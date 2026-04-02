@@ -24,7 +24,7 @@ function App() {
     localStorage.setItem("usuario", JSON.stringify(user));
   };
 
-  // 🔹 Nueva función cerrar sesión
+  // 🔹 Función cerrar sesión
   const cerrarSesion = () => {
     localStorage.removeItem("usuario");
     setUsuario(null);
@@ -91,7 +91,7 @@ function App() {
         actualizarInventario={actualizarInventario}
         mensajeInventario={mensajeInventario}
         refreshTrigger={refreshTrigger}
-        cerrarSesion={cerrarSesion}   {/* 🔹 Pasamos la función al POS */}
+        cerrarSesion={cerrarSesion}
       />
     );
   }
@@ -102,5 +102,7 @@ function App() {
 
   return <div>Rol desconocido</div>;
 }
+
+export default App;
 
 export default App;
