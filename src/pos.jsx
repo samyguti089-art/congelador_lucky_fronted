@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import "./POS.css";
 import VentasGrafico from "./VentasGrafico";
-import logo2 from "./logo_2.jpeg"; 
+import logo2 from "./logo_2.jpeg"; // tu logo dentro de src/
+
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [cantidad, setCantidad] = useState(1);
+  const [mostrarLogo, setMostrarLogo] = useState(false); // estado para modal del logo
 
   if (!inventario || inventario.length === 0) {
     return <p>Cargando inventario...</p>;
@@ -47,7 +49,12 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       <div className="pos-layout">
         {/* Lateral izquierdo con logo */}
         <aside className="pos-sidebar-left">
-          <img src={logo2} alt="Logo empresa" className="pos-logo" />
+          <img
+            src={logo2}
+            alt="Logo empresa"
+            className="pos-logo"
+            onClick={() => setMostrarLogo(true)} // al hacer click abre modal
+          />
         </aside>
 
         {/* Contenido principal */}
@@ -109,6 +116,15 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
         </aside>
       </div>
+
+      {/* Modal para mostrar logo en grande */}
+      {mostrarLogo && (
+        <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
+          <div className="modal-content">
+            <img src={logo2} alt="Logo empresa grande" className="logo-grande" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
