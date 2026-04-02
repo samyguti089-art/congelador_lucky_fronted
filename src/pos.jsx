@@ -126,6 +126,86 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
         </div>
       )}
     </div>
+      // Cargar combos desde Supabase al iniciar
+  useEffect(() => {
+    const fetchCombos = async () => {
+      const { data, error } = await supabase.from("combos").select("*");
+      if (error) {
+        console.error("Error cargando combos:", error);
+      } else {
+        setCombos(data);
+      }
+    };
+    fetchCombos();
+  }, []);
+
+  // Función para registrar venta de combo
+  const registrarVentaCombo = async (comboId, precioCombo) => {
+    try {
+      // Obtener detalle del combo
+      const { data: detalle, error } = await supabase
+        .from("combo_detalle")
+        .select("producto_id, cantidad")
+        .eq("combo_id", comboId);
+
+      if (error) throw error;
+
+      // Registrar la venta del combo
+      await supabase.from("ventas").insert([
+        {
+          producto_id: null,   // porque es un combo
+          cantidad: 1,         // siempre 1 combo por venta
+          total: precioCombo,  // precio real del combo
+          cajero_id: usuario.id
+        }
+      ]);
+
+      // Descontar inventario de cada producto incluido en el combo
+      for (const item of detalle) {
+        const producto = inventario.find(p => p.id === item.producto_id);
+        if (producto) {
+          await supabase
+            .from("inventario")
+            .update({ cantidad: producto.cantidad - item.cantidad })
+            .eq("id", item.producto_id);
+        }
+      }
+
+      // Feedback visual
+      setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
+      setTimeout(() => setMensajeInventario(""), 3000);
+      setRefreshTrigger(prev => prev + 1);
+
+    } catch (err) {
+      console.error("Error registrando venta de combo:", err);
+      alert("Error al registrar venta de combo");
+    }
+  };
+
+  return (
+    <div className="pos-container">
+      <h2>Bienvenido {usuario.nombre}</h2>
+
+      {/* Productos individuales */}
+      <h3>Productos individuales</h3>
+      <div className="productos-grid">
+        {inventario.filter(p => p.categoria === "individual").map(item => (
+          <button key={item.id} onClick={() => registrarVenta(item)}>
+            {item.nombre} - ${item.precio}
+          </button>
+        ))}
+      </div>
+
+      {/* Combos */}
+      <h3>Combos</h3>
+      <div className="combos-grid">
+        {combos.map(combo => (
+          <button key={combo.id} onClick={() => registrarVentaCombo(combo.id, combo.precio)}>
+            {combo.nombre} - ${combo.precio}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
