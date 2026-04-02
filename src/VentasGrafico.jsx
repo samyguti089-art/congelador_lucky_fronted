@@ -22,9 +22,10 @@ function VentasGrafico({ usuario, refreshTrigger }) {
         const res = await axios.get(`${API_URL}/ventas-dia`, {
           params: { cajero_id: usuario.id }
         });
-        setVentas(res.data);
+        setVentas(res.data || []);
       } catch (err) {
         console.error("Error obteniendo ventas del día:", err);
+        setVentas([]); // fallback seguro
       }
     };
 
@@ -35,21 +36,21 @@ function VentasGrafico({ usuario, refreshTrigger }) {
     labels: ventas.map(v => v.producto),
     datasets: [
       {
-        data: ventas.map(v => v.unidades),
+        data: ventas.map(v => Number(v.unidades) || 0),
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4CAF50", "#9C27B0"],
         hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4CAF50", "#9C27B0"]
       }
     ]
   };
 
-  const totalUnidades = ventas.reduce((acc, v) => acc + (v.unidades || 0), 0);
-  const totalDinero = ventas.reduce((acc, v) => acc + (v.total || 0), 0);
+  const totalUnidades = ventas.reduce((acc, v) => acc + (Number(v.unidades) || 0), 0);
+  const totalDinero = ventas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
 
-  // 🔹 Plugin para texto central (solo si hay datos)
+  // 🔹 Plugin para texto central (solo si hay datos válidos)
   const centerTextPlugin = {
     id: "centerText",
     beforeDraw: (chart) => {
-      if (ventas.length === 0) return; // evita NaN
+      if (!ventas || ventas.length === 0) return; // evita NaN
       const { width, height } = chart;
       const ctx = chart.ctx;
       ctx.restore();
