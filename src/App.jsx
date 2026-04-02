@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Login from "./login";
 import POS from "./pos";
-import AdminDashboard from "./admin/AdminDashboard";
+import AdminDashboard from "./AdminDashboard";
 import { supabase } from "./supabaseClient";
 
 function App() {
