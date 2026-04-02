@@ -8,10 +8,13 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 function VentasGrafico({ usuario, refreshTrigger }) {
   const [ventasDia, setVentasDia] = useState([]);
 
+  // 🔹 URL del backend desde variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const cargarVentas = async () => {
       try {
-        const res = await axios.get("http://127.0.0.1:8000/ventas-dia", {
+        const res = await axios.get(`${API_URL}/ventas-dia`, {
           params: { cajero_id: usuario.id }
         });
         setVentasDia(res.data || []);
@@ -86,3 +89,4 @@ function VentasGrafico({ usuario, refreshTrigger }) {
 }
 
 export default VentasGrafico;
+
