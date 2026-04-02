@@ -1,9 +1,9 @@
 .pos-container {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #000000, #fa8072); /* negro → salmón */
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); /* tonos oscuros azulados */
   min-height: 100vh;
   padding: 20px;
-  color: #fff;
+  color: #fff; /* letras claras para contraste */
 }
 
 .pos-header {
@@ -86,11 +86,24 @@
   font-size: 18px;
   font-weight: bold;
   text-align: center;
-  color: #fff;
+  color: #FFD700; /* dorado brillante */
+  text-shadow: 2px 2px 4px #000;
 }
 
 .pos-main {
   flex: 1;
+}
+
+.ventas-grafico h3 {
+  color: #FFD700; /* dorado brillante */
+  text-shadow: 2px 2px 4px #000;
+  font-weight: bold;
+}
+
+.ventas-grafico p {
+  color: #ffffff;
+  font-weight: bold;
+  text-shadow: 1px 1px 3px #000;
 }
 
 .pos-grid {
