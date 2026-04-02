@@ -9,6 +9,9 @@ function App() {
   const [mensajeInventario, setMensajeInventario] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // 🔹 URL del backend desde variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
     if (usuarioGuardado) {
@@ -23,7 +26,7 @@ function App() {
 
   const actualizarInventario = async (forzarRecarga = false) => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/inventario");
+      const res = await axios.get(`${API_URL}/inventario`);
       setInventario(res.data);
 
       if (forzarRecarga) {
@@ -46,31 +49,30 @@ function App() {
   }, [usuario]);
 
   const registrarVenta = async (item) => {
-  try {
-    const res = await axios.post("http://127.0.0.1:8000/venta", {
-      producto_id: item.id,
-      cantidad: item.cantidad,
-      total: item.total
-    }, {
-      params: { cajero_id: usuario.id }   // 🔹 enviamos el cajero_id como parámetro
-    });
+    try {
+      const res = await axios.post(`${API_URL}/venta`, {
+        producto_id: item.id,
+        cantidad: item.cantidad,
+        total: item.total
+      }, {
+        params: { cajero_id: usuario.id }   // 🔹 enviamos el cajero_id como parámetro
+      });
 
-    alert(res.data.mensaje);
+      alert(res.data.mensaje);
 
-    if (res.data.inventario) {
-      setInventario(res.data.inventario);
-      setMensajeInventario("Inventario actualizado después de la venta ✔️");
-      setTimeout(() => setMensajeInventario(""), 3000);
+      if (res.data.inventario) {
+        setInventario(res.data.inventario);
+        setMensajeInventario("Inventario actualizado después de la venta ✔️");
+        setTimeout(() => setMensajeInventario(""), 3000);
 
-      // 🔹 Actualizar trigger para refrescar gráfico
-      setRefreshTrigger(prev => prev + 1);
+        // 🔹 Actualizar trigger para refrescar gráfico
+        setRefreshTrigger(prev => prev + 1);
+      }
+    } catch (err) {
+      console.error("Error registrando venta:", err);
+      alert("Error al registrar venta");
     }
-  } catch (err) {
-    console.error("Error registrando venta:", err);
-    alert("Error al registrar venta");
-  }
-};
-
+  };
 
   if (!usuario) {
     return <Login setUsuario={manejarLogin} />;
