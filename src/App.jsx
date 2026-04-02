@@ -129,6 +129,39 @@ function App() {
       alert("Error al registrar venta");
     }
   };
+  const registrarVentaCombo = async (comboId) => {
+  try {
+    // Obtener detalle del combo
+    const { data: detalle, error } = await supabase
+      .from("combo_detalle")
+      .select("producto_id, cantidad")
+      .eq("combo_id", comboId);
+
+    if (error) throw error;
+
+    // Registrar la venta del combo
+    await supabase.from("ventas").insert([
+      { producto_id: null, cantidad: 1, total: /* precio del combo */, cajero_id: usuario.id }
+    ]);
+
+    // Descontar inventario de cada producto
+    for (const item of detalle) {
+      await supabase
+        .from("inventario")
+        .update({ cantidad: inventario.find(p => p.id === item.producto_id).cantidad - item.cantidad })
+        .eq("id", item.producto_id);
+    }
+
+    setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
+    setTimeout(() => setMensajeInventario(""), 3000);
+    setRefreshTrigger(prev => prev + 1);
+
+  } catch (err) {
+    console.error("Error registrando venta de combo:", err);
+    alert("Error al registrar venta de combo");
+  }
+};
+
 
   // 🔹 Renderizado
   if (!usuario) {
