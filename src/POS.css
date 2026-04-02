@@ -94,6 +94,7 @@
   flex: 1;
 }
 
+/* 🔹 Ajuste para que las letras de ventas resalten */
 .ventas-grafico h3 {
   color: #FFD700; /* dorado brillante */
   text-shadow: 2px 2px 4px #000;
