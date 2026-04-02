@@ -1,8 +1,9 @@
 .pos-container {
   font-family: 'Inter', sans-serif;
-  background-color: #f4f6f9;
+  background: linear-gradient(135deg, #000000, #fa8072); /* negro → salmón */
   min-height: 100vh;
   padding: 20px;
+  color: #fff;
 }
 
 .pos-header {
@@ -32,7 +33,6 @@
   text-align: right;
 }
 
-/* Botón cerrar sesión */
 .logout-btn {
   background-color: #dc3545;
   color: white;
@@ -48,14 +48,61 @@
   background-color: #c82333;
 }
 
+.refresh-btn {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 15px;
+  transition: background-color 0.2s ease;
+  font-size: 15px;
+}
+
+.refresh-btn:hover {
+  background-color: #117a8b;
+}
+
+.pos-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.pos-sidebar-left,
+.pos-sidebar-right {
+  flex: 0 0 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pos-logo {
+  max-width: 120px;
+  border-radius: 8px;
+}
+
+.pos-slogan {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #fff;
+}
+
+.pos-main {
+  flex: 1;
+}
+
 .pos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
 }
 
+/* Mantiene todos los estilos de cards y paneles igual */
 .product-card {
   background-color: white;
+  color: #333;
   border-radius: 10px;
   padding: 16px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -69,7 +116,6 @@
 
 .product-card h3 {
   margin-bottom: 10px;
-  color: #333;
 }
 
 .stock {
@@ -101,6 +147,7 @@
   margin-top: 30px;
   padding: 20px;
   background-color: #ffffff;
+  color: #333;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   text-align: center;
@@ -163,32 +210,128 @@
 
 .registrar-btn:hover {
   background-color: #218838;
+Perfecto, Samuel. Ya que quieres aprovechar los espacios laterales, aquí te dejo el `POS.jsx` y el `pos.css` integrados con **logo a la izquierda**, **lema a la derecha** y un **fondo degradado negro → salmón**.  
+
+---
+
+## 🔹 POS.jsx
+
+```jsx
+import React, { useState } from "react";
+import "./POS.css";
+import VentasGrafico from "./VentasGrafico";
+
+function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion }) {
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [cantidad, setCantidad] = useState(1);
+
+  if (!inventario || inventario.length === 0) {
+    return <p>Cargando inventario...</p>;
+  }
+
+  const aumentarCantidad = () => {
+    if (productoSeleccionado && cantidad < productoSeleccionado.cantidad) {
+      setCantidad(cantidad + 1);
+    }
+  };
+
+  const disminuirCantidad = () => {
+    if (cantidad > 1) {
+      setCantidad(cantidad - 1);
+    }
+  };
+
+  return (
+    <div className="pos-container">
+      <header className="pos-header">
+        <div className="pos-header-left">
+          <button className="logout-btn" onClick={cerrarSesion}>
+            🚪 Cerrar sesión
+          </button>
+        </div>
+
+        <h1 className="pos-title">TPV - {usuario.nombre}</h1>
+
+        <div className="pos-header-right">
+          <button className="refresh-btn" onClick={() => actualizarInventario(true)}>
+            🔄 Actualizar inventario
+          </button>
+        </div>
+      </header>
+
+      {mensajeInventario && (
+        <div className="mensaje-inventario">{mensajeInventario}</div>
+      )}
+
+      <div className="pos-layout">
+        {/* Lateral izquierdo con logo */}
+        <aside className="pos-sidebar-left">
+          <img src="/logo.png" alt="Logo empresa" className="pos-logo" />
+        </aside>
+
+        {/* Contenido principal */}
+        <main className="pos-main">
+          <VentasGrafico usuario={usuario} refreshTrigger={refreshTrigger} />
+
+          <div className="pos-grid">
+            {inventario.map((item) => (
+              <div key={item.id} className="product-card">
+                <h3>{item.nombre}</h3>
+                <p className="stock">Stock: {item.cantidad}</p>
+                <p className="price">Precio: ${item.precio}</p>
+                <button onClick={() => {
+                  setProductoSeleccionado(item);
+                  setCantidad(1);
+                }}>
+                  Seleccionar
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {productoSeleccionado && (
+            <div className="venta-panel">
+              <h2>Producto seleccionado</h2>
+              <p><strong>{productoSeleccionado.nombre}</strong></p>
+              <p>Stock disponible: {productoSeleccionado.cantidad}</p>
+              <p>Precio unitario: ${productoSeleccionado.precio}</p>
+
+              <div className="cantidad-selector">
+                <button className="cantidad-btn" onClick={disminuirCantidad}>-</button>
+                <input
+                  type="number"
+                  min="1"
+                  max={productoSeleccionado.cantidad}
+                  value={cantidad}
+                  onChange={(e) => setCantidad(parseInt(e.target.value))}
+                />
+                <button className="cantidad-btn" onClick={aumentarCantidad}>+</button>
+              </div>
+
+              <p className="total">Total: ${cantidad * productoSeleccionado.precio}</p>
+
+              <button
+                className="registrar-btn"
+                onClick={() => registrarVenta({
+                  ...productoSeleccionado,
+                  cantidad,
+                  total: cantidad * productoSeleccionado.precio
+                })}
+              >
+                Registrar venta
+              </button>
+            </div>
+          )}
+        </main>
+
+        {/* Lateral derecho con lema */}
+        <aside className="pos-sidebar-right">
+          <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
+        </aside>
+      </div>
+    </div>
+  );
 }
 
-.refresh-btn {
-  background-color: #17a2b8;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-left: 15px;
-  transition: background-color 0.2s ease;
-  font-size: 15px;
-}
-
-.refresh-btn:hover {
-  background-color: #117a8b;
-}
-
-.mensaje-inventario {
-  margin: 10px 0;
-  padding: 10px;
-  background-color: #e9f7ef;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 6px;
-  text-align: center;
-  font-weight: bold;
-}
+export default POS;
 
