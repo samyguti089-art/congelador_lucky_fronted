@@ -24,6 +24,12 @@ function App() {
     localStorage.setItem("usuario", JSON.stringify(user));
   };
 
+  // 🔹 Nueva función cerrar sesión
+  const cerrarSesion = () => {
+    localStorage.removeItem("usuario");
+    setUsuario(null);
+  };
+
   const actualizarInventario = async (forzarRecarga = false) => {
     try {
       const res = await axios.get(`${API_URL}/inventario`);
@@ -55,7 +61,7 @@ function App() {
         cantidad: item.cantidad,
         total: item.total
       }, {
-        params: { cajero_id: usuario.id }   // 🔹 enviamos el cajero_id como parámetro
+        params: { cajero_id: usuario.id }
       });
 
       alert(res.data.mensaje);
@@ -64,8 +70,6 @@ function App() {
         setInventario(res.data.inventario);
         setMensajeInventario("Inventario actualizado después de la venta ✔️");
         setTimeout(() => setMensajeInventario(""), 3000);
-
-        // 🔹 Actualizar trigger para refrescar gráfico
         setRefreshTrigger(prev => prev + 1);
       }
     } catch (err) {
@@ -87,6 +91,7 @@ function App() {
         actualizarInventario={actualizarInventario}
         mensajeInventario={mensajeInventario}
         refreshTrigger={refreshTrigger}
+        cerrarSesion={cerrarSesion}   {/* 🔹 Pasamos la función al POS */}
       />
     );
   }
