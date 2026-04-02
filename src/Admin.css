@@ -1,0 +1,237 @@
+/* Layout general */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #0a0f24; /* azul oscuro */
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 220px;
+  background: #1a2238;
+  padding: 20px;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.4);
+}
+
+.admin-sidebar h2 {
+  color: #FFD700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.admin-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-sidebar li {
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #0a0f24;
+}
+
+.admin-sidebar li:hover {
+  background: #FFD700;
+  color: #0a0f24;
+  transform: scale(1.05);
+}
+
+.admin-sidebar li.active {
+  background: #FFD700;
+  color: #0a0f24;
+  font-weight: bold;
+}
+
+/* Header superior */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a2238;
+  padding: 15px 25px;
+  border-bottom: 2px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.admin-header h1 {
+  color: #FFD700;
+  font-size: 1.4rem;
+}
+
+.logout-btn {
+  background: #FFD700;
+  color: #0a0f24;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #ffea00;
+  transform: scale(1.05);
+}
+
+/* Contenido principal */
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* Secciones (usuarios, inventario, reportes, alertas) */
+.admin-usuarios,
+.admin-inventario,
+.admin-reportes,
+.admin-alertas {
+  background: #1a2238;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.admin-usuarios h2,
+.admin-inventario h2,
+.admin-reportes h2,
+.admin-alertas h2 {
+  color: #FFD700;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+table th {
+  background: #FFD700;
+  color: #0a0f24;
+  padding: 10px;
+  text-align: left;
+}
+
+table td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+/* Inputs y selects */
+input, select {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 6px;
+  border: 1px solid #FFD700;
+  background: #0a0f24;
+  color: #fff;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #ffea00;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+}
+
+/* Botones */
+button {
+  background: #FFD700;
+  color: #0a0f24;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 5px;
+}
+
+button:hover {
+  background: #ffea00;
+  transform: scale(1.05);
+}
+
+/* Listas de alertas */
+.admin-alertas ul {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-alertas li {
+  background: #b22222; /* rojo alerta */
+  color: #fff;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* Notificaciones */
+.admin-notificaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.notificacion {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  animation: fadeIn 0.5s ease;
+}
+
+.notificacion.alerta {
+  background: #b22222;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(178, 34, 34, 0.7);
+}
+
+.notificacion.info {
+  background: #FFD700;
+  color: #0a0f24;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: none;
+    border-bottom: 2px solid #FFD700;
+  }
+
+  .admin-sidebar ul {
+    display: flex;
+    gap: 10px;
+  }
+
+  .admin-sidebar li {
+    flex: 1;
+    text-align: center;
+  }
+
+}
