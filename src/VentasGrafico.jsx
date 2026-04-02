@@ -42,13 +42,14 @@ function VentasGrafico({ usuario, refreshTrigger }) {
     ]
   };
 
-  const totalUnidades = ventas.reduce((acc, v) => acc + v.unidades, 0);
-  const totalDinero = ventas.reduce((acc, v) => acc + v.total, 0);
+  const totalUnidades = ventas.reduce((acc, v) => acc + (v.unidades || 0), 0);
+  const totalDinero = ventas.reduce((acc, v) => acc + (v.total || 0), 0);
 
-  // 🔹 Plugin para texto central
+  // 🔹 Plugin para texto central (solo si hay datos)
   const centerTextPlugin = {
     id: "centerText",
     beforeDraw: (chart) => {
+      if (ventas.length === 0) return; // evita NaN
       const { width, height } = chart;
       const ctx = chart.ctx;
       ctx.restore();
@@ -89,7 +90,9 @@ function VentasGrafico({ usuario, refreshTrigger }) {
       </h3>
 
       {ventas.length === 0 ? (
-        <p style={{ color: "#fff", fontWeight: "bold" }}>No hay ventas registradas hoy</p>
+        <p style={{ color: "#fff", fontWeight: "bold" }}>
+          No hay ventas registradas hoy
+        </p>
       ) : (
         <Doughnut data={data} plugins={[centerTextPlugin]} />
       )}
