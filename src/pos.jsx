@@ -104,3 +104,4 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
 }
 
 export default POS;
+
