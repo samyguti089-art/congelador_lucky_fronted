@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import AdminUsuarios from "./AdminUsuarios";
+import AdminUsuarios from "./AdminGestion_usr";
 import AdminInventario from "./AdminInventario";
 import AdminReportes from "./AdminReportes";
 import AdminAlertas from "./AdminAlertas";
