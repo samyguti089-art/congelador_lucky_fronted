@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./POS.css";
 import VentasGrafico from "./VentasGrafico";
 
-function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger }) {
+function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [cantidad, setCantidad] = useState(1);
 
@@ -25,10 +25,22 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   return (
     <div className="pos-container">
       <header className="pos-header">
-        <h1>TPV - {usuario.nombre}</h1>
-        <button className="refresh-btn" onClick={() => actualizarInventario(true)}>
-          🔄 Actualizar inventario
-        </button>
+        {/* Botón cerrar sesión a la izquierda */}
+        <div className="pos-header-left">
+          <button className="logout-btn" onClick={cerrarSesion}>
+            🚪 Cerrar sesión
+          </button>
+        </div>
+
+        {/* Título centrado */}
+        <h1 className="pos-title">TPV - {usuario.nombre}</h1>
+
+        {/* Botón actualizar inventario a la derecha */}
+        <div className="pos-header-right">
+          <button className="refresh-btn" onClick={() => actualizarInventario(true)}>
+            🔄 Actualizar inventario
+          </button>
+        </div>
       </header>
 
       {mensajeInventario && (
