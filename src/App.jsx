@@ -129,9 +129,10 @@ function App() {
       alert("Error al registrar venta");
     }
   };
-  const registrarVentaCombo = async (comboId) => {
+  // Función para registrar venta de combo
+const registrarVentaCombo = async (comboId, precioCombo) => {
   try {
-    // Obtener detalle del combo
+    // Obtener detalle del combo desde Supabase
     const { data: detalle, error } = await supabase
       .from("combo_detalle")
       .select("producto_id, cantidad")
@@ -139,19 +140,28 @@ function App() {
 
     if (error) throw error;
 
-    // Registrar la venta del combo
+    // Registrar la venta del combo en la tabla ventas
     await supabase.from("ventas").insert([
-      { producto_id: null, cantidad: 1, total: /* precio del combo */, cajero_id: usuario.id }
+      { 
+        producto_id: null,   // porque es un combo, no un producto individual
+        cantidad: 1,         // siempre 1 combo por venta
+        total: precioCombo,  // aquí usamos la variable con el precio real del combo
+        cajero_id: usuario.id 
+      }
     ]);
 
-    // Descontar inventario de cada producto
+    // Descontar inventario de cada producto incluido en el combo
     for (const item of detalle) {
-      await supabase
-        .from("inventario")
-        .update({ cantidad: inventario.find(p => p.id === item.producto_id).cantidad - item.cantidad })
-        .eq("id", item.producto_id);
+      const producto = inventario.find(p => p.id === item.producto_id);
+      if (producto) {
+        await supabase
+          .from("inventario")
+          .update({ cantidad: producto.cantidad - item.cantidad })
+          .eq("id", item.producto_id);
+      }
     }
 
+    // Feedback visual
     setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
     setTimeout(() => setMensajeInventario(""), 3000);
     setRefreshTrigger(prev => prev + 1);
