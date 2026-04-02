@@ -1,53 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title
+} from "chart.js";
 import axios from "axios";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 function VentasGrafico({ usuario, refreshTrigger }) {
-  const [ventasDia, setVentasDia] = useState([]);
+  const [ventas, setVentas] = useState([]);
 
-  // 🔹 URL del backend desde variable de entorno
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const cargarVentas = async () => {
+    const fetchVentas = async () => {
       try {
         const res = await axios.get(`${API_URL}/ventas-dia`, {
           params: { cajero_id: usuario.id }
         });
-        setVentasDia(res.data || []);
+        setVentas(res.data);
       } catch (err) {
-        console.error("Error cargando ventas del día:", err);
+        console.error("Error obteniendo ventas del día:", err);
       }
     };
 
-    cargarVentas();
+    fetchVentas();
   }, [usuario, refreshTrigger]);
 
-  // 🔹 Totales
-  const totalUnidades = ventasDia.reduce((acc, v) => acc + (v.cantidad || 0), 0);
-  const totalDinero = ventasDia.reduce((acc, v) => acc + (v.valor || 0), 0);
-
   const data = {
-    labels: ventasDia.map(v => v.producto),
+    labels: ventas.map(v => v.producto),
     datasets: [
       {
-        data: ventasDia.map(v => v.cantidad),
-        backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40"
-        ]
+        data: ventas.map(v => v.unidades),
+        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4CAF50", "#9C27B0"],
+        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4CAF50", "#9C27B0"]
       }
     ]
   };
 
-  // 🔹 Plugin con estilo moderno
+  const totalUnidades = ventas.reduce((acc, v) => acc + v.unidades, 0);
+  const totalDinero = ventas.reduce((acc, v) => acc + v.total, 0);
+
+  // 🔹 Plugin para texto central
   const centerTextPlugin = {
     id: "centerText",
     beforeDraw: (chart) => {
@@ -55,18 +53,22 @@ function VentasGrafico({ usuario, refreshTrigger }) {
       const ctx = chart.ctx;
       ctx.restore();
 
-      // Estilo para unidades
-      ctx.font = "bold 16px Arial";
-      ctx.fillStyle = "#333";
+      // Texto Unidades
+      ctx.font = "bold 18px Arial";
+      ctx.fillStyle = "#FFD700"; // dorado brillante
       ctx.textBaseline = "middle";
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 4;
       const texto1 = `Unidades: ${totalUnidades}`;
       const textX1 = Math.round((width - ctx.measureText(texto1).width) / 2);
       const textY1 = height / 2 - 15;
       ctx.fillText(texto1, textX1, textY1);
 
-      // Estilo para dinero
-      ctx.font = "bold 18px Arial";
-      ctx.fillStyle = "#007bff"; // azul moderno
+      // Texto Dinero
+      ctx.font = "bold 20px Arial";
+      ctx.fillStyle = "#00FF7F"; // verde neón
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 4;
       const texto2 = `💰 $${totalDinero}`;
       const textX2 = Math.round((width - ctx.measureText(texto2).width) / 2);
       const textY2 = height / 2 + 15;
@@ -77,12 +79,19 @@ function VentasGrafico({ usuario, refreshTrigger }) {
   };
 
   return (
-    <div style={{ width: "420px", margin: "20px auto", textAlign: "center" }}>
-      <h3 style={{ fontFamily: "Arial, sans-serif", color: "#444" }}>📊 Ventas del día</h3>
-      {ventasDia.length > 0 ? (
-        <Doughnut data={data} plugins={[centerTextPlugin]} />
+    <div className="ventas-grafico">
+      <h3 style={{
+        fontFamily: "Arial, sans-serif",
+        color: "#FFD700",
+        textShadow: "2px 2px 4px #000"
+      }}>
+        📊 Ventas del día
+      </h3>
+
+      {ventas.length === 0 ? (
+        <p style={{ color: "#fff", fontWeight: "bold" }}>No hay ventas registradas hoy</p>
       ) : (
-        <p style={{ color: "#888" }}>No hay ventas registradas hoy</p>
+        <Doughnut data={data} plugins={[centerTextPlugin]} />
       )}
     </div>
   );
