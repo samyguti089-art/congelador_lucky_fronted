@@ -50,7 +50,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       <div className="pos-layout">
         {/* Lateral izquierdo con logo */}
         <aside className="pos-sidebar-left">
-          <img src="logo_2.jpeg" alt="Logo empresa" className="pos-logo" />
+          <img src="/logo_2.jpeg" alt="Logo empresa" className="pos-logo" />
         </aside>
 
         {/* Contenido principal */}
