@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./POS.css";
 import VentasGrafico from "./VentasGrafico";
-
+import logo2 from "./logo_2.jpeg"; 
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [cantidad, setCantidad] = useState(1);
@@ -25,17 +25,14 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   return (
     <div className="pos-container">
       <header className="pos-header">
-        {/* Botón cerrar sesión a la izquierda */}
         <div className="pos-header-left">
           <button className="logout-btn" onClick={cerrarSesion}>
             🚪 Cerrar sesión
           </button>
         </div>
 
-        {/* Título centrado */}
         <h1 className="pos-title">TPV - {usuario.nombre}</h1>
 
-        {/* Botón actualizar inventario a la derecha */}
         <div className="pos-header-right">
           <button className="refresh-btn" onClick={() => actualizarInventario(true)}>
             🔄 Actualizar inventario
@@ -50,7 +47,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       <div className="pos-layout">
         {/* Lateral izquierdo con logo */}
         <aside className="pos-sidebar-left">
-          <img src="/logo_2.jpeg" alt="Logo empresa" className="pos-logo" />
+          <img src={logo2} alt="Logo empresa" className="pos-logo" />
         </aside>
 
         {/* Contenido principal */}
@@ -108,7 +105,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           )}
         </main>
 
-        {/* Lateral derecho con lema */}
         <aside className="pos-sidebar-right">
           <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
         </aside>
