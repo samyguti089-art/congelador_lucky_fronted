@@ -9,7 +9,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const [cantidad, setCantidad] = useState(1);
   const [mostrarLogo, setMostrarLogo] = useState(false);
   const [combos, setCombos] = useState([]);
-  const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarSubcategorias, setMostrarSubcategorias] = useState(false);
   const [subcategorias, setSubcategorias] = useState([]);
 
   // Cargar combos desde Supabase
@@ -25,50 +25,11 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     fetchCombos();
   }, []);
 
-  // Abrir modal con subcategorías de Deditos
-  const abrirModalDeditos = () => {
+  // Mostrar subcategorías de Deditos
+  const abrirSubcategoriasDeditos = () => {
     const deditos = inventario.filter(item => item.categoria === "deditos");
     setSubcategorias(deditos);
-    setMostrarModal(true);
-  };
-
-  // Función para registrar venta de combo
-  const registrarVentaCombo = async (comboId, precioCombo) => {
-    try {
-      const { data: detalle, error } = await supabase
-        .from("combo_detalle")
-        .select("producto_id, cantidad")
-        .eq("combo_id", comboId);
-
-      if (error) throw error;
-
-      await supabase.from("ventas").insert([
-        {
-          producto_id: null,
-          cantidad: 1,
-          total: precioCombo,
-          cajero_id: usuario.id
-        }
-      ]);
-
-      for (const item of detalle) {
-        const producto = inventario.find(p => p.id === item.producto_id);
-        if (producto) {
-          await supabase
-            .from("inventario")
-            .update({ cantidad: producto.cantidad - item.cantidad })
-            .eq("id", item.producto_id);
-        }
-      }
-
-      setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
-      setTimeout(() => setMensajeInventario(""), 3000);
-      setRefreshTrigger(prev => prev + 1);
-
-    } catch (err) {
-      console.error("Error registrando venta de combo:", err);
-      alert("Error al registrar venta de combo");
-    }
+    setMostrarSubcategorias(!mostrarSubcategorias);
   };
 
   const aumentarCantidad = () => {
@@ -122,13 +83,37 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
         <main className="pos-main">
           <VentasGrafico usuario={usuario} refreshTrigger={refreshTrigger} />
 
-          {/* Botón para abrir subcategorías de Deditos */}
+          {/* Botón principal de Deditos */}
           <h3>Categorías principales</h3>
-          <button className="categoria-btn" onClick={abrirModalDeditos}>
-            🥖 Deditos
-          </button>
+          <div className="categoria-card">
+            <button className="categoria-btn" onClick={abrirSubcategoriasDeditos}>
+              🥖 Deditos
+            </button>
 
-          {/* Productos individuales */}
+            {/* Lista desplegable de subcategorías */}
+            {mostrarSubcategorias && (
+              <div className="subcategorias-list">
+                {subcategorias.map(item => (
+                  <div key={item.id} className="subcategoria-card">
+                    <h4>{item.subcategoria}</h4>
+                    <p>Precio: ${item.precio}</p>
+                    <p>Stock: {item.cantidad}</p>
+                    <button
+                      onClick={() => registrarVenta({
+                        ...item,
+                        cantidad: 1,
+                        total: item.precio
+                      })}
+                    >
+                      Seleccionar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Aquí siguen tus productos individuales y combos */}
           <h3>Productos individuales</h3>
           <div className="pos-grid">
             {inventario.filter(p => p.categoria === "individual").map((item) => (
@@ -146,40 +131,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
             ))}
           </div>
 
-          {productoSeleccionado && (
-            <div className="venta-panel">
-              <h2>Producto seleccionado</h2>
-              <p><strong>{productoSeleccionado.nombre}</strong></p>
-              <p>Stock disponible: {productoSeleccionado.cantidad}</p>
-              <p>Precio unitario: ${productoSeleccionado.precio}</p>
-
-              <div className="cantidad-selector">
-                <button className="cantidad-btn" onClick={disminuirCantidad}>-</button>
-                <input
-                  type="number"
-                  min="1"
-                  max={productoSeleccionado.cantidad}
-                  value={cantidad}
-                  onChange={(e) => setCantidad(parseInt(e.target.value))}
-                />
-                <button className="cantidad-btn" onClick={aumentarCantidad}>+</button>
-              </div>
-
-              <p className="total">Total: ${cantidad * productoSeleccionado.precio}</p>
-
-              <button
-                className="registrar-btn"
-                onClick={() => registrarVenta({
-                  ...productoSeleccionado,
-                  cantidad,
-                  total: cantidad * productoSeleccionado.precio
-                })}
-              >
-                Registrar venta
-              </button>
-            </div>
-          )}
-
           {/* Combos */}
           <h3>Combos</h3>
           <div className="combos-grid">
@@ -196,35 +147,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
         </aside>
       </div>
 
-      {/* Modal para mostrar subcategorías de Deditos */}
-      {mostrarModal && (
-        <div className="modal-overlay" onClick={() => setMostrarModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Subcategorías de Deditos</h3>
-            <ul>
-              {subcategorias.map(item => (
-                <li key={item.id} className="subcategoria-item">
-                  <p><strong>{item.subcategoria}</strong></p>
-                  <p>Precio: ${item.precio}</p>
-                  <p>Stock: {item.cantidad}</p>
-                  <button
-                    onClick={() => registrarVenta({
-                      ...item,
-                      cantidad: 1,
-                      total: item.precio
-                    })}
-                  >
-                    Vender
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <button className="cerrar-btn" onClick={() => setMostrarModal(false)}>Cerrar</button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal para mostrar logo en grande */}
+      {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
           <div className="modal-content">
