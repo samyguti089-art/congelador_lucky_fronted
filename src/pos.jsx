@@ -175,12 +175,33 @@ const confirmarVentaOtros = () => {
         <h3>Medallones y Bolitas y otros</h3>
         <p className="info">Haz clic para ver subcategorías</p>
         </div>
+          
           {/* Bloque Combos */}
             <h3>Combos</h3>
             <div className="product-card" onClick={abrirModalCombos}>
             <h3>Combos</h3>
             <p className="info">Haz clic para ver todos los combos</p>
             </div>
+          
+      {/* Productos individuales */}
+      <h3>Productos individuales</h3>
+      <div className="productos-grid">
+        {inventario.filter(p => p.categoria === "individual").map(item => (
+          <button key={item.id} onClick={() => registrarVenta(item)}>
+            {item.nombre} - ${item.precio}
+          </button>
+        ))}
+      </div>
+
+      {/* Combos */}
+      <h3>Combos</h3>
+      <div className="combos-grid">
+        {combos.map(combo => (
+          <button key={combo.id} onClick={() => registrarVentaCombo(combo.id, combo.precio)}>
+            {combo.nombre} - ${combo.precio}
+          </button>
+        ))}
+      </div>
         <aside className="pos-sidebar-right">
         <img 
         src={logo2} 
@@ -189,7 +210,6 @@ const confirmarVentaOtros = () => {
         onClick={() => setMostrarLogo(true)} 
         />
         </aside>
-
       </div>
 
       {/* Modal de subcategorías de Deditos */}
