@@ -5,14 +5,16 @@ import { supabase } from "./supabaseClient";
 import logo2 from "./logo_2.jpeg";
 
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setMensajeInventario, setRefreshTrigger }) {
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [cantidad, setCantidad] = useState(1);
-  const [mostrarLogo, setMostrarLogo] = useState(false);
   const [combos, setCombos] = useState([]);
-  const [mostrarSubcategorias, setMostrarSubcategorias] = useState(false);
-  const [subcategorias, setSubcategorias] = useState([]);
+  const [mostrarLogo, setMostrarLogo] = useState(false);
 
-  // Cargar combos desde Supabase
+  // Estados para subcategorías
+  const [mostrarModalSubcategorias, setMostrarModalSubcategorias] = useState(false);
+  const [subcategorias, setSubcategorias] = useState([]);
+  const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState(null);
+  const [cantidad, setCantidad] = useState(1);
+
+  // Cargar combos
   useEffect(() => {
     const fetchCombos = async () => {
       const { data, error } = await supabase.from("combos").select("*");
@@ -25,92 +27,58 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     fetchCombos();
   }, []);
 
-  // Mostrar subcategorías de Deditos
-  const abrirSubcategoriasDeditos = () => {
+  // Abrir modal con subcategorías de Deditos
+  const abrirModalDeditos = () => {
     const deditos = inventario.filter(item => item.categoria === "deditos");
     setSubcategorias(deditos);
-    setMostrarSubcategorias(!mostrarSubcategorias);
+    setMostrarModalSubcategorias(true);
   };
 
-  const aumentarCantidad = () => {
-    if (productoSeleccionado && cantidad < productoSeleccionado.cantidad) {
-      setCantidad(cantidad + 1);
-    }
+  // Confirmar selección de subcategoría
+  const seleccionarSubcategoria = (item) => {
+    setSubcategoriaSeleccionada(item);
+    setCantidad(1);
   };
 
-  const disminuirCantidad = () => {
-    if (cantidad > 1) {
-      setCantidad(cantidad - 1);
-    }
+  // Registrar venta de la subcategoría seleccionada
+  const confirmarVenta = () => {
+    if (!subcategoriaSeleccionada) return;
+    registrarVenta({
+      ...subcategoriaSeleccionada,
+      cantidad,
+      total: cantidad * subcategoriaSeleccionada.precio
+    });
+    setMostrarModalSubcategorias(false);
+    setSubcategoriaSeleccionada(null);
   };
-
-  if (!inventario || inventario.length === 0) {
-    return <p>Cargando inventario...</p>;
-  }
 
   return (
     <div className="pos-container">
       <header className="pos-header">
         <div className="pos-header-left">
-          <button className="logout-btn" onClick={cerrarSesion}>
-            🚪 Cerrar sesión
-          </button>
+          <button className="logout-btn" onClick={cerrarSesion}>🚪 Cerrar sesión</button>
         </div>
-
         <h1 className="pos-title">TPV - {usuario.nombre}</h1>
-
         <div className="pos-header-right">
-          <button className="refresh-btn" onClick={() => actualizarInventario(true)}>
-            🔄 Actualizar inventario
-          </button>
+          <button className="refresh-btn" onClick={() => actualizarInventario(true)}>🔄 Actualizar inventario</button>
         </div>
       </header>
 
-      {mensajeInventario && (
-        <div className="mensaje-inventario">{mensajeInventario}</div>
-      )}
+      {mensajeInventario && <div className="mensaje-inventario">{mensajeInventario}</div>}
 
       <div className="pos-layout">
         <aside className="pos-sidebar-left">
-          <img
-            src={logo2}
-            alt="Logo empresa"
-            className="pos-logo"
-            onClick={() => setMostrarLogo(true)}
-          />
+          <img src={logo2} alt="Logo empresa" className="pos-logo" onClick={() => setMostrarLogo(true)} />
         </aside>
 
         <main className="pos-main">
           <VentasGrafico usuario={usuario} refreshTrigger={refreshTrigger} />
 
-          {/* Botón principal de Deditos */}
+          {/* Card de Deditos */}
           <h3>Categorías principales</h3>
-          <div className="categoria-card">
-            <button className="categoria-btn" onClick={abrirSubcategoriasDeditos}>
-              🥖 Deditos
-            </button>
-
-            {/* Lista desplegable de subcategorías */}
-            {mostrarSubcategorias && (
-              <div className="subcategorias-list">
-                {subcategorias.map(item => (
-                  <div key={item.id} className="subcategoria-card">
-                    <h4>{item.subcategoria}</h4>
-                    <p>Precio: ${item.precio}</p>
-                    <p>Stock: {item.cantidad}</p>
-                    <button
-                      onClick={() => registrarVenta({
-                        ...item,
-                        cantidad: 1,
-                        total: item.precio
-                      })}
-                    >
-                      Seleccionar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="product-card" onClick={abrirModalDeditos}>
+            <h3>Deditos</h3>
+            <p className="info">Haz clic para ver subcategorías</p>
           </div>
 
           {/* Aquí siguen tus productos individuales y combos */}
@@ -121,17 +89,10 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
                 <h3>{item.nombre}</h3>
                 <p className="stock">Stock: {item.cantidad}</p>
                 <p className="price">Precio: ${item.precio}</p>
-                <button onClick={() => {
-                  setProductoSeleccionado(item);
-                  setCantidad(1);
-                }}>
-                  Seleccionar
-                </button>
               </div>
             ))}
           </div>
 
-          {/* Combos */}
           <h3>Combos</h3>
           <div className="combos-grid">
             {combos.map(combo => (
@@ -146,6 +107,42 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
         </aside>
       </div>
+
+      {/* Modal de subcategorías de Deditos */}
+      {mostrarModalSubcategorias && (
+        <div className="modal-overlay" onClick={() => setMostrarModalSubcategorias(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            {!subcategoriaSeleccionada ? (
+              <>
+                <h3>Subcategorías de Deditos</h3>
+                <ul>
+                  {subcategorias.map(item => (
+                    <li key={item.id} className="subcategoria-item">
+                      <p><strong>{item.subcategoria}</strong></p>
+                      <p>Precio: ${item.precio}</p>
+                      <p>Stock: {item.cantidad}</p>
+                      <button onClick={() => seleccionarSubcategoria(item)}>Seleccionar</button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <>
+                <h3>Venta de {subcategoriaSeleccionada.subcategoria}</h3>
+                <p>Precio unitario: ${subcategoriaSeleccionada.precio}</p>
+                <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
+                <div className="cantidad-selector">
+                  <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
+                  <input type="number" min="1" max={subcategoriaSeleccionada.cantidad} value={cantidad} onChange={(e) => setCantidad(parseInt(e.target.value))} />
+                  <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
+                </div>
+                <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
+                <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal para logo */}
       {mostrarLogo && (
