@@ -13,6 +13,8 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const [subcategorias, setSubcategorias] = useState([]);
   const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState(null);
   const [cantidad, setCantidad] = useState(1);
+  // Carrito temporal
+const [carrito, setCarrito] = useState([]);
   // ====== ESTADOS PARA EMPANADAS ======
 const [mostrarModalEmpanadas, setMostrarModalEmpanadas] = useState(false);
 const [subcategoriasEmpanadas, setSubcategoriasEmpanadas] = useState([]);
@@ -132,6 +134,16 @@ const confirmarVentaOtros = () => {
   setMostrarModalOtros(false);
   setSubcategoriaOtrosSeleccionada(null);
 };
+  const agregarAlCarrito = (producto, cantidad) => {
+  const item = {
+    nombre: producto.subcategoria || producto.nombre,
+    precio: producto.precio,
+    cantidad: cantidad,
+    subtotal: cantidad * producto.precio
+  };
+  setCarrito([...carrito, item]);
+};
+
 
   return (
     <div className="pos-container">
@@ -368,6 +380,82 @@ const confirmarVentaOtros = () => {
     </div>
   </div>
 )}
+      {/* Modal de subcategorías de Deditos */}
+{mostrarModalDeditos && (
+  <div className="modal-overlay" onClick={() => setMostrarModalDeditos(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {!subcategoriaDeditosSeleccionada ? (
+        <>
+          <h3>Subcategorías de Deditos</h3>
+          <ul>
+            {subcategoriasDeditos.map(item => (
+              <li key={item.id} className="subcategoria-item">
+                <p><strong>{item.subcategoria}</strong></p>
+                <p>Precio: ${item.precio}</p>
+                <p>Stock: {item.cantidad}</p>
+                <button onClick={() => seleccionarSubcategoriaDeditos(item)}>Seleccionar</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Venta de {subcategoriaDeditosSeleccionada.subcategoria}</h3>
+          <p>Precio unitario: ${subcategoriaDeditosSeleccionada.precio}</p>
+          <p>Stock disponible: {subcategoriaDeditosSeleccionada.cantidad}</p>
+          <div className="cantidad-selector">
+            <button className="volver-btn" onClick={() => setSubcategoriaDeditosSeleccionada(null)}>⬅️ Volver</button>
+            <button onClick={() => cantidadDeditos > 1 && setCantidadDeditos(cantidadDeditos - 1)}>-</button>
+            <input
+              type="number"
+              min="1"
+              max={subcategoriaDeditosSeleccionada.cantidad}
+              value={cantidadDeditos}
+              onChange={(e) => setCantidadDeditos(parseInt(e.target.value))}
+            />
+            <button onClick={() => cantidadDeditos < subcategoriaDeditosSeleccionada.cantidad && setCantidadDeditos(cantidadDeditos + 1)}>+</button>
+          </div>
+          <p>Total: ${cantidadDeditos * subcategoriaDeditosSeleccionada.precio}</p>
+
+          {/* Botón Agregar más productos */}
+          <button 
+            className="agregar-btn" 
+            onClick={() => {
+              agregarAlCarrito(subcategoriaDeditosSeleccionada, cantidadDeditos);
+              setMostrarModalDeditos(false);
+              setSubcategoriaDeditosSeleccionada(null);
+            }}
+          >
+            ➕ Agregar más productos
+          </button>
+
+          {/* Botón Registrar venta final */}
+          <button 
+            className="registrar-btn" 
+            onClick={() => {
+              agregarAlCarrito(subcategoriaDeditosSeleccionada, cantidadDeditos);
+              registrarVenta({
+                productos: carrito.concat({
+                  nombre: subcategoriaDeditosSeleccionada.subcategoria,
+                  precio: subcategoriaDeditosSeleccionada.precio,
+                  cantidad: cantidadDeditos,
+                  subtotal: cantidadDeditos * subcategoriaDeditosSeleccionada.precio
+                }),
+                total: carrito.reduce((acc, item) => acc + item.subtotal, 0) + (cantidadDeditos * subcategoriaDeditosSeleccionada.precio)
+              });
+              setCarrito([]);
+              setMostrarModalDeditos(false);
+              setSubcategoriaDeditosSeleccionada(null);
+            }}
+          >
+            Registrar venta
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
       {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
