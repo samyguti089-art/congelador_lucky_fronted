@@ -26,10 +26,6 @@ const [cantidadOtros, setCantidadOtros] = useState(1);
 const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
 const [comboSeleccionado, setComboSeleccionado] = useState(null);
 const [cantidadCombo, setCantidadCombo] = useState(1);
-  // Carrito temporal
-const [carrito, setCarrito] = useState([]);
-
-
   // Cargar combos
   useEffect(() => {
     const fetchCombos = async () => {
