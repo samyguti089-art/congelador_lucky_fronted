@@ -349,6 +349,9 @@ const confirmarVentaOtros = () => {
           <h3>Venta de {comboSeleccionado.nombre}</h3>
           <p>Precio unitario: ${comboSeleccionado.precio}</p>
           <div className="cantidad-selector">
+            {/* Botón Volver */}
+            <button className="volver-btn" onClick={() => setComboSeleccionado(null)}>⬅️ Volver</button>
+
             <button onClick={() => cantidadCombo > 1 && setCantidadCombo(cantidadCombo - 1)}>-</button>
             <input
               type="number"
@@ -365,7 +368,6 @@ const confirmarVentaOtros = () => {
     </div>
   </div>
 )}
-
       {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
