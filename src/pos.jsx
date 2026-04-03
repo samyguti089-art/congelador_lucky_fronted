@@ -177,8 +177,14 @@ const confirmarVentaOtros = () => {
         </main>
 
         <aside className="pos-sidebar-right">
-          <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
+        <img 
+        src={logo2} 
+        alt="Logo empresa" 
+        className="pos-logo" 
+        onClick={() => setMostrarLogo(true)} 
+        />
         </aside>
+
       </div>
 
       {/* Modal de subcategorías de Deditos */}
