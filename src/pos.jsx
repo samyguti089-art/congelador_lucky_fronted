@@ -7,7 +7,8 @@ import logo2 from "./logo_2.jpeg";
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setMensajeInventario, setRefreshTrigger }) {
   const [combos, setCombos] = useState([]);
   const [mostrarLogo, setMostrarLogo] = useState(false);
-
+  // Carrito temporal
+  const [carrito, setCarrito] = useState([]);
   // Estados para subcategorías
   const [mostrarModalSubcategorias, setMostrarModalSubcategorias] = useState(false);
   const [subcategorias, setSubcategorias] = useState([]);
@@ -132,6 +133,16 @@ const confirmarVentaOtros = () => {
   setMostrarModalOtros(false);
   setSubcategoriaOtrosSeleccionada(null);
 };
+  const agregarAlCarrito = (producto, cantidad) => {
+  const item = {
+    nombre: producto.subcategoria || producto.nombre,
+    precio: producto.precio,
+    cantidad: cantidad,
+    subtotal: cantidad * producto.precio
+  };
+  setCarrito([...carrito, item]);
+};
+
   return (
     <div className="pos-container">
       <header className="pos-header">
