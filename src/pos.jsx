@@ -208,8 +208,7 @@ const confirmarVentaOtros = () => {
                       <p>Precio: ${item.precio}</p>
                       <p>Stock: {item.cantidad}</p>
                       <button onClick={() => seleccionarSubcategoria(item)}>Seleccionar</button>
-                      <button className="volver-btn" onClick={() => setSubcategoriaDeditosSeleccionada(null)}>⬅️ Volver</button>
-                      <button className="registrar-btn" onClick={confirmarVentaDeditos}>Registrar venta</button>
+                      <button onClick={() => setSubcategoriaDeditosSeleccionada(null)}>⬅️ Volver</button>
                     </li>
                   ))}
                 </ul>
