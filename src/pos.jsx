@@ -283,7 +283,7 @@ const confirmarVentaOtros = () => {
   </div>
 )}
 
-      {/* Modal de subcategorías de Otros */}
+     {/* Modal de subcategorías de Otros */}
 {mostrarModalOtros && (
   <div className="modal-overlay" onClick={() => setMostrarModalOtros(false)}>
     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -307,6 +307,9 @@ const confirmarVentaOtros = () => {
           <p>Precio unitario: ${subcategoriaOtrosSeleccionada.precio}</p>
           <p>Stock disponible: {subcategoriaOtrosSeleccionada.cantidad}</p>
           <div className="cantidad-selector">
+            {/* Botón Volver */}
+            <button className="volver-btn" onClick={() => setSubcategoriaOtrosSeleccionada(null)}>⬅️ Volver</button>
+
             <button onClick={() => cantidadOtros > 1 && setCantidadOtros(cantidadOtros - 1)}>-</button>
             <input
               type="number"
