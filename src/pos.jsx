@@ -208,7 +208,6 @@ const confirmarVentaOtros = () => {
                       <p>Precio: ${item.precio}</p>
                       <p>Stock: {item.cantidad}</p>
                       <button onClick={() => seleccionarSubcategoria(item)}>Seleccionar</button>
-                      <button onClick={() => setSubcategoriaDeditosSeleccionada(null)}>⬅️ Volver</button>
                     </li>
                   ))}
                 </ul>
@@ -219,6 +218,7 @@ const confirmarVentaOtros = () => {
                 <p>Precio unitario: ${subcategoriaSeleccionada.precio}</p>
                 <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
                 <div className="cantidad-selector">
+                  <button onClick={() => setSubcategoriaDeditosSeleccionada(null)}>⬅️ Volver</button>
                   <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
                   <input
                     type="number"
