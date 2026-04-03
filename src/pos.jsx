@@ -181,30 +181,6 @@ const confirmarVentaOtros = () => {
             <h3>Combos</h3>
             <p className="info">Haz clic para ver todos los combos</p>
             </div>
-
-          {/* Productos individuales */}
-          <h3>Productos individuales</h3>
-          <div className="pos-grid">
-            {inventario.filter(p => p.categoria === "individual").map((item) => (
-              <div key={item.id} className="product-card">
-                <h3>{item.nombre}</h3>
-                <p className="stock">Stock: {item.cantidad}</p>
-                <p className="price">Precio: ${item.precio}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Combos */}
-          <h3>Combos</h3>
-          <div className="combos-grid">
-            {combos.map(combo => (
-              <button key={combo.id} onClick={() => registrarVentaCombo(combo.id, combo.precio)}>
-                {combo.nombre} - ${combo.precio}
-              </button>
-            ))}
-          </div>
-        </main>
-
         <aside className="pos-sidebar-right">
         <img 
         src={logo2} 
