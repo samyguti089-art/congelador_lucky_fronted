@@ -81,7 +81,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
             <p className="info">Haz clic para ver subcategorías</p>
           </div>
 
-          {/* Aquí siguen tus productos individuales y combos */}
+          {/* Productos individuales */}
           <h3>Productos individuales</h3>
           <div className="pos-grid">
             {inventario.filter(p => p.categoria === "individual").map((item) => (
@@ -93,6 +93,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
             ))}
           </div>
 
+          {/* Combos */}
           <h3>Combos</h3>
           <div className="combos-grid">
             {combos.map(combo => (
@@ -133,7 +134,13 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
                 <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
                 <div className="cantidad-selector">
                   <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
-                  <input type="number" min="1" max={subcategoriaSeleccionada.cantidad} value={cantidad} onChange={(e) => setCantidad(parseInt(e.target.value))} />
+                  <input
+                    type="number"
+                    min="1"
+                    max={subcategoriaSeleccionada.cantidad}
+                    value={cantidad}
+                    onChange={(e) => setCantidad(parseInt(e.target.value))}
+                  />
                   <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
                 </div>
                 <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
