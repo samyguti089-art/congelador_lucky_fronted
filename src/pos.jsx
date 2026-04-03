@@ -29,7 +29,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
 
   // Abrir modal con subcategorías de Deditos
   const abrirModalDeditos = () => {
-    const deditos = inventario.filter(item => item.categoria === "deditos");
+    const deditos = inventario.filter(item => item.categoria.toLowerCase() === "deditos");
     setSubcategorias(deditos);
     setMostrarModalSubcategorias(true);
   };
