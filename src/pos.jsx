@@ -262,6 +262,8 @@ const confirmarVentaOtros = () => {
           <p>Precio unitario: ${subcategoriaEmpanadaSeleccionada.precio}</p>
           <p>Stock disponible: {subcategoriaEmpanadaSeleccionada.cantidad}</p>
           <div className="cantidad-selector">
+            {/* Botón Volver */}
+            <button className="volver-btn" onClick={() => setSubcategoriaSeleccionada(null)}>⬅️ Volver</button>
             <button onClick={() => cantidadEmpanada > 1 && setCantidadEmpanada(cantidadEmpanada - 1)}>-</button>
             <input
               type="number"
