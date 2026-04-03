@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import "./POS.css";
 import VentasGrafico from "./VentasGrafico";
 import { supabase } from "./supabaseClient";
-import logo2 from "./logo_2.jpeg"; // tu logo dentro de src/
+import logo2 from "./logo_2.jpeg";
 
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setMensajeInventario, setRefreshTrigger }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [mostrarLogo, setMostrarLogo] = useState(false);
   const [combos, setCombos] = useState([]);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [subcategorias, setSubcategorias] = useState([]);
 
-  // Cargar combos desde Supabase al iniciar
+  // Cargar combos desde Supabase
   useEffect(() => {
     const fetchCombos = async () => {
       const { data, error } = await supabase.from("combos").select("*");
@@ -23,10 +25,16 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     fetchCombos();
   }, []);
 
+  // Abrir modal con subcategorías de Deditos
+  const abrirModalDeditos = () => {
+    const deditos = inventario.filter(item => item.categoria === "deditos");
+    setSubcategorias(deditos);
+    setMostrarModal(true);
+  };
+
   // Función para registrar venta de combo
   const registrarVentaCombo = async (comboId, precioCombo) => {
     try {
-      // Obtener detalle del combo
       const { data: detalle, error } = await supabase
         .from("combo_detalle")
         .select("producto_id, cantidad")
@@ -34,7 +42,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
 
       if (error) throw error;
 
-      // Registrar la venta del combo
       await supabase.from("ventas").insert([
         {
           producto_id: null,
@@ -44,7 +51,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
         }
       ]);
 
-      // Descontar inventario de cada producto incluido en el combo
       for (const item of detalle) {
         const producto = inventario.find(p => p.id === item.producto_id);
         if (producto) {
@@ -104,7 +110,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       )}
 
       <div className="pos-layout">
-        {/* Lateral izquierdo con logo */}
         <aside className="pos-sidebar-left">
           <img
             src={logo2}
@@ -114,9 +119,14 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           />
         </aside>
 
-        {/* Contenido principal */}
         <main className="pos-main">
           <VentasGrafico usuario={usuario} refreshTrigger={refreshTrigger} />
+
+          {/* Botón para abrir subcategorías de Deditos */}
+          <h3>Categorías principales</h3>
+          <button className="categoria-btn" onClick={abrirModalDeditos}>
+            🥖 Deditos
+          </button>
 
           {/* Productos individuales */}
           <h3>Productos individuales</h3>
@@ -185,6 +195,34 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           <p className="pos-slogan">✨ ¡Tu sabor, nuestra pasión! ✨</p>
         </aside>
       </div>
+
+      {/* Modal para mostrar subcategorías de Deditos */}
+      {mostrarModal && (
+        <div className="modal-overlay" onClick={() => setMostrarModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Subcategorías de Deditos</h3>
+            <ul>
+              {subcategorias.map(item => (
+                <li key={item.id} className="subcategoria-item">
+                  <p><strong>{item.subcategoria}</strong></p>
+                  <p>Precio: ${item.precio}</p>
+                  <p>Stock: {item.cantidad}</p>
+                  <button
+                    onClick={() => registrarVenta({
+                      ...item,
+                      cantidad: 1,
+                      total: item.precio
+                    })}
+                  >
+                    Vender
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button className="cerrar-btn" onClick={() => setMostrarModal(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
 
       {/* Modal para mostrar logo en grande */}
       {mostrarLogo && (
