@@ -18,6 +18,11 @@ const [mostrarModalEmpanadas, setMostrarModalEmpanadas] = useState(false);
 const [subcategoriasEmpanadas, setSubcategoriasEmpanadas] = useState([]);
 const [subcategoriaEmpanadaSeleccionada, setSubcategoriaEmpanadaSeleccionada] = useState(null);
 const [cantidadEmpanada, setCantidadEmpanada] = useState(1);
+  // ====== ESTADOS PARA OTROS (Medallones y Bolitas) ======
+const [mostrarModalOtros, setMostrarModalOtros] = useState(false);
+const [subcategoriasOtros, setSubcategoriasOtros] = useState([]);
+const [subcategoriaOtrosSeleccionada, setSubcategoriaOtrosSeleccionada] = useState(null);
+const [cantidadOtros, setCantidadOtros] = useState(1);
 
   // Cargar combos
   useEffect(() => {
@@ -44,6 +49,15 @@ const abrirModalEmpanadas = () => {
   setSubcategoriasEmpanadas(empanadas);
   setMostrarModalEmpanadas(true);
 };
+  // Abrir modal con subcategorías de Medallones y Bolitas
+const abrirModalOtros = () => {
+  const otros = inventario.filter(item =>
+    item.categoria.toLowerCase() === "medallones" ||
+    item.categoria.toLowerCase() === "bolitas"
+  );
+  setSubcategoriasOtros(otros);
+  setMostrarModalOtros(true);
+};
   
   // Seleccionar una subcategoría
   const seleccionarSubcategoria = (item) => {
@@ -54,6 +68,11 @@ const abrirModalEmpanadas = () => {
 const seleccionarSubcategoriaEmpanada = (item) => {
   setSubcategoriaEmpanadaSeleccionada(item);
   setCantidadEmpanada(1);
+};
+  // Seleccionar una subcategoría de Otros
+const seleccionarSubcategoriaOtros = (item) => {
+  setSubcategoriaOtrosSeleccionada(item);
+  setCantidadOtros(1);
 };
 
   // Confirmar venta
@@ -77,6 +96,17 @@ const confirmarVentaEmpanada = () => {
   });
   setMostrarModalEmpanadas(false);
   setSubcategoriaEmpanadaSeleccionada(null);
+};
+  // Confirmar venta de Otros
+const confirmarVentaOtros = () => {
+  if (!subcategoriaOtrosSeleccionada) return;
+  registrarVenta({
+    ...subcategoriaOtrosSeleccionada,
+    cantidad: cantidadOtros,
+    total: cantidadOtros * subcategoriaOtrosSeleccionada.precio
+  });
+  setMostrarModalOtros(false);
+  setSubcategoriaOtrosSeleccionada(null);
 };
 
   return (
@@ -114,6 +144,14 @@ const confirmarVentaEmpanada = () => {
         <h3>Empanadas</h3>
         <p className="info">Haz clic para ver subcategorías</p>
         </div>
+          
+          {/* Card de Otros */}
+          <h3>Categorías principales</h3>
+        <div className="product-card" onClick={abrirModalOtros}>
+        <h3>Medallones y Bolitas y otros</h3>
+        <p className="info">Haz clic para ver subcategorías</p>
+        </div>
+
           
           {/* Productos individuales */}
           <h3>Productos individuales</h3>
@@ -225,7 +263,47 @@ const confirmarVentaEmpanada = () => {
     </div>
   </div>
 )}  
-
+      {/* Modal de subcategorías de Otros */}
+{mostrarModalOtros && (
+  <div className="modal-overlay" onClick={() => setMostrarModalOtros(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {!subcategoriaOtrosSeleccionada ? (
+        <>
+          <h3>Subcategorías de Medallones y Bolitas</h3>
+          <ul>
+            {subcategoriasOtros.map(item => (
+              <li key={item.id} className="subcategoria-item">
+                <p><strong>{item.subcategoria}</strong></p>
+                <p>Precio: ${item.precio}</p>
+                <p>Stock: {item.cantidad}</p>
+                <button onClick={() => seleccionarSubcategoriaOtros(item)}>Seleccionar</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Venta de {subcategoriaOtrosSeleccionada.subcategoria}</h3>
+          <p>Precio unitario: ${subcategoriaOtrosSeleccionada.precio}</p>
+          <p>Stock disponible: {subcategoriaOtrosSeleccionada.cantidad}</p>
+          <div className="cantidad-selector">
+            <button onClick={() => cantidadOtros > 1 && setCantidadOtros(cantidadOtros - 1)}>-</button>
+            <input
+              type="number"
+              min="1"
+              max={subcategoriaOtrosSeleccionada.cantidad}
+              value={cantidadOtros}
+              onChange={(e) => setCantidadOtros(parseInt(e.target.value))}
+            />
+            <button onClick={() => cantidadOtros < subcategoriaOtrosSeleccionada.cantidad && setCantidadOtros(cantidadOtros + 1)}>+</button>
+          </div>
+          <p>Total: ${cantidadOtros * subcategoriaOtrosSeleccionada.precio}</p>
+          <button className="registrar-btn" onClick={confirmarVentaOtros}>Registrar venta</button>
+        </>
+      )}
+    </div>
+  </div>
+)}
       {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
