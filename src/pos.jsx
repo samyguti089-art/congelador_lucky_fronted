@@ -179,7 +179,7 @@ const confirmarVentaOtros = () => {
           {/* Card de Otros */}
           <h3>Categorías principales</h3>
         <div className="product-card" onClick={abrirModalOtros}>
-        <h3>Medallones y Bolitas y otros</h3>
+        <h3>Medallones , Bolitas y otros</h3>
         <p className="info">Haz clic para ver subcategorías</p>
         </div>
           
