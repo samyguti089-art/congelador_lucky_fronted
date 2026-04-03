@@ -13,6 +13,11 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const [subcategorias, setSubcategorias] = useState([]);
   const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState(null);
   const [cantidad, setCantidad] = useState(1);
+  // ====== ESTADOS PARA EMPANADAS ======
+const [mostrarModalEmpanadas, setMostrarModalEmpanadas] = useState(false);
+const [subcategoriasEmpanadas, setSubcategoriasEmpanadas] = useState([]);
+const [subcategoriaEmpanadaSeleccionada, setSubcategoriaEmpanadaSeleccionada] = useState(null);
+const [cantidadEmpanada, setCantidadEmpanada] = useState(1);
 
   // Cargar combos
   useEffect(() => {
@@ -33,12 +38,23 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     setSubcategorias(deditos);
     setMostrarModalSubcategorias(true);
   };
-
+  // Abrir modal con subcategorías de Empanadas
+const abrirModalEmpanadas = () => {
+  const empanadas = inventario.filter(item => item.categoria.toLowerCase() === "empanadas");
+  setSubcategoriasEmpanadas(empanadas);
+  setMostrarModalEmpanadas(true);
+};
+  
   // Seleccionar una subcategoría
   const seleccionarSubcategoria = (item) => {
     setSubcategoriaSeleccionada(item);
     setCantidad(1);
   };
+  // Seleccionar una subcategoría de Empanadas
+const seleccionarSubcategoriaEmpanada = (item) => {
+  setSubcategoriaEmpanadaSeleccionada(item);
+  setCantidadEmpanada(1);
+};
 
   // Confirmar venta
   const confirmarVenta = () => {
@@ -51,6 +67,17 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     setMostrarModalSubcategorias(false);
     setSubcategoriaSeleccionada(null);
   };
+  // Confirmar venta de Empanadas
+const confirmarVentaEmpanada = () => {
+  if (!subcategoriaEmpanadaSeleccionada) return;
+  registrarVenta({
+    ...subcategoriaEmpanadaSeleccionada,
+    cantidad: cantidadEmpanada,
+    total: cantidadEmpanada * subcategoriaEmpanadaSeleccionada.precio
+  });
+  setMostrarModalEmpanadas(false);
+  setSubcategoriaEmpanadaSeleccionada(null);
+};
 
   return (
     <div className="pos-container">
@@ -81,6 +108,13 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
             <p className="info">Haz clic para ver subcategorías</p>
           </div>
 
+          {/* Card de Empanadas */}
+        <h3>Categorías principales</h3>
+        <div className="product-card" onClick={abrirModalEmpanadas}>
+        <h3>Empanadas</h3>
+        <p className="info">Haz clic para ver subcategorías</p>
+        </div>
+          
           {/* Productos individuales */}
           <h3>Productos individuales</h3>
           <div className="pos-grid">
@@ -150,6 +184,47 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           </div>
         </div>
       )}
+      {/* Modal de subcategorías de Empanadas */}
+      {mostrarModalEmpanadas && (
+        <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            {!subcategoriaEmpanadaSeleccionada ? (
+              <>
+                <h3>Subcategorías de Empanadas</h3>
+                  <ul>
+                  {subcategoriasEmpanadas.map(item => (
+                  <li key={item.id} className="subcategoria-item">
+                  <p><strong>{item.subcategoria}</strong></p>
+                  <p>Precio: ${item.precio}</p>
+                  <p>Stock: {item.cantidad}</p>
+                  <button onClick={() => seleccionarSubcategoriaEmpanada(item)}>Seleccionar</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Venta de {subcategoriaEmpanadaSeleccionada.subcategoria}</h3>
+          <p>Precio unitario: ${subcategoriaEmpanadaSeleccionada.precio}</p>
+          <p>Stock disponible: {subcategoriaEmpanadaSeleccionada.cantidad}</p>
+          <div className="cantidad-selector">
+            <button onClick={() => cantidadEmpanada > 1 && setCantidadEmpanada(cantidadEmpanada - 1)}>-</button>
+            <input
+              type="number"
+              min="1"
+              max={subcategoriaEmpanadaSeleccionada.cantidad}
+              value={cantidadEmpanada}
+              onChange={(e) => setCantidadEmpanada(parseInt(e.target.value))}
+            />
+            <button onClick={() => cantidadEmpanada < subcategoriaEmpanadaSeleccionada.cantidad && setCantidadEmpanada(cantidadEmpanada + 1)}>+</button>
+          </div>
+          <p>Total: ${cantidadEmpanada * subcategoriaEmpanadaSeleccionada.precio}</p>
+          <button className="registrar-btn" onClick={confirmarVentaEmpanada}>Registrar venta</button>
+        </>
+      )}
+    </div>
+  </div>
+)}  
 
       {/* Modal para logo */}
       {mostrarLogo && (
