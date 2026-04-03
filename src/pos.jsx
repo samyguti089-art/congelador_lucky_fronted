@@ -239,19 +239,19 @@ const confirmarVentaOtros = () => {
   </div>
 )}
       {/* Modal de subcategorías de Empanadas */}
-      {mostrarModalEmpanadas && (
-        <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {!subcategoriaEmpanadaSeleccionada ? (
-              <>
-                <h3>Subcategorías de Empanadas</h3>
-                  <ul>
-                  {subcategoriasEmpanadas.map(item => (
-                  <li key={item.id} className="subcategoria-item">
-                  <p><strong>{item.subcategoria}</strong></p>
-                  <p>Precio: ${item.precio}</p>
-                  <p>Stock: {item.cantidad}</p>
-                  <button onClick={() => seleccionarSubcategoriaEmpanada(item)}>Seleccionar</button>
+{mostrarModalEmpanadas && (
+  <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {!subcategoriaEmpanadaSeleccionada ? (
+        <>
+          <h3>Subcategorías de Empanadas</h3>
+          <ul>
+            {subcategoriasEmpanadas.map(item => (
+              <li key={item.id} className="subcategoria-item">
+                <p><strong>{item.subcategoria}</strong></p>
+                <p>Precio: ${item.precio}</p>
+                <p>Stock: {item.cantidad}</p>
+                <button onClick={() => seleccionarSubcategoriaEmpanada(item)}>Seleccionar</button>
               </li>
             ))}
           </ul>
@@ -263,7 +263,8 @@ const confirmarVentaOtros = () => {
           <p>Stock disponible: {subcategoriaEmpanadaSeleccionada.cantidad}</p>
           <div className="cantidad-selector">
             {/* Botón Volver */}
-            <button className="volver-btn" onClick={() => setSubcategoriaSeleccionada(null)}>⬅️ Volver</button>
+            <button className="volver-btn" onClick={() => setSubcategoriaEmpanadaSeleccionada(null)}>⬅️ Volver</button>
+
             <button onClick={() => cantidadEmpanada > 1 && setCantidadEmpanada(cantidadEmpanada - 1)}>-</button>
             <input
               type="number"
@@ -280,7 +281,8 @@ const confirmarVentaOtros = () => {
       )}
     </div>
   </div>
-)}  
+)}
+
       {/* Modal de subcategorías de Otros */}
 {mostrarModalOtros && (
   <div className="modal-overlay" onClick={() => setMostrarModalOtros(false)}>
