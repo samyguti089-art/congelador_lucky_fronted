@@ -109,56 +109,48 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
         </aside>
       </div>
 
-      {/* Modal de subcategorías de Deditos */}
-      {mostrarModalSubcategorias && (
-        <div className="modal-overlay" onClick={() => setMostrarModalSubcategorias(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {!subcategoriaSeleccionada ? (
-              <>
-                <h3>Subcategorías de Deditos</h3>
-                <ul>
-                  {subcategorias.map(item => (
-                    <li key={item.id} className="subcategoria-item">
-                      <p><strong>{item.subcategoria}</strong></p>
-                      <p>Precio: ${item.precio}</p>
-                      <p>Stock: {item.cantidad}</p>
-                      <button onClick={() => seleccionarSubcategoria(item)}>Seleccionar</button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <>
-                <h3>Venta de {subcategoriaSeleccionada.subcategoria}</h3>
-                <p>Precio unitario: ${subcategoriaSeleccionada.precio}</p>
-                <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
-                <div className="cantidad-selector">
-                  <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
-                  <input
-                    type="number"
-                    min="1"
-                    max={subcategoriaSeleccionada.cantidad}
-                    value={cantidad}
-                    onChange={(e) => setCantidad(parseInt(e.target.value))}
-                  />
-                  <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
-                </div>
-                <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
-                <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
-              </>
-            )}
+{/* Modal de subcategorías de Deditos */}
+{mostrarModalSubcategorias && (
+  <div className="modal-overlay" onClick={() => setMostrarModalSubcategorias(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {!subcategoriaSeleccionada ? (
+        <>
+          <h3>Subcategorías de Deditos</h3>
+          <ul>
+            {subcategorias.map(item => (
+              <li key={item.id} className="subcategoria-item">
+                <p><strong>{item.subcategoria}</strong></p>
+                <p>Precio: ${item.precio}</p>
+                <p>Stock: {item.cantidad}</p>
+                <button onClick={() => seleccionarSubcategoria(item)}>Seleccionar</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Venta de {subcategoriaSeleccionada.subcategoria}</h3>
+          <p>Precio unitario: ${subcategoriaSeleccionada.precio}</p>
+          <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
+          <div className="cantidad-selector">
+            <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
+            <input
+              type="number"
+              min="1"
+              max={subcategoriaSeleccionada.cantidad}
+              value={cantidad}
+              onChange={(e) => setCantidad(parseInt(e.target.value))}
+            />
+            <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
           </div>
-        </div>
+          <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
+          <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
+        </>
       )}
+    </div>
+  </div>
+)}
 
-      {/* Modal para logo */}
-      {mostrarLogo && (
-        <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
-          <div className="modal-content">
-            <img src={logo2} alt="Logo empresa grande" className="logo-grande" />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
