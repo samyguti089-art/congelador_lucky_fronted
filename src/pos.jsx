@@ -177,7 +177,7 @@ const confirmarVentaOtros = () => {
         </div>
           
           {/* Bloque Combos */}
-            <h3>Combos</h3>
+            <h3>Categorias principales</h3>
             <div className="product-card" onClick={abrirModalCombos}>
             <h3>Combos</h3>
             <p className="info">Haz clic para ver todos los combos</p>
