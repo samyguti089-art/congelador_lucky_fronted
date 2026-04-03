@@ -34,13 +34,13 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     setMostrarModalSubcategorias(true);
   };
 
-  // Confirmar selección de subcategoría
+  // Seleccionar una subcategoría
   const seleccionarSubcategoria = (item) => {
     setSubcategoriaSeleccionada(item);
     setCantidad(1);
   };
 
-  // Registrar venta de la subcategoría seleccionada
+  // Confirmar venta
   const confirmarVenta = () => {
     if (!subcategoriaSeleccionada) return;
     registrarVenta({
