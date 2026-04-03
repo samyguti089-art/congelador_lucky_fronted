@@ -23,6 +23,10 @@ const [mostrarModalOtros, setMostrarModalOtros] = useState(false);
 const [subcategoriasOtros, setSubcategoriasOtros] = useState([]);
 const [subcategoriaOtrosSeleccionada, setSubcategoriaOtrosSeleccionada] = useState(null);
 const [cantidadOtros, setCantidadOtros] = useState(1);
+  // ====== ESTADOS PARA COMBOS ======
+const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
+const [comboSeleccionado, setComboSeleccionado] = useState(null);
+const [cantidadCombo, setCantidadCombo] = useState(1);
 
   // Cargar combos
   useEffect(() => {
@@ -58,6 +62,10 @@ const abrirModalOtros = () => {
   setSubcategoriasOtros(otros);
   setMostrarModalOtros(true);
 };
+  // Abrir modal con todos los combos
+const abrirModalCombos = () => {
+  setMostrarModalCombos(true);
+};
   
   // Seleccionar una subcategoría
   const seleccionarSubcategoria = (item) => {
@@ -73,6 +81,22 @@ const seleccionarSubcategoriaEmpanada = (item) => {
 const seleccionarSubcategoriaOtros = (item) => {
   setSubcategoriaOtrosSeleccionada(item);
   setCantidadOtros(1);
+};
+  // Seleccionar un combo
+const seleccionarCombo = (combo) => {
+  setComboSeleccionado(combo);
+  setCantidadCombo(1);
+};
+  // Confirmar venta de combo
+const confirmarVentaCombo = () => {
+  if (!comboSeleccionado) return;
+  registrarVenta({
+    ...comboSeleccionado,
+    cantidad: cantidadCombo,
+    total: cantidadCombo * comboSeleccionado.precio
+  });
+  setMostrarModalCombos(false);
+  setComboSeleccionado(null);
 };
 
   // Confirmar venta
@@ -151,8 +175,13 @@ const confirmarVentaOtros = () => {
         <h3>Medallones y Bolitas y otros</h3>
         <p className="info">Haz clic para ver subcategorías</p>
         </div>
+          {/* Bloque Combos */}
+            <h3>Combos</h3>
+            <div className="product-card" onClick={abrirModalCombos}>
+            <h3>Combos</h3>
+            <p className="info">Haz clic para ver todos los combos</p>
+            </div>
 
-          
           {/* Productos individuales */}
           <h3>Productos individuales</h3>
           <div className="pos-grid">
@@ -310,6 +339,45 @@ const confirmarVentaOtros = () => {
     </div>
   </div>
 )}
+      {/* Modal de Combos */}
+{mostrarModalCombos && (
+  <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {!comboSeleccionado ? (
+        <>
+          <h3>Lista de Combos</h3>
+          <ul>
+            {combos.map(combo => (
+              <li key={combo.id} className="subcategoria-item">
+                <p><strong>{combo.nombre}</strong></p>
+                <p>Precio: ${combo.precio}</p>
+                <button onClick={() => seleccionarCombo(combo)}>Seleccionar</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Venta de {comboSeleccionado.nombre}</h3>
+          <p>Precio unitario: ${comboSeleccionado.precio}</p>
+          <div className="cantidad-selector">
+            <button onClick={() => cantidadCombo > 1 && setCantidadCombo(cantidadCombo - 1)}>-</button>
+            <input
+              type="number"
+              min="1"
+              value={cantidadCombo}
+              onChange={(e) => setCantidadCombo(parseInt(e.target.value))}
+            />
+            <button onClick={() => setCantidadCombo(cantidadCombo + 1)}>+</button>
+          </div>
+          <p>Total: ${cantidadCombo * comboSeleccionado.precio}</p>
+          <button className="registrar-btn" onClick={confirmarVentaCombo}>Registrar venta</button>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
       {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
