@@ -156,14 +156,14 @@ const registrarVentaFinal = async () => {
         cantidad: item.cantidad,
         total: item.subtotal
       }, {
-        params: { cajero_id: usuario.id }
+        params: { cajero_id: usuario.id }   // 🔹 aquí va el cajero_id
       });
     }
 
     alert("Venta del carrito registrada con éxito");
     setCarrito([]); // limpiar carrito
   } catch (error) {
-    console.error(error);
+    console.error("Error en registrarVentaFinal:", error.response?.data || error);
     alert("Error registrando la venta del carrito");
   }
 };
