@@ -245,6 +245,23 @@ const registrarVentaFinal = async () => {
               </li>
             ))}
           </ul>
+
+          {/* 🔹 Carrito dentro del modal */}
+          <div className="carrito-modal">
+            <h4>Carrito actual</h4>
+            {carrito.length === 0 ? (
+              <p>No hay productos en el carrito</p>
+            ) : (
+              <ul>
+                {carrito.map((item, index) => (
+                  <li key={index}>
+                    {item.nombre} - {item.cantidad} x ${item.precio} = ${item.subtotal}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+          </div>
         </>
       ) : (
         <>
@@ -252,9 +269,7 @@ const registrarVentaFinal = async () => {
           <p>Precio unitario: ${subcategoriaSeleccionada.precio}</p>
           <p>Stock disponible: {subcategoriaSeleccionada.cantidad}</p>
           <div className="cantidad-selector">
-            {/* Botón Volver */}
             <button className="volver-btn" onClick={() => setSubcategoriaSeleccionada(null)}>⬅️ Volver</button>
-
             <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>-</button>
             <input
               type="number"
@@ -267,11 +282,29 @@ const registrarVentaFinal = async () => {
           </div>
           <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
           <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
+
+          {/* 🔹 Carrito dentro del modal */}
+          <div className="carrito-modal">
+            <h4>Carrito actual</h4>
+            {carrito.length === 0 ? (
+              <p>No hay productos en el carrito</p>
+            ) : (
+              <ul>
+                {carrito.map((item, index) => (
+                  <li key={index}>
+                    {item.nombre} - {item.cantidad} x ${item.precio} = ${item.subtotal}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+          </div>
         </>
       )}
     </div>
   </div>
 )}
+
 
       {/* Modal de subcategorías de Empanadas */}
 {mostrarModalEmpanadas && (
