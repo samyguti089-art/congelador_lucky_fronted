@@ -150,7 +150,6 @@ const registrarVentaFinal = async () => {
   }
 
   try {
-    // Recorremos cada producto del carrito y registramos la venta
     for (const item of carrito) {
       await axios.post(`${API_URL}/venta`, {
         producto_id: item.id,
@@ -162,14 +161,13 @@ const registrarVentaFinal = async () => {
     }
 
     alert("Venta del carrito registrada con éxito");
-    setCarrito([]); // limpiamos el carrito
-    setMostrarModalCombos(false); // cerramos modal si estaba abierto
-    setComboSeleccionado(null);   // reseteamos selección
+    setCarrito([]); // limpiar carrito
   } catch (error) {
     console.error(error);
     alert("Error registrando la venta del carrito");
   }
 };
+
 
 
   return (
