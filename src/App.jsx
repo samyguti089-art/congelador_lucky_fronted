@@ -110,7 +110,7 @@ function App() {
   try {
     for (const item of carrito) {
       await axios.post(`${API_URL}/venta`, {
-        producto_id: item.id,
+        producto_id: item.id,       // ahora sí existe
         cantidad: item.cantidad,
         total: item.subtotal
       }, {
@@ -118,7 +118,7 @@ function App() {
       });
     }
     alert("Venta registrada con éxito");
-    setCarrito([]);
+    setCarrito([]); // limpiar carrito
   } catch (error) {
     console.error(error);
     alert("Error registrando la venta");
