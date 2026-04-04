@@ -281,6 +281,16 @@ const registrarVentaFinal = async () => {
             <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
           </div>
           <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
+          {/* 🔹 Botón para agregar al carrito */}
+    <button
+      className="agregar-btn"
+      onClick={() => {
+        agregarAlCarrito(subcategoriaSeleccionada, cantidad);
+        setSubcategoriaSeleccionada(null); // vuelve a la lista
+      }}
+    >
+      ➕ Agregar al carrito
+    </button>
           <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
 
           {/* 🔹 Carrito dentro del modal */}
