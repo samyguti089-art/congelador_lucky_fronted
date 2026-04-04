@@ -151,13 +151,21 @@ const registrarVentaFinal = async () => {
 
   try {
     for (const item of carrito) {
-      await axios.post(`${API_URL}/venta`, {
+      console.log("Enviando venta:", {
         producto_id: item.id,
         cantidad: item.cantidad,
-        total: item.subtotal
-      }, {
-        params: { cajero_id: usuario.id }   // 🔹 aquí va el cajero_id
+        total: item.subtotal,
+        cajero_id: usuario.id
       });
+
+      await axios.post(
+        `${API_URL}/venta?cajero_id=${usuario.id}`,
+        {
+          producto_id: item.id,
+          cantidad: item.cantidad,
+          total: item.subtotal
+        }
+      );
     }
 
     alert("Venta del carrito registrada con éxito");
@@ -167,7 +175,6 @@ const registrarVentaFinal = async () => {
     alert("Error registrando la venta del carrito");
   }
 };
-
 
 
   return (
