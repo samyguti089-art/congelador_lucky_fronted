@@ -527,7 +527,7 @@ const registrarVentaFinal = async () => {
   </div>
 )}
 
-     {/* Modal de Combos */}
+    {/* Modal de Combos */}
 {mostrarModalCombos && (
   <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -543,6 +543,30 @@ const registrarVentaFinal = async () => {
               </li>
             ))}
           </ul>
+
+          {/* 🔹 Carrito dentro del modal */}
+          <div className="carrito-modal">
+            <h4>Carrito actual</h4>
+            {carrito.length === 0 ? (
+              <p>No hay productos en el carrito</p>
+            ) : (
+              <ul>
+                {carrito.map((item, index) => (
+                  <li key={index}>
+                    {item.nombre} - {item.cantidad} x ${item.precio} = ${item.subtotal}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+
+            {/* 🔹 Botón para registrar todo el carrito */}
+            {carrito.length > 0 && (
+              <button className="registrar-btn" onClick={registrarVentaFinal}>
+                Registrar venta del carrito
+              </button>
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -562,13 +586,45 @@ const registrarVentaFinal = async () => {
             <button onClick={() => setCantidadCombo(cantidadCombo + 1)}>+</button>
           </div>
           <p>Total: ${cantidadCombo * comboSeleccionado.precio}</p>
-          <button className="registrar-btn" onClick={confirmarVentaCombo}>Registrar venta</button>
+
+          {/* 🔹 Botón para agregar al carrito */}
+          <button
+            className="agregar-btn"
+            onClick={() => {
+              agregarAlCarrito(comboSeleccionado, cantidadCombo);
+              setComboSeleccionado(null); // vuelve a la lista
+              setCantidadCombo(1);        // reset cantidad
+            }}
+          >
+            ➕ Agregar al carrito
+          </button>
+
+          {/* 🔹 Botón para registrar venta individual */}
+          <button className="registrar-btn" onClick={confirmarVentaCombo}>
+            Registrar venta
+          </button>
+
+          {/* 🔹 Carrito dentro del modal */}
+          <div className="carrito-modal">
+            <h4>Carrito actual</h4>
+            {carrito.length === 0 ? (
+              <p>No hay productos en el carrito</p>
+            ) : (
+              <ul>
+                {carrito.map((item, index) => (
+                  <li key={index}>
+                    {item.nombre} - {item.cantidad} x ${item.precio} = ${item.subtotal}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+          </div>
         </>
       )}
     </div>
   </div>
 )}
-
 
       <div className="carrito">
   <h3>Carrito actual</h3>
