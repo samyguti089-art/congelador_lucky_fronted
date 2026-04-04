@@ -106,18 +106,24 @@ function App() {
     }
   }, [usuario]);
 
-  const registrarVenta = async (item) => {
-    try {
-      const res = await axios.post(`${API_URL}/venta`, {
+  const registrarVentaFinal = async () => {
+  try {
+    for (const item of carrito) {
+      await axios.post(`${API_URL}/venta`, {
         producto_id: item.id,
         cantidad: item.cantidad,
-        total: item.total
+        total: item.subtotal
       }, {
         params: { cajero_id: usuario.id }
       });
-
-      alert(res.data.mensaje);
-
+    }
+    alert("Venta registrada con éxito");
+    setCarrito([]);
+  } catch (error) {
+    console.error(error);
+    alert("Error registrando la venta");
+  }
+};
       if (res.data.inventario) {
         setInventario(res.data.inventario);
         setMensajeInventario("Inventario actualizado después de la venta ✔️");
