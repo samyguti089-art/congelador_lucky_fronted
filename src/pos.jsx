@@ -261,6 +261,13 @@ const registrarVentaFinal = async () => {
               </ul>
             )}
             <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+
+            {/* 🔹 Botón para registrar todo el carrito */}
+            {carrito.length > 0 && (
+              <button className="registrar-btn" onClick={registrarVentaFinal}>
+                Registrar venta del carrito
+              </button>
+            )}
           </div>
         </>
       ) : (
@@ -281,17 +288,22 @@ const registrarVentaFinal = async () => {
             <button onClick={() => cantidad < subcategoriaSeleccionada.cantidad && setCantidad(cantidad + 1)}>+</button>
           </div>
           <p>Total: ${cantidad * subcategoriaSeleccionada.precio}</p>
+
           {/* 🔹 Botón para agregar al carrito */}
-    <button
-      className="agregar-btn"
-      onClick={() => {
-        agregarAlCarrito(subcategoriaSeleccionada, cantidad);
-        setSubcategoriaSeleccionada(null); // vuelve a la lista
-      }}
-    >
-      ➕ Agregar al carrito
-    </button>
-          <button className="registrar-btn" onClick={confirmarVenta}>Registrar venta</button>
+          <button
+            className="agregar-btn"
+            onClick={() => {
+              agregarAlCarrito(subcategoriaSeleccionada, cantidad);
+              setSubcategoriaSeleccionada(null); // vuelve a la lista
+            }}
+          >
+            ➕ Agregar al carrito
+          </button>
+
+          {/* 🔹 Botón para registrar venta individual */}
+          <button className="registrar-btn" onClick={confirmarVenta}>
+            Registrar venta
+          </button>
 
           {/* 🔹 Carrito dentro del modal */}
           <div className="carrito-modal">
