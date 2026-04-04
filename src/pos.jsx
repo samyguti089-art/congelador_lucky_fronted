@@ -130,8 +130,9 @@ const confirmarVentaOtros = () => {
   setMostrarModalOtros(false);
   setSubcategoriaOtrosSeleccionada(null);
 };
-  const agregarAlCarrito = (producto, cantidad) => {
+ const agregarAlCarrito = (producto, cantidad) => {
   const item = {
+    id: producto.id, // necesario para el backend
     nombre: producto.subcategoria || producto.nombre,
     precio: producto.precio,
     cantidad: cantidad,
@@ -139,6 +140,7 @@ const confirmarVentaOtros = () => {
   };
   setCarrito(prev => [...prev, item]);
 };
+
 
   return (
     <div className="pos-container">
