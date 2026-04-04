@@ -403,6 +403,29 @@ const registrarVentaFinal = async () => {
     </div>
   </div>
 )} 
+      <div className="carrito">
+  <h3>Carrito actual</h3>
+  {carrito.length === 0 ? (
+    <p>No hay productos en el carrito</p>
+  ) : (
+    <ul>
+      {carrito.map((item, index) => (
+        <li key={index}>
+          {item.nombre} - {item.cantidad} x ${item.precio} = ${item.subtotal}
+        </li>
+      ))}
+    </ul>
+  )}
+  <p><strong>Total parcial:</strong> ${carrito.reduce((acc, item) => acc + item.subtotal, 0)}</p>
+
+  {/* Botón para registrar todo el carrito */}
+  {carrito.length > 0 && (
+    <button className="registrar-btn" onClick={registrarVentaFinal}>
+      Registrar venta final
+    </button>
+  )}
+</div>
+
       {/* Modal para logo */}
       {mostrarLogo && (
         <div className="modal-overlay" onClick={() => setMostrarLogo(false)}>
