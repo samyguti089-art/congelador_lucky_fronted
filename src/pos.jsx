@@ -140,7 +140,29 @@ const confirmarVentaOtros = () => {
   };
   setCarrito(prev => [...prev, item]);
 };
+const registrarVentaFinal = async () => {
+  if (carrito.length === 0) {
+    alert("No hay productos en el carrito");
+    return;
+  }
 
+  try {
+    for (const item of carrito) {
+      await axios.post(`${API_URL}/venta`, {
+        producto_id: item.id,
+        cantidad: item.cantidad,
+        total: item.subtotal
+      }, {
+        params: { cajero_id: usuario.id }
+      });
+    }
+    alert("Venta registrada con éxito");
+    setCarrito([]);
+  } catch (error) {
+    console.error(error);
+    alert("Error registrando la venta");
+  }
+};
 
   return (
     <div className="pos-container">
