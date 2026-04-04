@@ -7,6 +7,9 @@ import logo2 from "./logo_2.jpeg";
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setMensajeInventario, setRefreshTrigger }) {
   const [combos, setCombos] = useState([]);
   const [mostrarLogo, setMostrarLogo] = useState(false);
+  // Carrito temporal
+  const [carrito, setCarrito] = useState([]);
+
   // Estados para subcategorías
   const [mostrarModalSubcategorias, setMostrarModalSubcategorias] = useState(false);
   const [subcategorias, setSubcategorias] = useState([]);
