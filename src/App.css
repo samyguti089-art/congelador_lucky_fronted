@@ -182,27 +182,30 @@
     border-right-color: var(--border);
   }
 }
-/* ===== LOGIN OPCIÓN 2 - FONDO CON GRADIENTE Y PUNTOS ===== */
-.login-modern-container {
+/* ===== LOGIN OPCIÓN 2 - CON CLASE EN BODY ===== */
+body.login-active {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  margin: 0;
+  padding: 0;
+}
+
+body.login-active #root {
+  width: 100%;
+  max-width: none;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
+}
+
+.login-modern-container {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  position: relative;
-}
-
-.login-modern-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(circle at 10% 20%, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
 }
 
 .login-modern-card {
@@ -369,36 +372,9 @@
   text-decoration: underline;
   color: #2d3748;
 }
-/* ===== ANULAR RESTRICCIONES PARA EL LOGIN ===== */
-/* Cuando el login está presente, el body toma el gradiente y el #root se vuelve transparente y sin límites */
-body:has(.login-modern-container) {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
 
-body:has(.login-modern-container) #root {
-  width: 100%;
-  max-width: none;
-  border-inline: none;
-  background: transparent;
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-
-/* Asegura que el contenedor del login ocupe toda la pantalla */
-.login-modern-container {
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: transparent; /* el fondo ahora lo pone el body */
-  position: relative;
-}
-
-/* El patrón de puntos lo aplicamos al body también o al contenedor */
-body:has(.login-modern-container)::after {
+/* Patrón de puntos decorativo */
+body.login-active::before {
   content: '';
   position: fixed;
   top: 0;
@@ -408,11 +384,5 @@ body:has(.login-modern-container)::after {
   background-image: radial-gradient(circle at 10% 20%, rgba(0,0,0,0.05) 1px, transparent 1px);
   background-size: 20px 20px;
   pointer-events: none;
-  z-index: 0;
-}
-
-/* La tarjeta del login debe estar por encima del patrón */
-.login-modern-card {
-  position: relative;
   z-index: 1;
 }
