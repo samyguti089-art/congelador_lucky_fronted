@@ -151,7 +151,7 @@ const registrarVentaFinal = async () => {
 
   try {
     for (const item of carrito) {
-      console.log("Enviando venta:", {
+      console.log("Registrando venta:", {
         producto_id: item.id,
         cantidad: item.cantidad,
         total: item.subtotal,
@@ -169,12 +169,13 @@ const registrarVentaFinal = async () => {
     }
 
     alert("Venta del carrito registrada con éxito");
-    setCarrito([]); // limpiar carrito
+    setCarrito([]);
   } catch (error) {
     console.error("Error en registrarVentaFinal:", error.response?.data || error);
     alert("Error registrando la venta del carrito");
   }
 };
+
 
 
   return (
