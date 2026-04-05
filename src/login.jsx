@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import "./App.css";
 
 function Login({ setUsuario }) {
   const [nombre, setNombre] = useState("");
