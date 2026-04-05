@@ -11,11 +11,41 @@ function Login({ setUsuario }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 👇 Agrega esta función
+  // Forzar estilos al montar el componente
   useEffect(() => {
-    document.body.classList.add("login-active");
+    // Guardar estilos originales
+    const originalBodyBg = document.body.style.background;
+    const originalBodyMargin = document.body.style.margin;
+    const originalRootStyle = document.getElementById("root")?.getAttribute("style");
+
+    // Aplicar estilos nuevos
+    document.body.style.background = "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)";
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    
+    const root = document.getElementById("root");
+    if (root) {
+      root.style.width = "100%";
+      root.style.maxWidth = "none";
+      root.style.border = "none";
+      root.style.background = "transparent";
+      root.style.display = "flex";
+      root.style.alignItems = "center";
+      root.style.justifyContent = "center";
+      root.style.minHeight = "100vh";
+      root.style.margin = "0";
+      root.style.padding = "0";
+    }
+
+    // Limpiar al desmontar (cuando se inicia sesión)
     return () => {
-      document.body.classList.remove("login-active");
+      document.body.style.background = originalBodyBg;
+      document.body.style.margin = originalBodyMargin;
+      if (root && originalRootStyle !== null) {
+        root.setAttribute("style", originalRootStyle);
+      } else if (root) {
+        root.removeAttribute("style");
+      }
     };
   }, []);
 
