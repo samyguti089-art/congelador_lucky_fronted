@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login({ setUsuario }) {
@@ -10,6 +10,14 @@ function Login({ setUsuario }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // 👇 Agrega esta función
+  useEffect(() => {
+    document.body.classList.add("login-active");
+    return () => {
+      document.body.classList.remove("login-active");
+    };
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -36,7 +44,7 @@ function Login({ setUsuario }) {
     <div className="login-modern-container">
       <div className="login-modern-card">
         <div className="login-modern-header">
-          <h1>🥟 Congelador Lucky</h1>
+          <h1>🍔 Congelador Lucky</h1>
           <p>Ingresa tus credenciales</p>
         </div>
 
