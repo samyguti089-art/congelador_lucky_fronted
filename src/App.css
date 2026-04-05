@@ -182,7 +182,7 @@
     border-right-color: var(--border);
   }
 }
-/* Login moderno - sin conflictos con otros estilos */
+/* Login moderno - versión corregida */
 .login-modern-container {
   min-height: 100vh;
   display: flex;
@@ -225,31 +225,40 @@
   font-size: 0.9rem;
 }
 
+/* === GRUPO DE INPUT CORREGIDO === */
 .input-modern-group {
   position: relative;
   margin-bottom: 1.5rem;
   display: flex;
-  align-items: center;
+  align-items: center;      /* ← asegura alineación vertical */
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2rem;
   transition: all 0.2s;
 }
 
+/* Ícono emoji: perfectamente centrado */
 .input-emoji {
   position: absolute;
   left: 1rem;
   font-size: 1.2rem;
+  line-height: 1;           /* elimina altura extra */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
   opacity: 0.8;
 }
 
+/* Input: ajuste de padding para que el texto no toque el ícono */
 .input-modern-group input {
   width: 100%;
-  padding: 0.85rem 1rem 0.85rem 2.8rem;
+  padding: 0.85rem 1rem 0.85rem 2.8rem; /* izquierda más grande para el emoji */
   background: transparent;
   border: none;
   color: white;
   font-size: 1rem;
   border-radius: 2rem;
+  line-height: 1.2;         /* altura de línea consistente */
+  box-sizing: border-box;
 }
 
 .input-modern-group input:focus {
@@ -261,6 +270,7 @@
   color: #94a3b8;
 }
 
+/* Botón de mostrar/ocultar contraseña */
 .password-toggle-modern {
   position: absolute;
   right: 1rem;
@@ -270,6 +280,11 @@
   font-size: 1.2rem;
   padding: 0;
   color: #cbd5e1;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-error-modern {
