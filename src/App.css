@@ -386,3 +386,10 @@ body.login-active::before {
   pointer-events: none;
   z-index: 1;
 }
+#root:has(.login-modern-container) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
