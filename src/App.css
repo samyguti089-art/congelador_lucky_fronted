@@ -182,7 +182,7 @@
     border-right-color: var(--border);
   }
 }
-/* === LOGIN MODERNO CON PATRÓN DE PUNTOS === */
+/* ===== LOGIN OPCIÓN 2 - FONDO CON GRADIENTE Y PUNTOS ===== */
 .login-modern-container {
   min-height: 100vh;
   display: flex;
@@ -193,7 +193,6 @@
   position: relative;
 }
 
-/* Patrón de puntos sutiles */
 .login-modern-container::after {
   content: '';
   position: absolute;
@@ -208,7 +207,6 @@
 
 .login-modern-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(0px); /* sin blur para mantener nitidez */
   border-radius: 2rem;
   padding: 2rem 2rem 2.5rem;
   width: 100%;
@@ -233,7 +231,6 @@
   font-size: 1.9rem;
   color: #1e2a3a;
   margin-bottom: 0.5rem;
-  text-shadow: none;
 }
 
 .login-modern-header p {
@@ -241,7 +238,6 @@
   font-size: 0.9rem;
 }
 
-/* Grupo de input con ícono */
 .input-modern-group {
   position: relative;
   margin-bottom: 1.5rem;
@@ -287,7 +283,6 @@
   color: #a0aec0;
 }
 
-/* Botón de mostrar/ocultar contraseña */
 .password-toggle-modern {
   position: absolute;
   right: 1rem;
@@ -308,7 +303,6 @@
   color: #1e2a3a;
 }
 
-/* Mensaje de error */
 .login-error-modern {
   background: #fed7d7;
   color: #c53030;
@@ -320,7 +314,6 @@
   border-left: 3px solid #e53e3e;
 }
 
-/* Botón de login */
 .login-button-modern {
   width: 100%;
   padding: 0.85rem;
@@ -348,7 +341,6 @@
   cursor: not-allowed;
 }
 
-/* Spinner */
 .spinner-modern {
   width: 1.2rem;
   height: 1.2rem;
@@ -362,7 +354,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Footer */
 .login-footer-modern {
   text-align: center;
   margin-top: 1.5rem;
