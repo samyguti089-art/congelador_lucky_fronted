@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"; // íconos
-import "./App.css"; //
+import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login({ setUsuario }) {
   const [nombre, setNombre] = useState("");
@@ -13,40 +12,36 @@ function Login({ setUsuario }) {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // evitar recarga
+    e.preventDefault();
     setError("");
-    
     if (!nombre.trim() || !password.trim()) {
       setError("Por favor completa todos los campos");
       return;
     }
-
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/login`, {
         nombre: nombre.trim(),
         password,
       });
-      console.log("Respuesta backend:", res.data);
       setUsuario(res.data);
     } catch (err) {
-      console.error("Error en login:", err.response?.data || err.message);
-      setError("Credenciales inválidas. Intenta de nuevo.");
+      setError("Credenciales inválidas");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>🍔 Congelador Lucky</h1>
+    <div className="login-modern-container">
+      <div className="login-modern-card">
+        <div className="login-modern-header">
+          <h1>🥟 Congelador Lucky</h1>
           <p>Ingresa tus credenciales</p>
         </div>
 
         <form onSubmit={handleLogin}>
-          <div className="input-group">
+          <div className="input-modern-group">
             <FaUser className="input-icon" />
             <input
               type="text"
@@ -58,7 +53,7 @@ function Login({ setUsuario }) {
             />
           </div>
 
-          <div className="input-group">
+          <div className="input-modern-group">
             <FaLock className="input-icon" />
             <input
               type={showPassword ? "text" : "password"}
@@ -69,7 +64,7 @@ function Login({ setUsuario }) {
             />
             <button
               type="button"
-              className="password-toggle"
+              className="password-toggle-modern"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex="-1"
             >
@@ -77,18 +72,14 @@ function Login({ setUsuario }) {
             </button>
           </div>
 
-          {error && <div className="login-error">{error}</div>}
+          {error && <div className="login-error-modern">{error}</div>}
 
-          <button type="submit" className="login-button" disabled={loading}>
-            {loading ? (
-              <span className="spinner"></span>
-            ) : (
-              "Iniciar Sesión"
-            )}
+          <button type="submit" className="login-button-modern" disabled={loading}>
+            {loading ? <span className="spinner-modern"></span> : "Iniciar Sesión"}
           </button>
         </form>
 
-        <div className="login-footer">
+        <div className="login-footer-modern">
           <a href="#">¿Olvidaste tu contraseña?</a>
         </div>
       </div>
