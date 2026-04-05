@@ -17,25 +17,6 @@ function Login({ setUsuario }) {
     const originalBodyBg = document.body.style.background;
     const originalBodyMargin = document.body.style.margin;
     const originalRootStyle = document.getElementById("root")?.getAttribute("style");
-    // Crear un div para el patrón de puntos
-    const patternDiv = document.createElement('div');
-    patternDiv.style.position = 'fixed';
-    patternDiv.style.top = '0';
-    patternDiv.style.left = '0';
-    patternDiv.style.width = '100%';
-    patternDiv.style.height = '100%';
-    patternDiv.style.backgroundImage = 'radial-gradient(circle at 10% 20%, rgba(0,0,0,0.05) 1px, transparent 1px)';
-    patternDiv.style.backgroundSize = '20px 20px';
-    patternDiv.style.pointerEvents = 'none';
-    patternDiv.style.zIndex = '0';
-    document.body.appendChild(patternDiv);
-    
-    // Guardar referencia para eliminarlo después
-    return () => {
-      // ... resto de limpiezas
-      patternDiv.remove();
-    };
-
     // Aplicar estilos nuevos
     document.body.style.background = "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)";
     document.body.style.margin = "0";
