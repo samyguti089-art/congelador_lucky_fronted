@@ -3,6 +3,9 @@ import "./POS.css";
 import VentasGrafico from "./VentasGrafico";
 import { supabase } from "./supabaseClient";
 import logo2 from "./logo_2.jpeg";
+import axios from "axios";
+
+const API_URL = "https://congelador-lucky.onrender.com";
 
 function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setMensajeInventario, setRefreshTrigger }) {
   const [combos, setCombos] = useState([]);
