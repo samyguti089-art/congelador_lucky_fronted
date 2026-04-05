@@ -182,7 +182,7 @@
     border-right-color: var(--border);
   }
 }
-/* Login moderno - versión corregida */
+/* === LOGIN MODERNO CON ÍCONOS === */
 .login-modern-container {
   min-height: 100vh;
   display: flex;
@@ -225,39 +225,35 @@
   font-size: 0.9rem;
 }
 
-/* === GRUPO DE INPUT CORREGIDO === */
+/* Grupo de input con ícono */
 .input-modern-group {
   position: relative;
   margin-bottom: 1.5rem;
   display: flex;
-  align-items: center;      /* ← asegura alineación vertical */
+  align-items: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2rem;
   transition: all 0.2s;
 }
 
-/* Ícono emoji: perfectamente centrado */
-.input-emoji {
+.input-icon {
   position: absolute;
   left: 1rem;
-  font-size: 1.2rem;
-  line-height: 1;           /* elimina altura extra */
   top: 50%;
   transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.1rem;
   pointer-events: none;
-  opacity: 0.8;
 }
 
-/* Input: ajuste de padding para que el texto no toque el ícono */
 .input-modern-group input {
   width: 100%;
-  padding: 0.85rem 1rem 0.85rem 2.8rem; /* izquierda más grande para el emoji */
+  padding: 0.85rem 1rem 0.85rem 2.8rem;
   background: transparent;
   border: none;
   color: white;
   font-size: 1rem;
   border-radius: 2rem;
-  line-height: 1.2;         /* altura de línea consistente */
   box-sizing: border-box;
 }
 
@@ -274,19 +270,24 @@
 .password-toggle-modern {
   position: absolute;
   right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   padding: 0;
   color: #cbd5e1;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.password-toggle-modern:hover {
+  color: #facc15;
+}
+
+/* Mensaje de error */
 .login-error-modern {
   background: rgba(220, 38, 38, 0.2);
   color: #fecaca;
@@ -298,6 +299,7 @@
   border-left: 3px solid #ef4444;
 }
 
+/* Botón de login */
 .login-button-modern {
   width: 100%;
   padding: 0.85rem;
@@ -324,6 +326,7 @@
   cursor: not-allowed;
 }
 
+/* Spinner */
 .spinner-modern {
   width: 1.2rem;
   height: 1.2rem;
@@ -337,6 +340,7 @@
   to { transform: rotate(360deg); }
 }
 
+/* Footer */
 .login-footer-modern {
   text-align: center;
   margin-top: 1.5rem;
