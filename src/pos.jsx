@@ -149,35 +149,38 @@ const registrarVentaFinal = async () => {
     return;
   }
 
+  // Transformar el carrito al formato esperado por el backend
+  const productosParaBackend = carrito.map(item => ({
+    producto_id: item.id,
+    cantidad: item.cantidad,
+    total: item.subtotal   // subtotal = cantidad * precio
+  }));
+
   try {
-    for (const item of carrito) {
-      console.log("Registrando venta:", {
-        producto_id: item.id,
-        cantidad: item.cantidad,
-        total: item.subtotal,
-        cajero_id: usuario.id
-      });
+    const response = await axios.post(`${API_URL}/venta-carrito`, {
+      cajero_id: usuario.id,
+      productos: productosParaBackend
+    });
 
-      await axios.post(
-        `${API_URL}/venta?cajero_id=${usuario.id}`,
-        {
-          producto_id: item.id,
-          cantidad: item.cantidad,
-          total: item.subtotal
-        }
-      );
-    }
-
-    alert("Venta del carrito registrada con éxito");
+    console.log("Respuesta:", response.data);
+    alert(`✅ Venta registrada. ID: ${response.data.id_venta} - Total: $${response.data.total}`);
+    
+    // Limpiar carrito
     setCarrito([]);
+    
+    // Actualizar inventario en el estado global si el backend lo devuelve
+    if (response.data.inventario && actualizarInventario) {
+      actualizarInventario(response.data.inventario);
+    }
+    
+    // Refrescar gráficos o datos si es necesario
+    if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
+    
   } catch (error) {
-    console.error("Error en registrarVentaFinal:", error.response?.data || error);
-    alert("Error registrando la venta del carrito");
+    console.error("Error al registrar venta del carrito:", error.response?.data || error);
+    alert("❌ Error al registrar la venta. Revisa la consola.");
   }
 };
-
-
-
   return (
     <div className="pos-container">
       <header className="pos-header">
