@@ -149,11 +149,13 @@ const registrarVentaFinal = async () => {
     return;
   }
 
-  // Transformar el carrito al formato esperado por el backend
+  console.log("Usuario:", usuario); // Verifica que usuario.id existe
+  console.log("Carrito:", carrito);
+
   const productosParaBackend = carrito.map(item => ({
     producto_id: item.id,
     cantidad: item.cantidad,
-    total: item.subtotal   // subtotal = cantidad * precio
+    total: item.subtotal
   }));
 
   try {
@@ -162,23 +164,25 @@ const registrarVentaFinal = async () => {
       productos: productosParaBackend
     });
 
-    console.log("Respuesta:", response.data);
+    console.log("Respuesta exitosa:", response.data);
     alert(`✅ Venta registrada. ID: ${response.data.id_venta} - Total: $${response.data.total}`);
     
-    // Limpiar carrito
     setCarrito([]);
-    
-    // Actualizar inventario en el estado global si el backend lo devuelve
     if (response.data.inventario && actualizarInventario) {
       actualizarInventario(response.data.inventario);
     }
-    
-    // Refrescar gráficos o datos si es necesario
     if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
     
   } catch (error) {
-    console.error("Error al registrar venta del carrito:", error.response?.data || error);
-    alert("❌ Error al registrar la venta. Revisa la consola.");
+    console.error("Error al registrar venta del carrito:", error);
+    if (error.response) {
+      console.error("Detalle del error del backend:", error.response.data);
+      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+    } else {
+      alert("Error al preparar la solicitud: " + error.message);
+    }
   }
 };
   return (
