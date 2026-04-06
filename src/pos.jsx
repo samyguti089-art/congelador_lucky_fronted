@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FiLogOut } from "react-icons/fi"; // Ícono de puerta abierta
 import "./POS.css";
 import { supabase } from "./supabaseClient";
 
@@ -9,6 +10,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
   const [cerrando, setCerrando] = useState(false);
+
 
   // Definir categorías con íconos y nombres
   const categorias = [
