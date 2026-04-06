@@ -118,9 +118,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const cerrarModalExito = () => {
-    setMostrarModalExito(false);
+  setMostrarModalExito(false);
+  // Pequeño delay para limpiar el estado después de cerrar el modal
+  setTimeout(() => {
     setVentaExitosa(null);
-  };
+  }, 300);
+};
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -226,63 +229,63 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* Modal de venta exitosa */}
-      {mostrarModalExito && ventaExitosa && (
-        <div className="modal-overlay" onClick={cerrarModalExito}>
-          <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header exito-header">
-              <FiCheckCircle className="exito-icono" />
-              <h2>¡Venta Exitosa!</h2>
-              <button className="close-btn" onClick={cerrarModalExito}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="venta-info">
-                <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
-                <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
-                <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
-              </div>
-              
-              <div className="detalle-venta">
-                <h3>Detalle de la compra</h3>
-                <table className="detalle-tabla">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Cantidad</th>
-                      <th>Precio Unit.</th>
-                      <th>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ventaExitosa.productos.map((item, idx) => (
-                      <tr key={idx}>
-                        <td>{item.nombre}</td>
-                        <td>{item.cantidad}</td>
-                        <td>${item.precio}</td>
-                        <td>${item.subtotal}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className="total-venta">
-                <span>Total Pagado:</span>
-                <strong>${ventaExitosa.total}</strong>
-              </div>
-              
-              <div className="mensaje-agradecimiento">
-                <p>🎉 ¡Gracias por tu compra!</p>
-                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
-              </div>
-              
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-                Aceptar
-              </button>
-            </div>
-          </div>
+     {/* Modal de venta exitosa */}
+{mostrarModalExito && ventaExitosa && (
+  <div className="modal-overlay" onClick={() => {}}>
+    <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header exito-header">
+        <FiCheckCircle className="exito-icono" />
+        <h2>¡Venta Exitosa!</h2>
+        <button className="close-btn" onClick={cerrarModalExito}>✕</button>
+      </div>
+      <div className="modal-body">
+        <div className="venta-info">
+          <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
+          <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
+          <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
         </div>
-      )}
+        
+        <div className="detalle-venta">
+          <h3>Detalle de la compra</h3>
+          <table className="detalle-tabla">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventaExitosa.productos.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.nombre}</td>
+                  <td>{item.cantidad}</td>
+                  <td>${item.precio}</td>
+                  <td>${item.subtotal}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="total-venta">
+          <span>Total Pagado:</span>
+          <strong>${ventaExitosa.total}</strong>
+        </div>
+        
+        <div className="mensaje-agradecimiento">
+          <p>🎉 ¡Gracias por tu compra!</p>
+          <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
+        </div>
+        
+        <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
