@@ -200,8 +200,16 @@ function App() {
   }
 
   if (usuario.rol === "dueño") {
-    return <OwnerDashboard usuario={usuario} cerrarSesion={cerrarSesion} />;
-  }
+  return (
+    <OwnerDashboard
+      usuario={usuario}
+      cerrarSesion={cerrarSesion}
+      actualizarInventario={actualizarInventario}
+      mensajeInventario={mensajeInventario}
+      inventario={inventario}  // ← agregar esta línea
+    />
+  );
+}
 
   return <div>Rol desconocido</div>;
 }
