@@ -5,15 +5,18 @@ import './OwnerDashboard.css';
 function InventoryPanel() {
   const [inventory, setInventory] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ subcategoria: '', precio: '', cantidad: '' });
-  const [newProduct, setNewProduct] = useState({ subcategoria: '', precio: '', cantidad: '' });
+  const [editForm, setEditForm] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
+  const [newProduct, setNewProduct] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
 
   useEffect(() => {
     fetchInventory();
   }, []);
 
   const fetchInventory = async () => {
-    const { data, error } = await supabase.from('inventario').select('*');
+    const { data, error } = await supabase
+      .from('inventario')
+      .select('*')
+      .order('orden', { ascending: true }); // si tienes columna orden
     if (error) console.error(error);
     else setInventory(data);
   };
@@ -21,6 +24,7 @@ function InventoryPanel() {
   const handleEdit = (producto) => {
     setEditingId(producto.id);
     setEditForm({
+      nombre: producto.nombre,
       subcategoria: producto.subcategoria,
       precio: producto.precio,
       cantidad: producto.cantidad
@@ -48,14 +52,14 @@ function InventoryPanel() {
   };
 
   const handleAdd = async () => {
-    if (!newProduct.subcategoria.trim()) {
-      alert('La descripción es obligatoria');
+    if (!newProduct.nombre.trim() || !newProduct.subcategoria.trim()) {
+      alert('El nombre y la subcategoría son obligatorios');
       return;
     }
     const { error } = await supabase.from('inventario').insert([newProduct]);
     if (error) console.error(error);
     else {
-      setNewProduct({ subcategoria: '', precio: '', cantidad: '' });
+      setNewProduct({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
       fetchInventory();
     }
   };
@@ -64,6 +68,12 @@ function InventoryPanel() {
     <div className="inventory-panel">
       <h3>📦 Gestión de Inventario</h3>
       <div className="add-product">
+        <input
+          type="text"
+          placeholder="Nombre del producto"
+          value={newProduct.nombre}
+          onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })}
+        />
         <input
           type="text"
           placeholder="Subcategoría / Descripción"
@@ -87,7 +97,7 @@ function InventoryPanel() {
       <table className="inventory-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Nombre</th>
             <th>Subcategoría / Descripción</th>
             <th>Precio</th>
             <th>Cantidad</th>
@@ -97,7 +107,14 @@ function InventoryPanel() {
         <tbody>
           {inventory.map((item) => (
             <tr key={item.id}>
-              <td>{item.id}</td>
+              <td>
+                {editingId === item.id ? (
+                  <input
+                    value={editForm.nombre}
+                    onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                  />
+                ) : item.nombre}
+              </td>
               <td>
                 {editingId === item.id ? (
                   <input
