@@ -4,6 +4,7 @@ import Login from "./login";
 import POS from "./pos";
 import AdminDashboard from "./AdminDashboard";
 import { supabase } from "./supabaseClient";
+import OwnerDashboard from '/components/OwnerDashboard';
 
 function App() {
   const [usuario, setUsuario] = useState(null);
