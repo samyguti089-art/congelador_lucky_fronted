@@ -7,6 +7,8 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [productosCategoria, setProductosCategoria] = useState([]);
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
+  const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
+  const [cerrando, setCerrando] = useState(false);
 
   // Definir categorías con íconos y nombres
   const categorias = [
@@ -52,20 +54,71 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       alert("El carrito está vacío");
       return;
     }
-    // Aquí va tu lógica de registro de venta (ya la tienes)
-    // ...
+    console.log("Usuario:", usuario); // Verifica que usuario.id existe
+  console.log("Carrito:", carrito);
+
+  const handleCerrarSesion = () => {
+    setMostrarModalCierre(true);
   };
 
+  const confirmarCierre = () => {
+    setCerrando(true);
+    setTimeout(() => {
+      cerrarSesion();
+    }, 1500);
+  };
+
+  const cancelarCierre = () => {
+    setMostrarModalCierre(false);
+  };
+
+
+  const productosParaBackend = carrito.map(item => ({
+    producto_id: item.id,
+    cantidad: item.cantidad,
+    total: item.subtotal
+  }));
+
+  try {
+    const response = await axios.post(`${API_URL}/venta-carrito`, {
+      cajero_id: usuario.id,
+      productos: productosParaBackend
+    });
+
+    console.log("Respuesta exitosa:", response.data);
+    alert(`✅ Venta registrada. ID: ${response.data.id_venta} - Total: $${response.data.total}`);
+    
+    setCarrito([]);
+    if (response.data.inventario && actualizarInventario) {
+      actualizarInventario(response.data.inventario);
+    }
+    if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
+    
+  } catch (error) {
+    console.error("Error al registrar venta del carrito:", error);
+    if (error.response) {
+      console.error("Detalle del error del backend:", error.response.data);
+      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+    } else {
+      alert("Error al preparar la solicitud: " + error.message);
+    }
+  }
+};
+ 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="pos-container">
+     <div className="pos-container">
       {/* Header */}
       <div className="pos-header">
-        <h3>🥟 Congelador Lucky-POS</h3>
+        <h1>🍔 Congelador Lucky - POS</h1>
         <div className="user-info">
-          <span> 👤 {usuario.nombre}</span>
-          <button onClick={cerrarSesion} className="logout-btn">Cerrar Sesión</button>
+          <span>👤 {usuario.nombre}</span>
+          <button onClick={handleCerrarSesion} className="logout-btn">
+            <FiLogOut className="logout-icon" /> Salir
+          </button>
         </div>
       </div>
 
@@ -151,5 +204,33 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     </div>
   );
 }
+{/* Modal de confirmación de cierre de sesión */}
+      {mostrarModalCierre && (
+        <div className="modal-overlay" onClick={cancelarCierre}>
+          <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
+            {!cerrando ? (
+              <>
+                <div className="modal-header">
+                  <h2>🔓 Cerrar Sesión</h2>
+                  <button className="close-btn" onClick={cancelarCierre}>✕</button>
+                </div>
+                <div className="modal-body">
+                  <p className="cierre-mensaje">¿Estás seguro de que deseas cerrar sesión?</p>
+                  <div className="cierre-buttons">
+                    <button className="btn-cancelar" onClick={cancelarCierre}>Cancelar</button>
+                    <button className="btn-confirmar" onClick={confirmarCierre}>Sí, cerrar sesión</button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="modal-body cerrando">
+                <div className="spinner"></div>
+                <p>🔄 Cerrando sesión...</p>
+                <p className="cerrando-mensaje">Por favor espera</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
 export default POS;
