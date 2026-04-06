@@ -283,3 +283,190 @@
     min-width: 150px;
   }
 }
+/* ===== KPI STOCK BAJO ===== */
+.stock-bajo-kpi {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.kpi-header h3 {
+  margin: 0;
+  color: var(--marron);
+}
+
+.refresh-stock-btn {
+  background: var(--marron);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.kpi-config {
+  margin-bottom: 15px;
+}
+
+.kpi-config label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--marron);
+}
+
+.kpi-config input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 6px;
+}
+
+.stock-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stock-card {
+  text-align: center;
+  padding: 15px;
+  border-radius: 12px;
+  color: white;
+}
+
+.stock-card.critico {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stock-card.agotado {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.stock-number {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.stock-label {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.stock-umbral {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.lista-stock-bajo {
+  margin-top: 15px;
+}
+
+.lista-stock-bajo h4 {
+  margin-bottom: 10px;
+  color: var(--marron);
+  font-size: 0.9rem;
+}
+
+.lista-stock-bajo ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lista-stock-bajo li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.lista-stock-bajo li.critico-item {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+}
+
+.lista-stock-bajo li.agotado-item {
+  background: #fee2e2;
+  border-left: 4px solid #ef4444;
+}
+
+.producto-nombre {
+  flex: 1;
+  color: var(--marron);
+}
+
+.producto-stock-actual {
+  font-weight: bold;
+  color: var(--marron-oscuro);
+}
+
+/* KPIs grid */
+.kpis-grid {
+  margin-bottom: 25px;
+}
+
+/* Estilos para top products mejorado */
+.top-products ol {
+  list-style: none;
+  padding: 0;
+}
+
+.top-products li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+.product-rank {
+  width: 30px;
+  height: 30px;
+  background: var(--rojo-marron);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.product-ingresos {
+  color: var(--rojo-marron);
+  font-weight: bold;
+}
+
+.sin-datos {
+  text-align: center;
+  color: var(--marron-claro);
+  padding: 30px;
+}
