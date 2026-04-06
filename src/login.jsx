@@ -73,7 +73,7 @@ function Login({ setUsuario }) {
     <div className="login-modern-container">
       <div className="login-modern-card">
         <div className="login-modern-header">
-          <h1>🥟 Congelador Lucky</h1>
+          <h1>🥟 Congelados Lucky</h1>
           <p>Ingresa tus credenciales</p>
         </div>
 
