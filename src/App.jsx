@@ -104,6 +104,9 @@ function App() {
       cargarUsuarios();
       cargarVentas();
     }
+    if (usuario.rol === "dueño") {
+      return <OwnerDashboard usuario={usuario} cerrarSesion={cerrarSesion} />;
+    }
   }, [usuario]);
 
   const registrarVenta = async (item) => {
