@@ -674,6 +674,7 @@
   color: #22c55e;
 }
 
+/* Botón de cerrar éxito */
 .btn-cerrar-exito {
   width: 100%;
   padding: 12px;
@@ -684,11 +685,17 @@
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
+  margin-top: 20px;
 }
 
 .btn-cerrar-exito:hover {
   transform: scale(1.02);
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.btn-cerrar-exito:active {
+  transform: scale(0.98);
 }
 
 /* Responsive para el modal de éxito */
