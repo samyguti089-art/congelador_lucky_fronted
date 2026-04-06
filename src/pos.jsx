@@ -62,9 +62,9 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     <div className="pos-container">
       {/* Header */}
       <div className="pos-header">
-        <h1>🍔 Congelador Lucky - POS</h1>
+        <h3>🥟 Congelador Lucky-POS</h3>
         <div className="user-info">
-          <span>👤 {usuario.nombre}</span>
+          <span> 👤 {usuario.nombre}</span>
           <button onClick={cerrarSesion} className="logout-btn">Cerrar Sesión</button>
         </div>
       </div>
