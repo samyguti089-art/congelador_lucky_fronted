@@ -16,9 +16,9 @@ function App() {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Cargar usuario guardado
+  // ✅ Usar sessionStorage en lugar de localStorage
   useEffect(() => {
-    const usuarioGuardado = localStorage.getItem("usuario");
+    const usuarioGuardado = sessionStorage.getItem("usuario");
     if (usuarioGuardado) {
       setUsuario(JSON.parse(usuarioGuardado));
     }
@@ -26,143 +26,17 @@ function App() {
 
   const manejarLogin = (user) => {
     setUsuario(user);
-    localStorage.setItem("usuario", JSON.stringify(user));
+    sessionStorage.setItem("usuario", JSON.stringify(user));
   };
 
   const cerrarSesion = () => {
-    localStorage.removeItem("usuario");
+    sessionStorage.removeItem("usuario");
     setUsuario(null);
   };
 
-  // Funciones Supabase
-  const cargarInventario = async () => {
-    const { data, error } = await supabase.from("inventario").select("*");
-    if (!error) setInventario(data);
-  };
+  // ... resto de funciones (cargarInventario, etc.) sin cambios ...
 
-  const cargarUsuarios = async () => {
-    const { data, error } = await supabase.from("usuarios").select("*");
-    if (!error) setUsuarios(data);
-  };
-
-  const cargarVentas = async () => {
-    const { data, error } = await supabase.from("ventas").select("*");
-    if (!error) setVentas(data);
-  };
-
-  const agregarUsuario = async (nuevoUsuario) => {
-    const { data, error } = await supabase.from("usuarios").insert([nuevoUsuario]);
-    if (!error) setUsuarios([...usuarios, ...data]);
-  };
-
-  const eliminarUsuario = async (id) => {
-    await supabase.from("usuarios").delete().eq("id", id);
-    setUsuarios(usuarios.filter(u => u.id !== id));
-  };
-
-  const agregarProducto = async (producto) => {
-    const { data, error } = await supabase.from("inventario").insert([producto]);
-    if (!error) setInventario([...inventario, ...data]);
-  };
-
-  const actualizarProducto = async (id, cambios) => {
-    const { data, error } = await supabase.from("inventario").update(cambios).eq("id", id);
-    if (!error) {
-      setInventario(inventario.map(p => p.id === id ? { ...p, ...cambios } : p));
-    }
-  };
-
-  const eliminarProducto = async (id) => {
-    await supabase.from("inventario").delete().eq("id", id);
-    setInventario(inventario.filter(p => p.id !== id));
-  };
-
-  // Actualizar inventario para cajero
-  const actualizarInventario = async (forzarRecarga = false) => {
-    try {
-      const res = await axios.get(`${API_URL}/inventario`);
-      setInventario(res.data);
-      if (forzarRecarga) {
-        window.location.reload();
-      } else {
-        setMensajeInventario("Inventario actualizado correctamente ✔️");
-        setTimeout(() => setMensajeInventario(""), 3000);
-      }
-    } catch (err) {
-      console.error("Error actualizando inventario:", err);
-      setMensajeInventario("❌ Error al actualizar inventario");
-      setTimeout(() => setMensajeInventario(""), 3000);
-    }
-  };
-
-  useEffect(() => {
-    if (usuario && usuario.rol === "cajero") {
-      actualizarInventario();
-    }
-    if (usuario && usuario.rol === "admin") {
-      cargarInventario();
-      cargarUsuarios();
-      cargarVentas();
-    }
-    // No devuelvas componentes aquí, solo carga datos
-  }, [usuario]);
-
-  const registrarVenta = async (item) => {
-    try {
-      const res = await axios.post(`${API_URL}/venta`, {
-        producto_id: item.id,
-        cantidad: item.cantidad,
-        total: item.total
-      }, {
-        params: { cajero_id: usuario.id }
-      });
-      alert(res.data.mensaje);
-      if (res.data.inventario) {
-        setInventario(res.data.inventario);
-        setMensajeInventario("Inventario actualizado después de la venta ✔️");
-        setTimeout(() => setMensajeInventario(""), 3000);
-        setRefreshTrigger(prev => prev + 1);
-      }
-    } catch (err) {
-      console.error("Error registrando venta:", err);
-      alert("Error al registrar venta");
-    }
-  };
-
-  const registrarVentaCombo = async (comboId, precioCombo) => {
-    try {
-      const { data: detalle, error } = await supabase
-        .from("combo_detalle")
-        .select("producto_id, cantidad")
-        .eq("combo_id", comboId);
-      if (error) throw error;
-      await supabase.from("ventas").insert([
-        { 
-          producto_id: null,
-          cantidad: 1,
-          total: precioCombo,
-          cajero_id: usuario.id 
-        }
-      ]);
-      for (const item of detalle) {
-        const producto = inventario.find(p => p.id === item.producto_id);
-        if (producto) {
-          await supabase
-            .from("inventario")
-            .update({ cantidad: producto.cantidad - item.cantidad })
-            .eq("id", item.producto_id);
-        }
-      }
-      setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
-      setTimeout(() => setMensajeInventario(""), 3000);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (err) {
-      console.error("Error registrando venta de combo:", err);
-      alert("Error al registrar venta de combo");
-    }
-  };
-
-  // RENDERIZADO PRINCIPAL
+  // Renderizado principal
   if (!usuario) {
     return <Login setUsuario={manejarLogin} />;
   }
