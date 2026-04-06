@@ -115,7 +115,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       <div className="pos-header">
         <h3>🥟 Congelador Lucky - POS </h3>
         <div className="user-info">
-          <span> 👤{usuario.nombre} </span>
+          <span> { usuario.nombre} </span>
           <button onClick={handleCerrarSesion} className="logout-btn">
             <FiLogOut className="logout-icon" /> Salir
           </button>
