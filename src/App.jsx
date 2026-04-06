@@ -3,7 +3,7 @@ import axios from "axios";
 import Login from "./login";
 import POS from "./pos";
 import AdminDashboard from "./AdminDashboard";
-import OwnerDashboard from ".components/OwnerDashboard";
+import OwnerDashboard from "./components/OwnerDashboard";
 import { supabase } from "./supabaseClient";
 
 function App() {
