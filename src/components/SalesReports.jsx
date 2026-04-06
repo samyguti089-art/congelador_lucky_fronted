@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { supabase } from '../../services/supabaseClient';
+import { supabase } from '../services/supabaseClient';
 import './OwnerDashboard.css';
 
 function SalesReports() {
