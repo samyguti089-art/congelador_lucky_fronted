@@ -1,7 +1,7 @@
 import React from 'react';
 import InventoryPanel from './InventoryPanel';
 import SalesReports from './SalesReports';
-import RealtimeSales from './RealtimeSales';
+import RealtimeSales from './services/RealtimeSales';
 import TopProducts from './TopProducts';
 import './OwnerDashboard.css';
 
