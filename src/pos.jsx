@@ -114,7 +114,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       {/* Header mejorado */}
       <div className="pos-header">
         <div className="logo-area">
-          <h1>🍔 Congelador Lucky</h1>
+          <h1>🥟 Congelador Lucky</h1>
           <span className="pos-badge">Punto de Venta</span>
         </div>
         <div className="user-area">
