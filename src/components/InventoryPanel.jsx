@@ -7,25 +7,39 @@ function InventoryPanel() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
   const [newProduct, setNewProduct] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchInventory();
   }, []);
 
   const fetchInventory = async () => {
-    const { data, error } = await supabase
-      .from('inventario')
-      .select('*')
-      .order('orden', { ascending: true }); // si tienes columna orden
-    if (error) console.error(error);
-    else setInventory(data);
+    setLoading(true);
+    try {
+      // Consulta simple sin ordenar para asegurar que trae datos
+      const { data, error } = await supabase.from('inventario').select('*');
+      
+      if (error) {
+        console.error('Error fetching inventory:', error);
+        alert('Error al cargar inventario: ' + error.message);
+        setInventory([]);
+      } else {
+        console.log('Productos obtenidos:', data?.length || 0);
+        setInventory(data || []);
+      }
+    } catch (err) {
+      console.error('Exception:', err);
+      alert('Error inesperado: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (producto) => {
     setEditingId(producto.id);
     setEditForm({
-      nombre: producto.nombre,
-      subcategoria: producto.subcategoria,
+      nombre: producto.nombre || '',
+      subcategoria: producto.subcategoria || '',
       precio: producto.precio,
       cantidad: producto.cantidad
     });
@@ -34,10 +48,17 @@ function InventoryPanel() {
   const handleUpdate = async (id) => {
     const { error } = await supabase
       .from('inventario')
-      .update(editForm)
+      .update({
+        nombre: editForm.nombre,
+        subcategoria: editForm.subcategoria,
+        precio: editForm.precio,
+        cantidad: editForm.cantidad
+      })
       .eq('id', id);
-    if (error) console.error(error);
-    else {
+    if (error) {
+      console.error(error);
+      alert('Error al actualizar: ' + error.message);
+    } else {
       setEditingId(null);
       fetchInventory();
     }
@@ -46,23 +67,38 @@ function InventoryPanel() {
   const handleDelete = async (id) => {
     if (window.confirm('¿Eliminar este producto?')) {
       const { error } = await supabase.from('inventario').delete().eq('id', id);
-      if (error) console.error(error);
-      else fetchInventory();
+      if (error) {
+        console.error(error);
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        fetchInventory();
+      }
     }
   };
 
   const handleAdd = async () => {
-    if (!newProduct.nombre.trim() || !newProduct.subcategoria.trim()) {
-      alert('El nombre y la subcategoría son obligatorios');
+    if (!newProduct.nombre.trim()) {
+      alert('El nombre es obligatorio');
       return;
     }
-    const { error } = await supabase.from('inventario').insert([newProduct]);
-    if (error) console.error(error);
-    else {
+    const { error } = await supabase.from('inventario').insert([{
+      nombre: newProduct.nombre,
+      subcategoria: newProduct.subcategoria,
+      precio: newProduct.precio,
+      cantidad: newProduct.cantidad
+    }]);
+    if (error) {
+      console.error(error);
+      alert('Error al agregar: ' + error.message);
+    } else {
       setNewProduct({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
       fetchInventory();
     }
   };
+
+  if (loading) {
+    return <div>Cargando inventario...</div>;
+  }
 
   return (
     <div className="inventory-panel">
@@ -98,64 +134,70 @@ function InventoryPanel() {
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Subcategoría / Descripción</th>
+            <th>Subcategoría</th>
             <th>Precio</th>
             <th>Cantidad</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {inventory.map((item) => (
-            <tr key={item.id}>
-              <td>
-                {editingId === item.id ? (
-                  <input
-                    value={editForm.nombre}
-                    onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
-                  />
-                ) : item.nombre}
-              </td>
-              <td>
-                {editingId === item.id ? (
-                  <input
-                    value={editForm.subcategoria}
-                    onChange={(e) => setEditForm({ ...editForm, subcategoria: e.target.value })}
-                  />
-                ) : item.subcategoria}
-              </td>
-              <td>
-                {editingId === item.id ? (
-                  <input
-                    type="number"
-                    value={editForm.precio}
-                    onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })}
-                  />
-                ) : item.precio}
-              </td>
-              <td>
-                {editingId === item.id ? (
-                  <input
-                    type="number"
-                    value={editForm.cantidad}
-                    onChange={(e) => setEditForm({ ...editForm, cantidad: e.target.value })}
-                  />
-                ) : item.cantidad}
-              </td>
-              <td>
-                {editingId === item.id ? (
-                  <>
-                    <button onClick={() => handleUpdate(item.id)}>Guardar</button>
-                    <button onClick={() => setEditingId(null)}>Cancelar</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleEdit(item)}>✏️ Editar</button>
-                    <button onClick={() => handleDelete(item.id)}>🗑️ Eliminar</button>
-                  </>
-                )}
-              </td>
+          {inventory.length === 0 ? (
+            <tr>
+              <td colSpan="5" style={{ textAlign: 'center' }}>No hay productos registrados</td>
             </tr>
-          ))}
+          ) : (
+            inventory.map((item) => (
+              <tr key={item.id}>
+                <td>
+                  {editingId === item.id ? (
+                    <input
+                      value={editForm.nombre}
+                      onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                    />
+                  ) : item.nombre}
+                </td>
+                <td>
+                  {editingId === item.id ? (
+                    <input
+                      value={editForm.subcategoria}
+                      onChange={(e) => setEditForm({ ...editForm, subcategoria: e.target.value })}
+                    />
+                  ) : item.subcategoria}
+                </td>
+                <td>
+                  {editingId === item.id ? (
+                    <input
+                      type="number"
+                      value={editForm.precio}
+                      onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })}
+                    />
+                  ) : item.precio}
+                </td>
+                <td>
+                  {editingId === item.id ? (
+                    <input
+                      type="number"
+                      value={editForm.cantidad}
+                      onChange={(e) => setEditForm({ ...editForm, cantidad: e.target.value })}
+                    />
+                  ) : item.cantidad}
+                </td>
+                <td>
+                  {editingId === item.id ? (
+                    <>
+                      <button onClick={() => handleUpdate(item.id)}>Guardar</button>
+                      <button onClick={() => setEditingId(null)}>Cancelar</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => handleEdit(item)}>✏️ Editar</button>
+                      <button onClick={() => handleDelete(item.id)}>🗑️ Eliminar</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
