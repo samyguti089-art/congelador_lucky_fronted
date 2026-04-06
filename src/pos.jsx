@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiCheckCircle } from "react-icons/fi";
 import "./POS.css";
 
-function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
+function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [productosCategoria, setProductosCategoria] = useState([]);
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
+  const [mostrarModalExito, setMostrarModalExito] = useState(false);
+  const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -71,9 +73,18 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
       });
 
       console.log("Respuesta exitosa:", response.data);
-      alert(`✅ Venta registrada. ID: ${response.data.id_venta} - Total: $${response.data.total}`);
+      
+      // Guardar datos de la venta para mostrar en el modal
+      setVentaExitosa({
+        id: response.data.id_venta,
+        productos: [...carrito],
+        total: response.data.total,
+        fecha: new Date().toLocaleString()
+      });
       
       setCarrito([]);
+      setMostrarModalExito(true);
+      
       if (response.data.inventario && actualizarInventario) {
         actualizarInventario(response.data.inventario);
       }
@@ -82,7 +93,6 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     } catch (error) {
       console.error("Error al registrar venta del carrito:", error);
       if (error.response) {
-        console.error("Detalle del error del backend:", error.response.data);
         alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
       } else if (error.request) {
         alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
@@ -107,14 +117,19 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     setMostrarModalCierre(false);
   };
 
+  const cerrarModalExito = () => {
+    setMostrarModalExito(false);
+    setVentaExitosa(null);
+  };
+
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
     <div className="pos-container">
-      {/* Header mejorado */}
+      {/* Header */}
       <div className="pos-header">
         <div className="logo-area">
-          <h1>🥟 Congelador Lucky</h1>
+          <h1>🍔 Congelador Lucky</h1>
           <span className="pos-badge">Punto de Venta</span>
         </div>
         <div className="user-area">
@@ -210,6 +225,64 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           </>
         )}
       </div>
+
+      {/* Modal de venta exitosa */}
+      {mostrarModalExito && ventaExitosa && (
+        <div className="modal-overlay" onClick={cerrarModalExito}>
+          <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header exito-header">
+              <FiCheckCircle className="exito-icono" />
+              <h2>¡Venta Exitosa!</h2>
+              <button className="close-btn" onClick={cerrarModalExito}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="venta-info">
+                <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
+                <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
+                <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
+              </div>
+              
+              <div className="detalle-venta">
+                <h3>Detalle de la compra</h3>
+                <table className="detalle-tabla">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventaExitosa.productos.map((item, idx) => (
+                      <tr key={idx}>
+                        <td>{item.nombre}</td>
+                        <td>{item.cantidad}</td>
+                        <td>${item.precio}</td>
+                        <td>${item.subtotal}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="total-venta">
+                <span>Total Pagado:</span>
+                <strong>${ventaExitosa.total}</strong>
+              </div>
+              
+              <div className="mensaje-agradecimiento">
+                <p>🎉 ¡Gracias por tu compra!</p>
+                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
+              </div>
+              
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
