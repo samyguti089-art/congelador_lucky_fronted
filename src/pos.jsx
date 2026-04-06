@@ -55,53 +55,64 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const registrarVentaFinal = async () => {
-    if (carrito.length === 0) {
-      alert("El carrito está vacío");
-      return;
+  if (carrito.length === 0) {
+    alert("El carrito está vacío");
+    return;
+  }
+
+  const productosParaBackend = carrito.map(item => ({
+    producto_id: item.id,
+    cantidad: item.cantidad,
+    total: item.subtotal
+  }));
+
+  try {
+    const response = await axios.post(`${API_URL}/venta-carrito`, {
+      cajero_id: usuario.id,
+      productos: productosParaBackend
+    });
+
+    console.log("Respuesta exitosa:", response.data);
+    
+    // Guardar los productos ANTES de limpiar el carrito
+    const productosVendidos = [...carrito];
+    const totalVenta = response.data.total;
+    const idVenta = response.data.id_venta;
+    
+    // Limpiar carrito
+    setCarrito([]);
+    
+    // Mostrar modal con los datos
+    setVentaExitosa({
+      id: idVenta,
+      productos: productosVendidos,
+      total: totalVenta,
+      fecha: new Date().toLocaleString()
+    });
+    setMostrarModalExito(true);
+    
+    // Actualizar inventario SIN recargar la página
+    if (response.data.inventario && actualizarInventario) {
+      // Asegúrate de que actualizarInventario NO tenga window.location.reload()
+      await actualizarInventario(false); // false = no recargar
     }
-
-    const productosParaBackend = carrito.map(item => ({
-      producto_id: item.id,
-      cantidad: item.cantidad,
-      total: item.subtotal
-    }));
-
-    try {
-      const response = await axios.post(`${API_URL}/venta-carrito`, {
-        cajero_id: usuario.id,
-        productos: productosParaBackend
-      });
-
-      console.log("Respuesta exitosa:", response.data);
-      
-      // Guardar datos de la venta para mostrar en el modal
-      setVentaExitosa({
-        id: response.data.id_venta,
-        productos: [...carrito],
-        total: response.data.total,
-        fecha: new Date().toLocaleString()
-      });
-      
-      setCarrito([]);
-      setMostrarModalExito(true);
-      
-      if (response.data.inventario && actualizarInventario) {
-        actualizarInventario(response.data.inventario);
-      }
-      if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
-      
-    } catch (error) {
-      console.error("Error al registrar venta del carrito:", error);
-      if (error.response) {
-        alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
-      } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
-      } else {
-        alert("Error al preparar la solicitud: " + error.message);
-      }
+    
+    // Actualizar trigger sin recargar
+    if (setRefreshTrigger) {
+      setRefreshTrigger(prev => prev + 1); // Usar +1 en lugar de !prev
     }
-  };
-
+    
+  } catch (error) {
+    console.error("Error al registrar venta del carrito:", error);
+    if (error.response) {
+      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+    } else {
+      alert("Error al preparar la solicitud: " + error.message);
+    }
+  }
+};
   const handleCerrarSesion = () => {
     setMostrarModalCierre(true);
   };
