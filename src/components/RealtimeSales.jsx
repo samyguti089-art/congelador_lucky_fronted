@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { subscribeToSales } from './services/realtimeService';
+import { subscribeToSales } from '../services/realtimeService';
 import './OwnerDashboard.css';
 
 function RealtimeSales() {
