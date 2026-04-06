@@ -1,7 +1,10 @@
+/* ===== DASHBOARD DUEÑO - OCUPAR TODO EL ANCHO ===== */
 .owner-dashboard {
   padding: 20px;
   background: #f0f2f5;
   min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -9,75 +12,242 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #1e2a3a;
+}
+
+.dashboard-header button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.dashboard-header button:hover {
+  background: #b91c1c;
+}
+
+/* Cuadrícula responsiva: cada tarjeta ocupa mínimo 400px y se expande */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 25px;
+  width: 100%;
 }
 
 .dashboard-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow-x: auto;  /* Para que las tablas grandes puedan hacer scroll horizontal */
 }
 
-/* Estilos para la tabla de inventario */
-.inventory-table {
-  width: 100%;
-  border-collapse: collapse;
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.inventory-table th, .inventory-table td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+/* ===== GESTIÓN DE INVENTARIO (tabla ancha) ===== */
+.inventory-panel h3,
+.sales-reports h3,
+.realtime-sales h3,
+.top-products h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #2d3748;
+  border-left: 4px solid #4a5568;
+  padding-left: 12px;
 }
 
-/* Estilos para los formularios */
 .add-product {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
+  align-items: center;
 }
 
 .add-product input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  flex: 1 1 150px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
 }
 
 .add-product button {
-  padding: 8px 16px;
-  background: #4CAF50;
+  background: #4a5568;
   color: white;
   border: none;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
 }
 
-/* Estilos para los reportes */
+.add-product button:hover {
+  background: #2d3748;
+}
+
+/* Tabla de inventario: ancho completo y scroll horizontal si es necesario */
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 500px;  /* Evita que se comprima demasiado */
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inventory-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.inventory-table input {
+  width: 90%;
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.inventory-table button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin: 0 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.inventory-table button:hover {
+  background: #e2e8f0;
+}
+
+/* ===== REPORTES ===== */
 .date-range {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
   margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+.date-range label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+.date-range input {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.date-range button {
+  background: #4a5568;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .chart-container {
-  margin-top: 20px;
+  width: 100%;
+  height: 300px;
+  margin-top: 15px;
 }
 
-/* Estilos para ventas en tiempo real */
+/* ===== VENTAS EN TIEMPO REAL ===== */
 .realtime-sales ul {
   list-style: none;
   padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .realtime-sales li {
-  padding: 8px;
-  background: #f8f9fa;
+  padding: 10px;
+  background: #f8fafc;
   margin-bottom: 8px;
-  border-radius: 4px;
+  border-radius: 8px;
+  border-left: 3px solid #4a5568;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+/* ===== PRODUCTOS MÁS VENDIDOS ===== */
+.top-products ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.top-products li {
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 500;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .dashboard-card {
+    padding: 15px;
+  }
+  
+  .add-product {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-product input,
+  .add-product button {
+    width: 100%;
+  }
+  
+  .date-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .inventory-table {
+    font-size: 0.8rem;
+  }
+  
+  .inventory-table th,
+  .inventory-table td {
+    padding: 8px 4px;
+  }
 }
