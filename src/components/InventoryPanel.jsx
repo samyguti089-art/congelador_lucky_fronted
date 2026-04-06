@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient.js';
+import { supabase } from '../services/supabaseClient';
 import './OwnerDashboard.css';
 
 function InventoryPanel() {
   const [inventory, setInventory] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ nombre: '', precio: '', cantidad: '' });
-  const [newProduct, setNewProduct] = useState({ nombre: '', precio: '', cantidad: '' });
+  const [editForm, setEditForm] = useState({ subcategoria: '', precio: '', cantidad: '' });
+  const [newProduct, setNewProduct] = useState({ subcategoria: '', precio: '', cantidad: '' });
 
   useEffect(() => {
     fetchInventory();
@@ -21,7 +21,7 @@ function InventoryPanel() {
   const handleEdit = (producto) => {
     setEditingId(producto.id);
     setEditForm({
-      nombre: producto.nombre,
+      subcategoria: producto.subcategoria,
       precio: producto.precio,
       cantidad: producto.cantidad
     });
@@ -48,10 +48,14 @@ function InventoryPanel() {
   };
 
   const handleAdd = async () => {
+    if (!newProduct.subcategoria.trim()) {
+      alert('La descripción es obligatoria');
+      return;
+    }
     const { error } = await supabase.from('inventario').insert([newProduct]);
     if (error) console.error(error);
     else {
-      setNewProduct({ nombre: '', precio: '', cantidad: '' });
+      setNewProduct({ subcategoria: '', precio: '', cantidad: '' });
       fetchInventory();
     }
   };
@@ -62,9 +66,9 @@ function InventoryPanel() {
       <div className="add-product">
         <input
           type="text"
-          placeholder="Nombre"
-          value={newProduct.nombre}
-          onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })}
+          placeholder="Subcategoría / Descripción"
+          value={newProduct.subcategoria}
+          onChange={(e) => setNewProduct({ ...newProduct, subcategoria: e.target.value })}
         />
         <input
           type="number"
@@ -83,7 +87,11 @@ function InventoryPanel() {
       <table className="inventory-table">
         <thead>
           <tr>
-            <th>ID</th><th>Nombre</th><th>Precio</th><th>Cantidad</th><th>Acciones</th>
+            <th>ID</th>
+            <th>Subcategoría / Descripción</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -93,10 +101,10 @@ function InventoryPanel() {
               <td>
                 {editingId === item.id ? (
                   <input
-                    value={editForm.nombre}
-                    onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                    value={editForm.subcategoria}
+                    onChange={(e) => setEditForm({ ...editForm, subcategoria: e.target.value })}
                   />
-                ) : item.nombre}
+                ) : item.subcategoria}
               </td>
               <td>
                 {editingId === item.id ? (
