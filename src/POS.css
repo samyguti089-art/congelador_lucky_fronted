@@ -566,3 +566,148 @@
     justify-content: center;
   }
 }
+/* ===== MODAL DE VENTA EXITOSA ===== */
+.exito-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.exito-header {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border-bottom: none;
+}
+
+.exito-icono {
+  font-size: 2rem;
+  margin-right: 10px;
+}
+
+.exito-header h2 {
+  flex: 1;
+  margin: 0;
+  color: white;
+}
+
+.venta-info {
+  background: var(--crema);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.venta-info p {
+  margin: 5px 0;
+  color: var(--marron);
+}
+
+.detalle-venta {
+  margin-bottom: 20px;
+}
+
+.detalle-venta h3 {
+  color: var(--marron);
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.detalle-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.detalle-tabla th,
+.detalle-tabla td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+.detalle-tabla th {
+  background: var(--crema);
+  color: var(--marron);
+  font-weight: 600;
+}
+
+.detalle-tabla td {
+  color: var(--marron-claro);
+}
+
+.total-venta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: var(--crema);
+  border-radius: 12px;
+  margin: 15px 0;
+  font-size: 1.2rem;
+}
+
+.total-venta span {
+  color: var(--marron);
+  font-weight: 500;
+}
+
+.total-venta strong {
+  color: var(--rojo-marron);
+  font-size: 1.4rem;
+}
+
+.mensaje-agradecimiento {
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: #dcfce7;
+  border-radius: 12px;
+}
+
+.mensaje-agradecimiento p {
+  margin: 5px 0;
+  color: #166534;
+  font-weight: 500;
+}
+
+.mensaje-pequeno {
+  font-size: 0.75rem;
+  color: #22c55e;
+}
+
+.btn-cerrar-exito {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-cerrar-exito:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive para el modal de éxito */
+@media (max-width: 640px) {
+  .exito-modal {
+    max-width: 95%;
+  }
+  
+  .detalle-tabla th,
+  .detalle-tabla td {
+    font-size: 0.7rem;
+    padding: 6px 4px;
+  }
+  
+  .total-venta {
+    font-size: 1rem;
+  }
+  
+  .total-venta strong {
+    font-size: 1.2rem;
+  }
+}
