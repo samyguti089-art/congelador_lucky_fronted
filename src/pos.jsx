@@ -206,7 +206,7 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     </div>
   );
 }
-{/* Modal de confirmación de cierre de sesión */}
+   {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
           <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
@@ -234,5 +234,14 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
           </div>
         </div>
       )}
+
+      {/* Mensaje de inventario */}
+      {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
+
+      {/* Resto del POS (categorías, modal de productos, carrito) */}
+      {/* ... */}
+    </div>
+  );
+}
 
 export default POS;
