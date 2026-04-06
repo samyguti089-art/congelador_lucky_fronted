@@ -262,20 +262,24 @@
   width: 100%;
   box-sizing: border-box;
 }
-/* Mejora la legibilidad de la tabla de inventario */
-.inventory-table {
-  width: 100%;
-  table-layout: fixed;  /* Permite controlar anchos de columna */
+.inventory-panel {
+  overflow-x: auto;
 }
 
-.inventory-table th:nth-child(1) { width: 60px; }   /* ID */
-.inventory-table th:nth-child(2) { width: 35%; }    /* Nombre (más ancho) */
-.inventory-table th:nth-child(3) { width: 100px; }  /* Precio */
-.inventory-table th:nth-child(4) { width: 100px; }  /* Cantidad */
-.inventory-table th:nth-child(5) { width: 140px; }  /* Acciones */
+.inventory-table {
+  min-width: 600px;  /* Asegura un ancho mínimo para que se vea bien */
+}
 
-.inventory-table td:nth-child(2) {
-  word-break: break-word;      /* Permite saltos de línea */
-  white-space: normal;         /* El texto se envuelve */
-  line-height: 1.4;
+.inventory-table td,
+.inventory-table th {
+  white-space: nowrap;  /* Evita que el texto se envuelva, mejor para scroll */
+}
+
+/* Pero si quieres que el nombre sí pueda envolverse en pantallas pequeñas */
+@media (max-width: 768px) {
+  .inventory-table td:nth-child(2) {
+    white-space: normal;
+    word-break: break-word;
+    min-width: 150px;
+  }
 }
