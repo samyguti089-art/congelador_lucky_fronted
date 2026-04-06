@@ -14,9 +14,9 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
     { id: "empanadas", nombre: "Empanadas", icono: "🥟", color: "#10b981" },
     { id: "medallones", nombre: "Medallones", icono: "🍔", color: "#ef4444" },
     { id: "bolitas", nombre: "Bolitas", icono: "🫘", color: "#8b5cf6" },
-    { id: "mini_carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#f97316" },
-    { id: "mini_pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#eab308" },
-    { id: "mini_hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#22c55e" }
+    { id: "carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#f97316" },
+    { id: "pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#eab308" },
+    { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#22c55e" }
   ];
 
   // Filtrar productos por categoría (usando la columna 'categoria' de tu inventario)
