@@ -14,6 +14,7 @@ function App() {
   const [mensajeInventario, setMensajeInventario] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   // ✅ Solo cambié localStorage → sessionStorage aquí
@@ -176,6 +177,7 @@ function App() {
         mensajeInventario={mensajeInventario}
         refreshTrigger={refreshTrigger}
         cerrarSesion={cerrarSesion}
+        setRefreshTrigger={setRefreshTrigger}
       />
     );
   }
