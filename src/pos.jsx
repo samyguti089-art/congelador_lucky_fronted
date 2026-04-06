@@ -291,7 +291,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
         
         <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-          Aceptar
+          ✅ Aceptar
         </button>
       </div>
     </div>
