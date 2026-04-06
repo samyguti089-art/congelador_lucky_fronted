@@ -110,17 +110,24 @@ function POS({ usuario, inventario, registrarVenta, actualizarInventario, mensaj
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="pos-container">
-      {/* Header */}
-      <div className="pos-header">
-        <h3>🥟 Congelador Lucky - POS </h3>
-        <div className="user-info">
-          <span> { usuario.nombre} </span>
-          <button onClick={handleCerrarSesion} className="logout-btn">
-            <FiLogOut className="logout-icon" /> Salir
-          </button>
-        </div>
+    <div className="pos-header">
+  <div className="logo-area">
+    <h1>🍔 Congelador Lucky</h1>
+    <span className="pos-badge">Punto de Venta</span>
+  </div>
+  <div className="user-area">
+    <div className="user-details">
+      <span className="user-icon">👤</span>
+      <div className="user-text">
+        <span className="user-name">{usuario.nombre}</span>
+        <span className="user-role">Cajero</span>
       </div>
+    </div>
+    <button onClick={handleCerrarSesion} className="logout-btn">
+      <FiLogOut className="logout-icon" /> Salir
+    </button>
+  </div>
+</div>
 
       {/* Mensaje de inventario */}
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
