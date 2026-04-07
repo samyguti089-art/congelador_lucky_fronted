@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaStore } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
-import "./Login.css";
+import "./App.css";
 
 function Login({ setUsuario }) {
   const [nombre, setNombre] = useState("");
