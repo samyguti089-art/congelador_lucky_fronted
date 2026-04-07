@@ -806,25 +806,26 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Ícono más pequeño */
 .combo-icono {
-  font-size: 3rem;
+  font-size: 2rem;  /* Cambiado de 3rem a 2rem */
   margin-bottom: 10px;
 }
 
 .combo-info h4 {
   margin: 0 0 8px 0;
   color: #5c3a21;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .combo-descripcion {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #8b5e3c;
   margin: 5px 0;
 }
 
 .combo-precio {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: #9b2c2c;
   margin: 10px 0;
@@ -834,7 +835,7 @@
   background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
