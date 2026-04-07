@@ -888,3 +888,147 @@
     font-size: 0.75rem;
   }
 }
+/* ===== VENTAS EN TIEMPO REAL ===== */
+.realtime-sales {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.realtime-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.realtime-header h3 {
+  margin: 0;
+  color: var(--marron);
+}
+
+.connection-status {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f0f0f0;
+}
+
+.connection-status.conectado {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.connection-status.conectando... {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.connection-status.sin_datos {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.connection-status.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sales-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.sale-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--crema);
+  margin-bottom: 8px;
+  border-radius: 10px;
+  transition: all 0.3s;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sale-item:hover {
+  transform: translateX(5px);
+  background: var(--crema-oscuro);
+}
+
+.sale-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sale-id {
+  font-weight: bold;
+  color: var(--marron);
+  font-size: 0.85rem;
+}
+
+.sale-time {
+  font-size: 0.7rem;
+  color: var(--marron-claro);
+}
+
+.sale-amount {
+  font-weight: bold;
+  color: var(--rojo-marron);
+  font-size: 1rem;
+}
+
+.sin-ventas-realtime {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+}
+
+.mensaje-espera {
+  font-size: 0.75rem;
+  margin-top: 10px;
+  color: #9ca3af;
+}
+
+.realtime-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.retry-btn {
+  background: var(--rojo-marron);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+}
