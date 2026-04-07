@@ -4,6 +4,7 @@ import SalesReports from './SalesReports';
 import RealtimeSales from './RealtimeSales';
 import TopProducts from './TopProducts';
 import StockBajoKPI from './StockBajoKPI';
+import DailySalesKPI from './DailySalesKPI';
 import './OwnerDashboard.css';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
@@ -29,6 +30,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         </div>
         <div className="dashboard-card sales-card">
           <SalesReports />
+          {/* KPI de ventas diarias debajo del gráfico */}
+          <DailySalesKPI />
         </div>
         <div className="dashboard-card realtime-card">
           <RealtimeSales />
