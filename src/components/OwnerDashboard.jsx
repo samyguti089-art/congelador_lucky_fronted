@@ -19,14 +19,12 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
-      {/* Fila de KPIs de stock bajo */}
-      <div className="kpis-grid">
-        <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
-      </div>
+      {/* KPIs de stock bajo */}
+      <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
       
       {/* Layout de dos columnas */}
       <div className="dashboard-two-columns">
-        {/* Columna izquierda: Gestión de Inventario */}
+        {/* Columna izquierda: Gestión de Inventario - más compacto */}
         <div className="column-left">
           <div className="dashboard-card inventory-card">
             <InventoryPanel />
@@ -37,7 +35,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         <div className="column-right">
           <div className="dashboard-card sales-card">
             <SalesReports />
-            {/* KPI de ventas diarias debajo del gráfico */}
             <DailySalesKPI />
           </div>
           <div className="dashboard-card realtime-card">
@@ -46,7 +43,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         </div>
       </div>
       
-      {/* Sección de Productos Más Vendidos a ancho completo */}
+      {/* Productos Más Vendidos - ancho completo */}
       <div className="dashboard-card top-products-full">
         <TopProducts />
       </div>
