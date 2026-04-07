@@ -1163,12 +1163,15 @@
   font-size: 0.9rem;
   padding: 2px 6px;
 }
-/* ===== TOP PRODUCTOS CARD ===== */
+/* ===== TOP PRODUCTOS CARD - ALTURA COMPLETA ===== */
 .top-products-card {
   background: white;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
 }
 
 .top-products-card h3 {
@@ -1178,14 +1181,16 @@
   color: #5c3a21;
   border-left: 4px solid #9b2c2c;
   padding-left: 12px;
+  flex-shrink: 0;
 }
 
 .top-products-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
+  min-height: 300px;
 }
 
 .top-product-item {
@@ -1196,6 +1201,7 @@
   background: #faf7f2;
   border-radius: 12px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .top-product-item:hover {
@@ -1271,11 +1277,34 @@
   min-width: 35px;
 }
 
+/* Scroll personalizado para top products */
+.top-products-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.top-products-list::-webkit-scrollbar-track {
+  background: #e6d5c3;
+  border-radius: 3px;
+}
+
+.top-products-list::-webkit-scrollbar-thumb {
+  background: #9b2c2c;
+  border-radius: 3px;
+}
+
+.top-products-list::-webkit-scrollbar-thumb:hover {
+  background: #7c1e1e;
+}
+
 .loading-products,
 .sin-productos {
   text-align: center;
-  padding: 30px;
+  padding: 40px;
   color: #8b5e3c;
   background: #faf7f2;
   border-radius: 12px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
