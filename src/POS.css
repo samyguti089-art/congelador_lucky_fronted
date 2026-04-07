@@ -774,3 +774,94 @@
     max-height: calc(70vh - 100px);
   }
 }
+/* ===== MODAL DE COMBOS ===== */
+.combos-modal {
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.combos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.combo-card {
+  background: linear-gradient(135deg, #faf7f2, #e6d5c3);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+  border: 1px solid #e6d5c3;
+}
+
+.combo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.combo-icono {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.combo-info h4 {
+  margin: 0 0 8px 0;
+  color: #5c3a21;
+  font-size: 1.1rem;
+}
+
+.combo-descripcion {
+  font-size: 0.8rem;
+  color: #8b5e3c;
+  margin: 5px 0;
+}
+
+.combo-precio {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #9b2c2c;
+  margin: 10px 0;
+}
+
+.agregar-combo-btn {
+  background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.agregar-combo-btn:hover {
+  transform: scale(1.02);
+  background: linear-gradient(135deg, #7c1e1e, #6b1a1a);
+}
+
+/* Categoría de combos en el grid */
+.categoria-card[data-categoria="combos"] {
+  background: linear-gradient(135deg, #6b21a5, #581c87);
+}
+
+/* Responsive para combos */
+@media (max-width: 640px) {
+  .combos-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .combo-card {
+    padding: 15px;
+  }
+}
+
