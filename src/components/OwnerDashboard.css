@@ -503,9 +503,10 @@
   font-size: 0.85rem;
 }
 
+/* ===== KPI VENTAS DIARIAS - TAMAÑOS AJUSTADOS ===== */
 .kpi-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 15px;
   margin-bottom: 25px;
 }
@@ -513,8 +514,8 @@
 .kpi-card {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 15px;
+  gap: 12px;
+  padding: 12px 15px;
   border-radius: 12px;
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -546,27 +547,60 @@
 }
 
 .kpi-icon svg {
-  font-size: 2rem;
+  font-size: 1.6rem;
   opacity: 0.9;
 }
 
 .kpi-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .kpi-label {
   font-size: 0.7rem;
-  opacity: 0.9;
+  opacity: 0.85;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 .kpi-value {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
+  line-height: 1.2;
+  word-break: break-word;
 }
 
+/* Para valores muy grandes (ej: $1,000,000) */
+.kpi-value small {
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+/* Ajuste para pantallas pequeñas */
+@media (max-width: 640px) {
+  .kpi-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .kpi-card {
+    padding: 10px 12px;
+  }
+  
+  .kpi-icon svg {
+    font-size: 1.3rem;
+  }
+  
+  .kpi-label {
+    font-size: 0.65rem;
+  }
+  
+  .kpi-value {
+    font-size: 1rem;
+  }
+}
 /* Detalle de ventas del día */
 .detalle-ventas-dia {
   margin-top: 20px;
