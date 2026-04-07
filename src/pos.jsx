@@ -7,13 +7,33 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [productosCategoria, setProductosCategoria] = useState([]);
+  const [combos, setCombos] = useState([]);
+  const [comboSeleccionado, setComboSeleccionado] = useState(null);
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
+  const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
   const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Cargar combos desde Supabase
+  useEffect(() => {
+    fetchCombos();
+  }, []);
+
+  const fetchCombos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("combos")
+        .select("*");
+      if (error) throw error;
+      setCombos(data || []);
+    } catch (err) {
+      console.error("Error cargando combos:", err);
+    }
+  };
 
   // Definir categorías con íconos y nombres
   const categorias = [
@@ -23,11 +43,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     { id: "bolitas", nombre: "Bolitas", icono: "🫘", color: "#854d0e" },
     { id: "carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#c2410c" },
     { id: "pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#b91c1c" },
-    { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#a16207" }
+    { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#a16207" },
+    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
   ];
 
   // Filtrar productos por categoría
   const abrirCategoria = (categoriaId) => {
+    if (categoriaId === "combos") {
+      setMostrarModalCombos(true);
+      return;
+    }
+    
     const productos = inventario.filter(item => 
       item.categoria?.toLowerCase() === categoriaId.toLowerCase() ||
       item.subcategoria?.toLowerCase().includes(categoriaId.toLowerCase())
@@ -37,13 +63,35 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
+  // Seleccionar combo
+  const seleccionarCombo = (combo) => {
+    setComboSeleccionado(combo);
+  };
+
+  // Agregar combo al carrito
+  const agregarComboAlCarrito = (combo, cantidad = 1) => {
+    const item = {
+      id: combo.id,
+      nombre: combo.nombre,
+      precio: combo.precio,
+      cantidad: cantidad,
+      subtotal: cantidad * combo.precio,
+      esCombo: true,
+      productos: combo.productos // Guardar los productos del combo para referencia
+    };
+    setCarrito(prev => [...prev, item]);
+    setComboSeleccionado(null);
+    setMostrarModalCombos(false);
+  };
+
   const agregarAlCarrito = (producto, cantidad = 1) => {
     const item = {
       id: producto.id,
       nombre: producto.subcategoria || producto.nombre,
       precio: producto.precio,
       cantidad: cantidad,
-      subtotal: cantidad * producto.precio
+      subtotal: cantidad * producto.precio,
+      esCombo: false
     };
     setCarrito(prev => [...prev, item]);
   };
@@ -55,64 +103,53 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const registrarVentaFinal = async () => {
-  if (carrito.length === 0) {
-    alert("El carrito está vacío");
-    return;
-  }
-
-  const productosParaBackend = carrito.map(item => ({
-    producto_id: item.id,
-    cantidad: item.cantidad,
-    total: item.subtotal
-  }));
-
-  try {
-    const response = await axios.post(`${API_URL}/venta-carrito`, {
-      cajero_id: usuario.id,
-      productos: productosParaBackend
-    });
-
-    console.log("Respuesta exitosa:", response.data);
-    
-    // Guardar los productos ANTES de limpiar el carrito
-    const productosVendidos = [...carrito];
-    const totalVenta = response.data.total;
-    const idVenta = response.data.id_venta;
-    
-    // Limpiar carrito
-    setCarrito([]);
-    
-    // Mostrar modal con los datos
-    setVentaExitosa({
-      id: idVenta,
-      productos: productosVendidos,
-      total: totalVenta,
-      fecha: new Date().toLocaleString()
-    });
-    setMostrarModalExito(true);
-    
-    // Actualizar inventario SIN recargar la página
-    if (response.data.inventario && actualizarInventario) {
-      // Asegúrate de que actualizarInventario NO tenga window.location.reload()
-      await actualizarInventario(false); // false = no recargar
+    if (carrito.length === 0) {
+      alert("El carrito está vacío");
+      return;
     }
-    
-    // Actualizar trigger sin recargar
-    if (setRefreshTrigger) {
-      setRefreshTrigger(prev => prev + 1); // Usar +1 en lugar de !prev
+
+    const productosParaBackend = carrito.map(item => ({
+      producto_id: item.esCombo ? null : item.id,
+      combo_id: item.esCombo ? item.id : null,
+      cantidad: item.cantidad,
+      total: item.subtotal
+    }));
+
+    try {
+      const response = await axios.post(`${API_URL}/venta-carrito`, {
+        cajero_id: usuario.id,
+        productos: productosParaBackend
+      });
+
+      console.log("Respuesta exitosa:", response.data);
+      
+      setVentaExitosa({
+        id: response.data.id_venta,
+        productos: [...carrito],
+        total: response.data.total,
+        fecha: new Date().toLocaleString()
+      });
+      
+      setCarrito([]);
+      setMostrarModalExito(true);
+      
+      if (response.data.inventario && actualizarInventario) {
+        actualizarInventario(response.data.inventario);
+      }
+      if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
+      
+    } catch (error) {
+      console.error("Error al registrar venta del carrito:", error);
+      if (error.response) {
+        alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+      } else {
+        alert("Error al preparar la solicitud: " + error.message);
+      }
     }
-    
-  } catch (error) {
-    console.error("Error al registrar venta del carrito:", error);
-    if (error.response) {
-      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
-    } else if (error.request) {
-      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
-    } else {
-      alert("Error al preparar la solicitud: " + error.message);
-    }
-  }
-};
+  };
+
   const handleCerrarSesion = () => {
     setMostrarModalCierre(true);
   };
@@ -129,12 +166,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const cerrarModalExito = () => {
-  setMostrarModalExito(false);
-  // Pequeño delay para limpiar el estado después de cerrar el modal
-  setTimeout(() => {
+    setMostrarModalExito(false);
     setVentaExitosa(null);
-  }, 300);
-};
+  };
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -212,6 +246,40 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
+      {/* Modal de Combos */}
+      {mostrarModalCombos && (
+        <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
+          <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🍱 Combos Especiales</h2>
+              <button className="close-btn" onClick={() => setMostrarModalCombos(false)}>✕</button>
+            </div>
+            <div className="combos-grid">
+              {combos.length === 0 ? (
+                <p>No hay combos disponibles</p>
+              ) : (
+                combos.map((combo) => (
+                  <div key={combo.id} className="combo-card">
+                    <div className="combo-icono">🍱</div>
+                    <div className="combo-info">
+                      <h4>{combo.nombre}</h4>
+                      <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
+                      <p className="combo-precio">${combo.precio}</p>
+                    </div>
+                    <button
+                      className="agregar-combo-btn"
+                      onClick={() => agregarComboAlCarrito(combo)}
+                    >
+                      ➕ Agregar Combo
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Carrito de compras */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
@@ -222,7 +290,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             <div className="carrito-items">
               {carrito.map((item, idx) => (
                 <div key={idx} className="carrito-item">
-                  <span className="carrito-nombre">{item.nombre}</span>
+                  <span className="carrito-nombre">
+                    {item.esCombo && "🍱 "}{item.nombre}
+                  </span>
                   <span className="carrito-cantidad">x{item.cantidad}</span>
                   <span className="carrito-precio">${item.precio}</span>
                   <span className="carrito-subtotal">${item.subtotal}</span>
@@ -240,63 +310,63 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-     {/* Modal de venta exitosa */}
-{mostrarModalExito && ventaExitosa && (
-  <div className="modal-overlay" onClick={() => {}}>
-    <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header exito-header">
-        <FiCheckCircle className="exito-icono" />
-        <h2>¡Venta Exitosa!</h2>
-        <button className="close-btn" onClick={cerrarModalExito}>✕</button>
-      </div>
-      <div className="modal-body">
-        <div className="venta-info">
-          <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
-          <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
-          <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
+      {/* Modal de venta exitosa */}
+      {mostrarModalExito && ventaExitosa && (
+        <div className="modal-overlay" onClick={() => {}}>
+          <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header exito-header">
+              <FiCheckCircle className="exito-icono" />
+              <h2>¡Venta Exitosa!</h2>
+              <button className="close-btn" onClick={cerrarModalExito}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="venta-info">
+                <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
+                <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
+                <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
+              </div>
+              
+              <div className="detalle-venta">
+                <h3>Detalle de la compra</h3>
+                <table className="detalle-tabla">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventaExitosa.productos.map((item, idx) => (
+                      <tr key={idx}>
+                        <td>{item.esCombo && "🍱 "}{item.nombre}</td>
+                        <td>{item.cantidad}</td>
+                        <td>${item.precio}</td>
+                        <td>${item.subtotal}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="total-venta">
+                <span>Total Pagado:</span>
+                <strong>${ventaExitosa.total}</strong>
+              </div>
+              
+              <div className="mensaje-agradecimiento">
+                <p>🎉 ¡Gracias por tu compra!</p>
+                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
+              </div>
+              
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
+                Aceptar
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <div className="detalle-venta">
-          <h3>Detalle de la compra</h3>
-          <table className="detalle-tabla">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unit.</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ventaExitosa.productos.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{item.nombre}</td>
-                  <td>{item.cantidad}</td>
-                  <td>${item.precio}</td>
-                  <td>${item.subtotal}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        <div className="total-venta">
-          <span>Total Pagado:</span>
-          <strong>${ventaExitosa.total}</strong>
-        </div>
-        
-        <div className="mensaje-agradecimiento">
-          <p>🎉 ¡Gracias por tu compra!</p>
-          <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
-        </div>
-        
-        <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-          ✅ Aceptar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
