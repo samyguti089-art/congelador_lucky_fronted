@@ -470,3 +470,206 @@
   color: var(--marron-claro);
   padding: 30px;
 }
+/* ===== KPI VENTAS DIARIAS ===== */
+.daily-sales-kpi {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid var(--crema-oscuro);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.kpi-header h3 {
+  margin: 0;
+  color: var(--marron);
+  font-size: 1.1rem;
+}
+
+.fecha-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--crema);
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: var(--marron);
+  font-size: 0.85rem;
+}
+
+.kpi-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.kpi-card.total {
+  background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
+  color: white;
+}
+
+.kpi-card.total .kpi-icon svg {
+  color: white;
+}
+
+.kpi-card.transacciones {
+  background: linear-gradient(135deg, #5c3a21, #3b2a1f);
+  color: white;
+}
+
+.kpi-card.promedio {
+  background: linear-gradient(135deg, #c2410c, #9a3412);
+  color: white;
+}
+
+.kpi-icon svg {
+  font-size: 2rem;
+  opacity: 0.9;
+}
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Detalle de ventas del día */
+.detalle-ventas-dia {
+  margin-top: 20px;
+}
+
+.detalle-ventas-dia h4 {
+  color: var(--marron);
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.tabla-detalle-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--crema-oscuro);
+}
+
+.detalle-ventas-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.detalle-ventas-tabla th,
+.detalle-ventas-tabla td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+.detalle-ventas-tabla th {
+  background: var(--crema);
+  color: var(--marron);
+  font-weight: 600;
+}
+
+.detalle-ventas-tabla td {
+  color: var(--marron-claro);
+}
+
+.productos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.producto-item {
+  background: var(--crema);
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  color: var(--marron);
+}
+
+.total-cell {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.total-footer {
+  background: var(--crema);
+}
+
+.total-footer td {
+  border-bottom: none;
+  padding: 12px 8px;
+}
+
+.total-footer-value {
+  color: var(--rojo-marron);
+  font-size: 1rem;
+}
+
+.sin-ventas {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+  background: var(--crema);
+  border-radius: 12px;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 20px;
+  color: var(--marron-claro);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kpi-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .detalle-ventas-tabla {
+    font-size: 0.7rem;
+  }
+  
+  .detalle-ventas-tabla th,
+  .detalle-ventas-tabla td {
+    padding: 6px 4px;
+  }
+  
+  .producto-item {
+    font-size: 0.6rem;
+  }
+}
