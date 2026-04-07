@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiLogOut, FiCheckCircle } from "react-icons/fi";
+import { supabase } from "./supabaseClient";
 import "./POS.css";
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
