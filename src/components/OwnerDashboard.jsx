@@ -24,10 +24,13 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {/* Layout de dos columnas */}
       <div className="dashboard-two-columns">
-        {/* Columna izquierda: Gestión de Inventario - más compacto */}
+        {/* Columna izquierda: Gestión de Inventario + Top Productos */}
         <div className="column-left">
           <div className="dashboard-card inventory-card">
             <InventoryPanel />
+          </div>
+          <div className="dashboard-card top-products-card">
+            <TopProducts />
           </div>
         </div>
         
@@ -41,11 +44,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
             <RealtimeSales />
           </div>
         </div>
-      </div>
-      
-      {/* Productos Más Vendidos - ancho completo */}
-      <div className="dashboard-card top-products-full">
-        <TopProducts />
       </div>
     </div>
   );
