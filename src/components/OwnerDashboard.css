@@ -1090,3 +1090,39 @@
   width: 100%;
   box-sizing: border-box;
 }
+/* ===== INVENTARIO MÁS COMPACTO ===== */
+.inventory-card {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.inventory-panel h3 {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+}
+
+.add-product {
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.add-product input {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.add-product button {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 8px 6px;
+  font-size: 0.8rem;
+}
+
+.inventory-table button {
+  font-size: 0.9rem;
+  padding: 2px 6px;
+}
