@@ -9,7 +9,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [productosCategoria, setProductosCategoria] = useState([]);
   const [combos, setCombos] = useState([]);
-  const [comboSeleccionado, setComboSeleccionado] = useState(null);
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
   const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
@@ -45,7 +44,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     { id: "carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#c2410c" },
     { id: "pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#b91c1c" },
     { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#a16207" },
-    { id: "combos", nombre: "Combo", icono: "🍱", color: "#6b21a5" }
+    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
   ];
 
   // Filtrar productos por categoría
@@ -64,11 +63,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
-  // Seleccionar combo
-  const seleccionarCombo = (combo) => {
-    setComboSeleccionado(combo);
-  };
-
   // Agregar combo al carrito
   const agregarComboAlCarrito = (combo, cantidad = 1) => {
     const item = {
@@ -77,11 +71,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       precio: combo.precio,
       cantidad: cantidad,
       subtotal: cantidad * combo.precio,
-      esCombo: true,
-      productos: combo.productos // Guardar los productos del combo para referencia
+      esCombo: true
     };
     setCarrito(prev => [...prev, item]);
-    setComboSeleccionado(null);
     setMostrarModalCombos(false);
   };
 
@@ -116,6 +108,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       total: item.subtotal
     }));
 
+    // Guardar copia del carrito antes de limpiar
+    const carritoCopy = [...carrito];
+    const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
+
     try {
       const response = await axios.post(`${API_URL}/venta-carrito`, {
         cajero_id: usuario.id,
@@ -124,20 +120,39 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       console.log("Respuesta exitosa:", response.data);
       
+      // Preparar productos para mostrar en el modal
+      const productosMostrados = carritoCopy.map(item => ({
+        nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
+        cantidad: item.cantidad,
+        precio: item.precio,
+        subtotal: item.subtotal,
+        esCombo: item.esCombo
+      }));
+      
+      // Mostrar modal PRIMERO
       setVentaExitosa({
         id: response.data.id_venta,
-        productos: [...carrito],
-        total: response.data.total,
-        fecha: new Date().toLocaleString()
+        productos: productosMostrados,
+        total: totalVenta,
+        fecha: new Date().toLocaleString(),
+        cajero: usuario.nombre
       });
-      
-      setCarrito([]);
       setMostrarModalExito(true);
       
+      // Limpiar carrito DESPUÉS de mostrar el modal
+      setCarrito([]);
+      
+      // Actualizar inventario sin esperar
       if (response.data.inventario && actualizarInventario) {
-        actualizarInventario(response.data.inventario);
+        actualizarInventario(false);
       }
-      if (setRefreshTrigger) setRefreshTrigger(prev => !prev);
+      
+      // Actualizar trigger sin causar re-render inmediato
+      if (setRefreshTrigger) {
+        setTimeout(() => {
+          setRefreshTrigger(prev => prev + 1);
+        }, 100);
+      }
       
     } catch (error) {
       console.error("Error al registrar venta del carrito:", error);
@@ -168,7 +183,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const cerrarModalExito = () => {
     setMostrarModalExito(false);
-    setVentaExitosa(null);
+    setTimeout(() => {
+      setVentaExitosa(null);
+    }, 300);
   };
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
@@ -302,7 +319,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               ))}
             </div>
             <div className="carrito-total">
-              <strong>Total: ${totalCarrito}</strong>
+              <strong>Total: ${totalCarrito.toLocaleString()}</strong>
               <button className="registrar-btn" onClick={registrarVentaFinal}>
                 Registrar Venta
               </button>
@@ -324,7 +341,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <div className="venta-info">
                 <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
                 <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
-                <p><strong>👤 Cajero:</strong> {usuario.nombre}</p>
+                <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
               </div>
               
               <div className="detalle-venta">
@@ -340,20 +357,23 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   </thead>
                   <tbody>
                     {ventaExitosa.productos.map((item, idx) => (
-                      <tr key={idx}>
-                        <td>{item.esCombo && "🍱 "}{item.nombre}</td>
+                      <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
+                        <td className={item.esCombo ? "combo-producto" : ""}>
+                          {item.nombre}
+                        </td>
                         <td>{item.cantidad}</td>
-                        <td>${item.precio}</td>
-                        <td>${item.subtotal}</td>
+                        <td>${item.precio?.toLocaleString() || 0}</td>
+                        <td className="subtotal-cell">${item.subtotal?.toLocaleString() || 0}</td>
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="total-row">
+                      <td colSpan="3"><strong>Total</strong></td>
+                      <td className="total-cell">${ventaExitosa.total?.toLocaleString() || 0}</td>
+                    </tr>
+                  </tfoot>
                 </table>
-              </div>
-              
-              <div className="total-venta">
-                <span>Total Pagado:</span>
-                <strong>${ventaExitosa.total}</strong>
               </div>
               
               <div className="mensaje-agradecimiento">
