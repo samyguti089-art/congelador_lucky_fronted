@@ -42,7 +42,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
-  margin-bottom: 25px;
+  margin-bottom: 0;
 }
 
 .column-left,
@@ -51,7 +51,17 @@
   flex-direction: column;
   gap: 25px;
 }
-
+/* Tarjeta de Top Productos en columna izquierda */
+.top-products-card {
+  overflow: hidden;
+}
+/* Ajustes responsivos */
+@media (max-width: 1024px) {
+  .dashboard-two-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
 /* Cuadrícula responsiva: cada tarjeta ocupa mínimo 400px y se expande */
 .dashboard-grid {
   display: grid;
