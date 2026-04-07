@@ -1136,3 +1136,119 @@
   font-size: 0.9rem;
   padding: 2px 6px;
 }
+/* ===== TOP PRODUCTOS CARD ===== */
+.top-products-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.top-products-card h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: #5c3a21;
+  border-left: 4px solid #9b2c2c;
+  padding-left: 12px;
+}
+
+.top-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.top-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #faf7f2;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.top-product-item:hover {
+  transform: translateX(5px);
+  background: #e6d5c3;
+}
+
+.top-product-rank {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.top-product-info {
+  flex: 1;
+}
+
+.top-product-name {
+  font-weight: bold;
+  color: #5c3a21;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.top-product-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 0.7rem;
+}
+
+.top-product-units {
+  color: #166534;
+  background: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.top-product-revenue {
+  color: #9b2c2c;
+  font-weight: bold;
+}
+
+.top-product-percentage {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.percentage-bar {
+  flex: 1;
+  height: 8px;
+  background: #e6d5c3;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.percentage-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #9b2c2c, #c2410c);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.percentage-value {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #5c3a21;
+  min-width: 35px;
+}
+
+.loading-products,
+.sin-productos {
+  text-align: center;
+  padding: 30px;
+  color: #8b5e3c;
+  background: #faf7f2;
+  border-radius: 12px;
+}
