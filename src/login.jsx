@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaStore } from "react-icons/fa";
+import { FiLogIn } from "react-icons/fi";
+import "./Login.css";
 
 function Login({ setUsuario }) {
   const [nombre, setNombre] = useState("");
@@ -8,43 +10,15 @@ function Login({ setUsuario }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Forzar estilos al montar el componente
   useEffect(() => {
-    // Guardar estilos originales
-    const originalBodyBg = document.body.style.background;
-    const originalBodyMargin = document.body.style.margin;
-    const originalRootStyle = document.getElementById("root")?.getAttribute("style");
-    // Aplicar estilos nuevos
-    document.body.style.background = "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)";
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    
-    const root = document.getElementById("root");
-    if (root) {
-      root.style.width = "100%";
-      root.style.maxWidth = "none";
-      root.style.border = "none";
-      root.style.background = "transparent";
-      root.style.display = "flex";
-      root.style.alignItems = "center";
-      root.style.justifyContent = "center";
-      root.style.minHeight = "100vh";
-      root.style.margin = "0";
-      root.style.padding = "0";
-    }
-
-    // Limpiar al desmontar (cuando se inicia sesión)
+    document.body.classList.add("login-active");
     return () => {
-      document.body.style.background = originalBodyBg;
-      document.body.style.margin = originalBodyMargin;
-      if (root && originalRootStyle !== null) {
-        root.setAttribute("style", originalRootStyle);
-      } else if (root) {
-        root.removeAttribute("style");
-      }
+      document.body.classList.remove("login-active");
     };
   }, []);
 
@@ -63,7 +37,7 @@ function Login({ setUsuario }) {
       });
       setUsuario(res.data);
     } catch (err) {
-      setError("Credenciales inválidas");
+      setError("Credenciales inválidas. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -71,10 +45,14 @@ function Login({ setUsuario }) {
 
   return (
     <div className="login-modern-container">
+      <div className="login-background-overlay"></div>
       <div className="login-modern-card">
-        <div className="login-modern-header">
-          <h1>🥟 Congelados Lucky</h1>
-          <p>Ingresa tus credenciales</p>
+        <div className="login-logo-section">
+          <div className="logo-icon">
+            <FaStore />
+          </div>
+          <h1>Congelador Lucky</h1>
+          <p>Sistema de Punto de Venta</p>
         </div>
 
         <form onSubmit={handleLogin}>
@@ -109,15 +87,34 @@ function Login({ setUsuario }) {
             </button>
           </div>
 
+          <div className="login-options">
+            <label className="remember-checkbox">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span>Recordarme</span>
+            </label>
+            <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
+          </div>
+
           {error && <div className="login-error-modern">{error}</div>}
 
           <button type="submit" className="login-button-modern" disabled={loading}>
-            {loading ? <span className="spinner-modern"></span> : "Iniciar Sesión"}
+            {loading ? (
+              <span className="spinner-modern"></span>
+            ) : (
+              <>
+                <FiLogIn className="button-icon" />
+                Iniciar Sesión
+              </>
+            )}
           </button>
         </form>
 
         <div className="login-footer-modern">
-          <a href="#">¿Olvidaste tu contraseña?</a>
+          <p>© 2024 Congelador Lucky - Todos los derechos reservados</p>
         </div>
       </div>
     </div>
