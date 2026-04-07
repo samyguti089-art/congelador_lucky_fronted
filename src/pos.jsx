@@ -44,7 +44,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     { id: "carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#c2410c" },
     { id: "pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#b91c1c" },
     { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#a16207" },
-    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
+    { id: "combos", nombre: "Combo", icono: "🍱", color: "#6b21a5" }
   ];
 
   // Filtrar productos por categoría
