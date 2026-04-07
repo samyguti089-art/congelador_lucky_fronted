@@ -707,3 +707,184 @@
     font-size: 0.6rem;
   }
 }
+/* ===== REPORTES DE VENTAS MEJORADOS ===== */
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.reports-header h3 {
+  margin: 0;
+  color: var(--marron);
+}
+
+.reports-stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat-badge {
+  background: var(--crema);
+  padding: 8px 15px;
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-badge span {
+  font-size: 0.65rem;
+  color: var(--marron-claro);
+  text-transform: uppercase;
+}
+
+.stat-badge strong {
+  font-size: 0.9rem;
+  color: var(--rojo-marron);
+  font-weight: bold;
+}
+
+/* Selector de tipo de gráfico */
+.chart-type-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.chart-type-selector button {
+  background: var(--crema);
+  border: 1px solid var(--crema-oscuro);
+  padding: 8px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--marron);
+  transition: all 0.3s;
+}
+
+.chart-type-selector button:hover {
+  background: var(--crema-oscuro);
+}
+
+.chart-type-selector button.active {
+  background: var(--rojo-marron);
+  color: white;
+  border-color: var(--rojo-marron);
+}
+
+/* Filtros de fecha */
+.date-range {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.date-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.7rem;
+  color: var(--marron);
+  gap: 4px;
+}
+
+.date-inputs input {
+  padding: 8px 12px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  background: white;
+  color: var(--marron);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-btn, .reset-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+}
+
+.filter-btn {
+  background: var(--rojo-marron);
+  color: white;
+}
+
+.filter-btn:hover {
+  background: var(--rojo-marron-oscuro);
+}
+
+.reset-btn {
+  background: var(--crema-oscuro);
+  color: var(--marron);
+}
+
+.reset-btn:hover {
+  background: var(--crema);
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-left: 3px solid var(--rojo-marron);
+}
+
+.tooltip-label {
+  margin: 0 0 5px 0;
+  font-size: 0.8rem;
+  color: var(--marron);
+  font-weight: bold;
+}
+
+.tooltip-value {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--rojo-marron);
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .date-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .date-inputs {
+    flex-direction: column;
+  }
+  
+  .chart-type-selector {
+    flex-wrap: wrap;
+  }
+  
+  .stat-badge strong {
+    font-size: 0.75rem;
+  }
+}
