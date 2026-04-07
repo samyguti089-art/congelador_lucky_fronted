@@ -51,7 +51,7 @@ function Login({ setUsuario }) {
           <div className="logo-icon">
             <FaStore />
           </div>
-          <h1>Congelador Lucky</h1>
+          <h1>Congelados Lucky</h1>
           <p>Sistema de Punto de Venta</p>
         </div>
 
@@ -114,7 +114,7 @@ function Login({ setUsuario }) {
         </form>
 
         <div className="login-footer-modern">
-          <p>© 2024 Congelador Lucky - Todos los derechos reservados</p>
+          <p>© 2024 Congelados Lucky - Todos los derechos reservados</p>
         </div>
       </div>
     </div>
