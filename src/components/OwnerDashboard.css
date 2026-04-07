@@ -921,9 +921,10 @@
   color: #166534;
 }
 
-.connection-status.conectando... {
+.connection-status.conectando {
   background: #fef3c7;
   color: #92400e;
+
 }
 
 .connection-status.sin_datos {
