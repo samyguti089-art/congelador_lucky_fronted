@@ -864,4 +864,29 @@
     padding: 15px;
   }
 }
+/* Estilos para combos en el modal de éxito */
+.combo-row {
+  background: linear-gradient(90deg, #faf7f2, #fff);
+}
+
+.combo-producto {
+  font-weight: 600;
+  color: #6b21a5;
+}
+
+.subtotal-cell {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.total-row {
+  background: #faf7f2;
+  font-weight: bold;
+}
+
+.total-cell {
+  color: #9b2c2c;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
 
