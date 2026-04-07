@@ -37,12 +37,13 @@
   background: #b91c1c;
 }
 
-/* ===== LAYOUT DE DOS COLUMNAS ===== */
+/* ===== LAYOUT DE DOS COLUMNAS - AJUSTE DE ALTURAS ===== */
 .dashboard-two-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
   margin-bottom: 0;
+  align-items: stretch;
 }
 
 .column-left,
@@ -51,15 +52,41 @@
   flex-direction: column;
   gap: 25px;
 }
-/* Tarjeta de Top Productos en columna izquierda */
+
+/* Tarjeta de inventario - altura flexible */
+.inventory-card {
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Tarjeta de Top Productos - que crezca para ocupar el espacio */
 .top-products-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
+
+.top-products-list {
+  flex: 1;
+  max-height: none;
+  overflow-y: auto;
+}
+
+/* Tarjeta de ventas en tiempo real - altura fija pero flexible */
+.realtime-card {
+  flex-shrink: 0;
+}
+
 /* Ajustes responsivos */
 @media (max-width: 1024px) {
   .dashboard-two-columns {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+  
+  .top-products-card {
+    flex: none;
   }
 }
 /* Cuadrícula responsiva: cada tarjeta ocupa mínimo 400px y se expande */
