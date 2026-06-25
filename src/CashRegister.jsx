@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from './supabaseClient';
 import { FaMoneyBillWave, FaBoxes, FaCheckCircle, FaExclamationTriangle, FaSave } from 'react-icons/fa';
 import './CashRegister.css';
 
