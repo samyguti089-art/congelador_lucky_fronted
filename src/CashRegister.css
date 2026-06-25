@@ -1,0 +1,262 @@
+.cash-register-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.cash-register-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e6d5c3;
+}
+
+.cash-register-header h2 {
+  margin: 0;
+  color: #5c3a21;
+}
+
+.fecha-badge {
+  background: #faf7f2;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: #5c3a21;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #5c3a21;
+}
+
+.ventas-resumen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.resumen-item {
+  background: #faf7f2;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.resumen-item .label {
+  display: block;
+  font-size: 0.75rem;
+  color: #8b5e3c;
+  text-transform: uppercase;
+}
+
+.resumen-item .value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #5c3a21;
+}
+
+.cuadre-section {
+  background: #faf7f2;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.cuadre-section h3 {
+  margin: 0 0 15px 0;
+  color: #5c3a21;
+}
+
+.cuadre-input-group {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.cuadre-input-group label {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #5c3a21;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cuadre-input-group input {
+  padding: 10px;
+  border: 1px solid #e6d5c3;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.btn-calcular {
+  background: #9b2c2c;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  height: 42px;
+}
+
+.btn-calcular:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diferencia-resultado {
+  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.diferencia-resultado.exacto {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.diferencia-resultado.sobrante {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.diferencia-resultado.faltante {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.inventario-section {
+  margin-bottom: 20px;
+}
+
+.inventario-section h3 {
+  margin: 0 0 5px 0;
+  color: #5c3a21;
+}
+
+.instruccion {
+  font-size: 0.8rem;
+  color: #8b5e3c;
+  margin-bottom: 10px;
+}
+
+.conteo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.conteo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #faf7f2;
+  border-radius: 8px;
+}
+
+.conteo-item .producto-nombre {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #5c3a21;
+}
+
+.conteo-item .producto-sistema {
+  font-size: 0.7rem;
+  color: #8b5e3c;
+}
+
+.conteo-item input {
+  width: 70px;
+  padding: 6px;
+  border: 1px solid #e6d5c3;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.observaciones-section {
+  margin-bottom: 20px;
+}
+
+.observaciones-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: #5c3a21;
+}
+
+.observaciones-section textarea {
+  padding: 10px;
+  border: 1px solid #e6d5c3;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.cash-register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e6d5c3;
+}
+
+.btn-guardar {
+  background: #9b2c2c;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background: #7c1e1e;
+}
+
+.cash-register-loading {
+  text-align: center;
+  padding: 40px;
+  color: #8b5e3c;
+}
+
+@media (max-width: 640px) {
+  .ventas-resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .cuadre-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .conteo-grid {
+    grid-template-columns: 1fr;
+  }
+}
