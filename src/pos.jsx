@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiLogOut, FiCheckCircle } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
+import CashRegister from './CashRegister';
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
@@ -199,19 +200,21 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           <h1>🥟 Congelados Lucky</h1>
           <span className="pos-badge">Punto de Venta</span>
         </div>
-        <div className="user-area">
-          <div className="user-details">
-            <span className="user-icon">👤</span>
-            <div className="user-text">
-              <span className="user-name">{usuario.nombre}</span>
-              <span className="user-role">Cajero</span>
-            </div>
-          </div>
-          <button onClick={handleCerrarSesion} className="logout-btn">
-            <FiLogOut className="logout-icon" /> Salir
-          </button>
-        </div>
-      </div>
+       <div className="user-area">
+  <div className="user-details">
+    <span className="user-icon">👤</span>
+    <div className="user-text">
+      <span className="user-name">{usuario.nombre}</span>
+      <span className="user-role">Cajero</span>
+    </div>
+  </div>
+  <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+    💰 Cuadre
+  </button>
+  <button onClick={handleCerrarSesion} className="logout-btn">
+    <FiLogOut className="logout-icon" /> Salir
+  </button>
+</div>
       
       {/* Mensaje de inventario */}
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
@@ -389,6 +392,18 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
+        {/* Modal de Cuadre de Caja */}
+        {mostrarCuadre && (
+          <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <CashRegister 
+                usuario={usuario} 
+                inventario={inventario}
+                onClose={() => setMostrarCuadre(false)}
+              />
+            </div>
+          </div>
+        )}
      
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
