@@ -15,6 +15,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
   const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
+  const [mostrarCuadre, setMostrarCuadre] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -53,8 +54,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       setMostrarModalCombos(true);
       return;
     }
-    const [mostrarCuadre, setMostrarCuadre] = useState(false);
-    
     const productos = inventario.filter(item => 
       item.categoria?.toLowerCase() === categoriaId.toLowerCase() ||
       item.subcategoria?.toLowerCase().includes(categoriaId.toLowerCase())
