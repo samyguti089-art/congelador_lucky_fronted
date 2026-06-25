@@ -53,6 +53,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       setMostrarModalCombos(true);
       return;
     }
+    const [mostrarCuadre, setMostrarCuadre] = useState(false);
     
     const productos = inventario.filter(item => 
       item.categoria?.toLowerCase() === categoriaId.toLowerCase() ||
@@ -212,6 +213,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </button>
         </div>
       </div>
+      
       // En POS.jsx, en el header
 <div className="user-area">
   <div className="user-details">
@@ -405,7 +407,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
-      const [mostrarCuadre, setMostrarCuadre] = useState(false);
+     
 
 // En el return, antes del modal de cierre:
 {mostrarCuadre && (
