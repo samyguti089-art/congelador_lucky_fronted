@@ -214,23 +214,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       </div>
       
-      // En POS.jsx, en el header
-<div className="user-area">
-  <div className="user-details">
-    <span className="user-icon">👤</span>
-    <div className="user-text">
-      <span className="user-name">{usuario.nombre}</span>
-      <span className="user-role">Cajero</span>
-    </div>
-  </div>
-  <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-    💰 Cuadre
-  </button>
-  <button onClick={handleCerrarSesion} className="logout-btn">
-    <FiLogOut className="logout-icon" /> Salir
-  </button>
-</div>
-
       {/* Mensaje de inventario */}
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
