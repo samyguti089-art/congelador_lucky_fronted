@@ -62,6 +62,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCategoriaSeleccionada(categoriaId);
     setMostrarModalProductos(true);
   };
+  
 
   // Agregar combo al carrito
   const agregarComboAlCarrito = (combo, cantidad = 1) => {
@@ -211,6 +212,22 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </button>
         </div>
       </div>
+      // En POS.jsx, en el header
+<div className="user-area">
+  <div className="user-details">
+    <span className="user-icon">👤</span>
+    <div className="user-text">
+      <span className="user-name">{usuario.nombre}</span>
+      <span className="user-role">Cajero</span>
+    </div>
+  </div>
+  <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+    💰 Cuadre
+  </button>
+  <button onClick={handleCerrarSesion} className="logout-btn">
+    <FiLogOut className="logout-icon" /> Salir
+  </button>
+</div>
 
       {/* Mensaje de inventario */}
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
@@ -388,6 +405,20 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
+      const [mostrarCuadre, setMostrarCuadre] = useState(false);
+
+// En el return, antes del modal de cierre:
+{mostrarCuadre && (
+  <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <CashRegister 
+        usuario={usuario} 
+        inventario={inventario}
+        onClose={() => setMostrarCuadre(false)}
+      />
+    </div>
+  </div>
+)}
 
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
