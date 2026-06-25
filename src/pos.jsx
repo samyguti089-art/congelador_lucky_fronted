@@ -391,20 +391,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
      
-
-// En el return, antes del modal de cierre:
-{mostrarCuadre && (
-  <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <CashRegister 
-        usuario={usuario} 
-        inventario={inventario}
-        onClose={() => setMostrarCuadre(false)}
-      />
-    </div>
-  </div>
-)}
-
       {/* Modal de confirmación de cierre de sesión */}
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
