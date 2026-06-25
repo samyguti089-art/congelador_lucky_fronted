@@ -20,16 +20,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Cargar combos desde Supabase
   useEffect(() => {
     fetchCombos();
   }, []);
 
   const fetchCombos = async () => {
     try {
-      const { data, error } = await supabase
-        .from("combos")
-        .select("*");
+      const { data, error } = await supabase.from("combos").select("*");
       if (error) throw error;
       setCombos(data || []);
     } catch (err) {
@@ -37,7 +34,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // Definir categorías con íconos y nombres
   const categorias = [
     { id: "deditos", nombre: "Deditos", icono: "🍢", color: "#d97706" },
     { id: "empanadas", nombre: "Empanadas", icono: "🥟", color: "#b45309" },
@@ -49,13 +45,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
   ];
 
-  // Filtrar productos por categoría
   const abrirCategoria = (categoriaId) => {
     if (categoriaId === "combos") {
       setMostrarModalCombos(true);
       return;
     }
-    const productos = inventario.filter(item => 
+    const productos = inventario.filter(item =>
       item.categoria?.toLowerCase() === categoriaId.toLowerCase() ||
       item.subcategoria?.toLowerCase().includes(categoriaId.toLowerCase())
     );
@@ -63,9 +58,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCategoriaSeleccionada(categoriaId);
     setMostrarModalProductos(true);
   };
-  
 
-  // Agregar combo al carrito
   const agregarComboAlCarrito = (combo, cantidad = 1) => {
     const item = {
       id: combo.id,
@@ -110,7 +103,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       total: item.subtotal
     }));
 
-    // Guardar copia del carrito antes de limpiar
     const carritoCopy = [...carrito];
     const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -121,8 +113,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       });
 
       console.log("Respuesta exitosa:", response.data);
-      
-      // Preparar productos para mostrar en el modal
+
       const productosMostrados = carritoCopy.map(item => ({
         nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
         cantidad: item.cantidad,
@@ -130,8 +121,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         subtotal: item.subtotal,
         esCombo: item.esCombo
       }));
-      
-      // Mostrar modal PRIMERO
+
       setVentaExitosa({
         id: response.data.id_venta,
         productos: productosMostrados,
@@ -140,22 +130,19 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         cajero: usuario.nombre
       });
       setMostrarModalExito(true);
-      
-      // Limpiar carrito DESPUÉS de mostrar el modal
+
       setCarrito([]);
-      
-      // Actualizar inventario sin esperar
+
       if (response.data.inventario && actualizarInventario) {
         actualizarInventario(false);
       }
-      
-      // Actualizar trigger sin causar re-render inmediato
+
       if (setRefreshTrigger) {
         setTimeout(() => {
           setRefreshTrigger(prev => prev + 1);
         }, 100);
       }
-      
+
     } catch (error) {
       console.error("Error al registrar venta del carrito:", error);
       if (error.response) {
@@ -194,32 +181,30 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   return (
     <div className="pos-container">
-      {/* Header */}
       <div className="pos-header">
         <div className="logo-area">
           <h1>🥟 Congelados Lucky</h1>
           <span className="pos-badge">Punto de Venta</span>
         </div>
-       <div className="user-area">
-  <div className="user-details">
-    <span className="user-icon">👤</span>
-    <div className="user-text">
-      <span className="user-name">{usuario.nombre}</span>
-      <span className="user-role">Cajero</span>
-    </div>
-  </div>
-  <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-    💰 Cuadre
-  </button>
-  <button onClick={handleCerrarSesion} className="logout-btn">
-    <FiLogOut className="logout-icon" /> Salir
-  </button>
-</div>
-      
-      {/* Mensaje de inventario */}
+        <div className="user-area">
+          <div className="user-details">
+            <span className="user-icon">👤</span>
+            <div className="user-text">
+              <span className="user-name">{usuario.nombre}</span>
+              <span className="user-role">Cajero</span>
+            </div>
+          </div>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+            💰 Cuadre
+          </button>
+          <button onClick={handleCerrarSesion} className="logout-btn">
+            <FiLogOut className="logout-icon" /> Salir
+          </button>
+        </div>
+      </div>
+
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* Grid de categorías */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -234,7 +219,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         ))}
       </div>
 
-      {/* Modal de productos por categoría */}
       {mostrarModalProductos && (
         <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -268,7 +252,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Modal de Combos */}
       {mostrarModalCombos && (
         <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
           <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
@@ -302,7 +285,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Carrito de compras */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -332,7 +314,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* Modal de venta exitosa */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay" onClick={() => {}}>
           <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
@@ -347,7 +328,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
                 <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
               </div>
-              
               <div className="detalle-venta">
                 <h3>Detalle de la compra</h3>
                 <table className="detalle-tabla">
@@ -379,12 +359,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   </tfoot>
                 </table>
               </div>
-              
               <div className="mensaje-agradecimiento">
                 <p>🎉 ¡Gracias por tu compra!</p>
                 <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
               </div>
-              
               <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
                 Aceptar
               </button>
@@ -392,20 +370,19 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
-        {/* Modal de Cuadre de Caja */}
-        {mostrarCuadre && (
-          <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <CashRegister 
-                usuario={usuario} 
-                inventario={inventario}
-                onClose={() => setMostrarCuadre(false)}
-              />
-            </div>
+
+      {mostrarCuadre && (
+        <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <CashRegister
+              usuario={usuario}
+              inventario={inventario}
+              onClose={() => setMostrarCuadre(false)}
+            />
           </div>
-        )}
-     
-      {/* Modal de confirmación de cierre de sesión */}
+        </div>
+      )}
+
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
           <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
