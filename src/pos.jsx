@@ -37,13 +37,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const categorias = [
     { id: "deditos", nombre: "Deditos", icono: "🍢", color: "#d97706" },
     { id: "empanadas", nombre: "Empanadas", icono: "🥟", color: "#b45309" },
-    { id: "medallones", nombre: "Medallones", icono: "🍔", color: "#9b2c2c" },
-    { id: "bolitas", nombre: "Bolitas", icono: "🫘", color: "#854d0e" },
-    { id: "carimañolas", nombre: "Mini Carimañolas", icono: "🥟", color: "#c2410c" },
-    { id: "pizzas", nombre: "Mini Pizzas", icono: "🍕", color: "#b91c1c" },
-    { id: "hayacas", nombre: "Mini Hayacas", icono: "🌽", color: "#a16207" },
-    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" },
-    { id: "otros", nombre: "Otros", icono: "📦", color: "#4b5563" }
+    {id: "otros", nombre: "Otros", icono: "📦", color: "#4b5563" },
+    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
   ];
 
   const abrirCategoria = (categoriaId) => {
