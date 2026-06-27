@@ -10,6 +10,8 @@ import deditosImg from "./components/images/portada 2 deditos.jpg";
 import empanadasImg from "./components/images/empanadas portada.jpg";
 import otrosImg from "./components/images/portada de otros.jpg";
 import combosImg from "./components/images/imagen de portada de combos.jpg";
+import logoImg from "./components/images/logo.jpeg";
+
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
@@ -206,9 +208,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     <div className="pos-container">
       <div className="pos-header">
         <div className="logo-area">
-  <img src="./components/images/logo.jpeg" alt="Congelados Lucky" className="logo-img" />
-  <span className="pos-badge">Punto de Venta</span>
-</div>
+          <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
+          <span className="pos-badge">Punto de Venta</span>
+        </div>
         <div className="user-area">
           <div className="user-details">
             <span className="user-icon">👤</span>
