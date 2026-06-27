@@ -427,5 +427,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       </div>
     )}
-  </div>
-);
+      </div>
+  );
+}
+
+export default POS;
