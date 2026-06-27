@@ -5,6 +5,12 @@ import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
 
+// Importar imágenes de categorías (deben estar en src/components/images/)
+import deditosImg from "./images/portada 2 deditos.jpg";
+import empanadasImg from "./images/empanadas portada.jpg";
+import otrosImg from "./images/portada de otros.jpg";
+import combosImg from "./images/imagen de portada de combos.jpg";
+
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
@@ -34,27 +40,47 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
+  // Categorías con imágenes (reemplazando íconos)
   const categorias = [
-    { id: "deditos", nombre: "Deditos", icono: "🍢", color: "#d97706" },
-    { id: "empanadas", nombre: "Empanadas", icono: "🥟", color: "#b45309" },
-    {id: "otros", nombre: "Otros", icono: "📦", color: "#4b5563" },
-    { id: "combos", nombre: "Combos", icono: "🍱", color: "#6b21a5" }
+    {
+      id: "deditos",
+      nombre: "Deditos",
+      imagen: deditosImg,
+      color: "#d97706"
+    },
+    {
+      id: "empanadas",
+      nombre: "Empanadas",
+      imagen: empanadasImg,
+      color: "#b45309"
+    },
+    {
+      id: "otros",
+      nombre: "Otros",
+      imagen: otrosImg,
+      color: "#4b5563"
+    },
+    {
+      id: "combos",
+      nombre: "Combos",
+      imagen: combosImg,
+      color: "#6b21a5"
+    }
   ];
 
   const abrirCategoria = (categoriaId) => {
-  if (categoriaId === "combos") {
-    setMostrarModalCombos(true);
-    return;
-  }
-  // Para 'otros', usamos el nombre exacto de la categoría en la BD
-  const nombreCategoria = categoriaId === "otros" ? "Otros" : categoriaId;
-  const productos = inventario.filter(item => 
-    item.categoria?.toLowerCase() === nombreCategoria.toLowerCase()
-  );
-  setProductosCategoria(productos);
-  setCategoriaSeleccionada(categoriaId);
-  setMostrarModalProductos(true);
-};
+    if (categoriaId === "combos") {
+      setMostrarModalCombos(true);
+      return;
+    }
+    const nombreCategoria = categoriaId === "otros" ? "Otros" : categoriaId;
+    const productos = inventario.filter(item =>
+      item.categoria?.toLowerCase() === nombreCategoria.toLowerCase()
+    );
+    setProductosCategoria(productos);
+    setCategoriaSeleccionada(categoriaId);
+    setMostrarModalProductos(true);
+  };
 
   const agregarComboAlCarrito = (combo, cantidad = 1) => {
     const item = {
@@ -177,252 +203,257 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-  <div className="pos-container">
-    <div className="pos-header">
-      <div className="logo-area">
-        <h1>🥟 Congelados Lucky</h1>
-        <span className="pos-badge">Punto de Venta</span>
+    <div className="pos-container">
+      <div className="pos-header">
+        <div className="logo-area">
+          <h1>🥟 Congelados Lucky</h1>
+          <span className="pos-badge">Punto de Venta</span>
+        </div>
+        <div className="user-area">
+          <div className="user-details">
+            <span className="user-icon">👤</span>
+            <div className="user-text">
+              <span className="user-name">{usuario.nombre}</span>
+              <span className="user-role">Cajero</span>
+            </div>
+          </div>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+            💰 Cuadre
+          </button>
+          <button onClick={handleCerrarSesion} className="logout-btn">
+            <FiLogOut className="logout-icon" /> Salir
+          </button>
+        </div>
       </div>
-      <div className="user-area">
-        <div className="user-details">
-          <span className="user-icon">👤</span>
-          <div className="user-text">
-            <span className="user-name">{usuario.nombre}</span>
-            <span className="user-role">Cajero</span>
+
+      {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
+
+      {/* Grid de categorías con imágenes de fondo */}
+      <div className="categorias-grid">
+        {categorias.map((cat) => (
+          <button
+            key={cat.id}
+            className="categoria-card"
+            data-categoria={cat.id}
+            onClick={() => abrirCategoria(cat.id)}
+            style={{
+              backgroundImage: `url(${cat.imagen})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundColor: cat.color,
+            }}
+          >
+            <div className="categoria-overlay"></div>
+            <span className="categoria-nombre">{cat.nombre}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Modal de productos con imágenes */}
+      {mostrarModalProductos && (
+        <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{categorias.find(c => c.id === categoriaSeleccionada)?.nombre}</h2>
+              <button className="close-btn" onClick={() => setMostrarModalProductos(false)}>✕</button>
+            </div>
+            <div className="productos-grid">
+              {productosCategoria.length === 0 ? (
+                <p>No hay productos en esta categoría</p>
+              ) : (
+                productosCategoria.map((producto) => (
+                  <div key={producto.id} className="producto-card">
+                    <div className="producto-imagen">
+                      {producto.imagen_url ? (
+                        <img src={producto.imagen_url} alt={producto.subcategoria || producto.nombre} />
+                      ) : (
+                        <div className="producto-sin-imagen">📷</div>
+                      )}
+                    </div>
+                    <div className="producto-info">
+                      <h4>{producto.subcategoria || producto.nombre}</h4>
+                      <p className="producto-precio">${producto.precio.toLocaleString('es-CO')}</p>
+                      <p className="producto-stock">Stock: {producto.cantidad}</p>
+                    </div>
+                    <button
+                      className="agregar-btn"
+                      onClick={() => agregarAlCarrito(producto)}
+                      disabled={producto.cantidad <= 0}
+                    >
+                      ➕ Agregar
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
-        <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-          💰 Cuadre
-        </button>
-        <button onClick={handleCerrarSesion} className="logout-btn">
-          <FiLogOut className="logout-icon" /> Salir
-        </button>
-      </div>
-    </div>
+      )}
 
-    {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
-
-    {/* Grid de categorías con "Otros" incluido */}
-    <div className="categorias-grid">
-      {categorias.map((cat) => (
-        <button
-          key={cat.id}
-          className="categoria-card"
-          data-categoria={cat.id}
-          onClick={() => abrirCategoria(cat.id)}
-        >
-          <span className="categoria-icono">{cat.icono}</span>
-          <span className="categoria-nombre">{cat.nombre}</span>
-        </button>
-      ))}
-    </div>
-
-    {/* Modal de productos con imágenes */}
-    {mostrarModalProductos && (
-      <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>{categorias.find(c => c.id === categoriaSeleccionada)?.nombre}</h2>
-            <button className="close-btn" onClick={() => setMostrarModalProductos(false)}>✕</button>
+      {/* Modal de Combos */}
+      {mostrarModalCombos && (
+        <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
+          <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🍱 Combos Especiales</h2>
+              <button className="close-btn" onClick={() => setMostrarModalCombos(false)}>✕</button>
+            </div>
+            <div className="combos-grid">
+              {combos.length === 0 ? (
+                <p>No hay combos disponibles</p>
+              ) : (
+                combos.map((combo) => (
+                  <div key={combo.id} className="combo-card">
+                    <div className="combo-icono">🍱</div>
+                    <div className="combo-info">
+                      <h4>{combo.nombre}</h4>
+                      <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
+                      <p className="combo-precio">${combo.precio}</p>
+                    </div>
+                    <button
+                      className="agregar-combo-btn"
+                      onClick={() => agregarComboAlCarrito(combo)}
+                    >
+                      ➕ Agregar Combo
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-          <div className="productos-grid">
-            {productosCategoria.length === 0 ? (
-              <p>No hay productos en esta categoría</p>
-            ) : (
-              productosCategoria.map((producto) => (
-                <div key={producto.id} className="producto-card">
-                  {/* Imagen del producto */}
-                  <div className="producto-imagen">
-                    {producto.imagen_url ? (
-                      <img src={producto.imagen_url} alt={producto.subcategoria || producto.nombre} />
-                    ) : (
-                      <div className="producto-sin-imagen">📷</div>
-                    )}
-                  </div>
-                  <div className="producto-info">
-                    <h4>{producto.subcategoria || producto.nombre}</h4>
-                    <p className="producto-precio">${producto.precio.toLocaleString('es-CO')}</p>
-                    <p className="producto-stock">Stock: {producto.cantidad}</p>
-                  </div>
-                  <button
-                    className="agregar-btn"
-                    onClick={() => agregarAlCarrito(producto)}
-                    disabled={producto.cantidad <= 0}
-                  >
-                    ➕ Agregar
-                  </button>
+        </div>
+      )}
+
+      {/* Carrito de compras */}
+      <div className="carrito-container">
+        <h2>🛒 Carrito de Compras</h2>
+        {carrito.length === 0 ? (
+          <p className="carrito-vacio">El carrito está vacío</p>
+        ) : (
+          <>
+            <div className="carrito-items">
+              {carrito.map((item, idx) => (
+                <div key={idx} className="carrito-item">
+                  <span className="carrito-nombre">
+                    {item.esCombo && "🍱 "}{item.nombre}
+                  </span>
+                  <span className="carrito-cantidad">x{item.cantidad}</span>
+                  <span className="carrito-precio">${item.precio}</span>
+                  <span className="carrito-subtotal">${item.subtotal}</span>
+                  <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
+              ))}
+            </div>
+            <div className="carrito-total">
+              <strong>Total: ${totalCarrito.toLocaleString()}</strong>
+              <button className="registrar-btn" onClick={registrarVentaFinal}>
+                Registrar Venta
+              </button>
+            </div>
+          </>
+        )}
       </div>
-    )}
 
-    {/* Modal de Combos (sin cambios) */}
-    {mostrarModalCombos && (
-      <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
-        <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>🍱 Combos Especiales</h2>
-            <button className="close-btn" onClick={() => setMostrarModalCombos(false)}>✕</button>
-          </div>
-          <div className="combos-grid">
-            {combos.length === 0 ? (
-              <p>No hay combos disponibles</p>
-            ) : (
-              combos.map((combo) => (
-                <div key={combo.id} className="combo-card">
-                  <div className="combo-icono">🍱</div>
-                  <div className="combo-info">
-                    <h4>{combo.nombre}</h4>
-                    <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
-                    <p className="combo-precio">${combo.precio}</p>
-                  </div>
-                  <button
-                    className="agregar-combo-btn"
-                    onClick={() => agregarComboAlCarrito(combo)}
-                  >
-                    ➕ Agregar Combo
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Carrito de compras (sin cambios) */}
-    <div className="carrito-container">
-      <h2>🛒 Carrito de Compras</h2>
-      {carrito.length === 0 ? (
-        <p className="carrito-vacio">El carrito está vacío</p>
-      ) : (
-        <>
-          <div className="carrito-items">
-            {carrito.map((item, idx) => (
-              <div key={idx} className="carrito-item">
-                <span className="carrito-nombre">
-                  {item.esCombo && "🍱 "}{item.nombre}
-                </span>
-                <span className="carrito-cantidad">x{item.cantidad}</span>
-                <span className="carrito-precio">${item.precio}</span>
-                <span className="carrito-subtotal">${item.subtotal}</span>
-                <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
+      {/* Modal de venta exitosa */}
+      {mostrarModalExito && ventaExitosa && (
+        <div className="modal-overlay" onClick={() => {}}>
+          <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header exito-header">
+              <FiCheckCircle className="exito-icono" />
+              <h2>¡Venta Exitosa!</h2>
+              <button className="close-btn" onClick={cerrarModalExito}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="venta-info">
+                <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
+                <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
+                <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
               </div>
-            ))}
+              <div className="detalle-venta">
+                <h3>Detalle de la compra</h3>
+                <table className="detalle-tabla">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventaExitosa.productos.map((item, idx) => (
+                      <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
+                        <td className={item.esCombo ? "combo-producto" : ""}>
+                          {item.nombre}
+                        </td>
+                        <td>{item.cantidad}</td>
+                        <td>${item.precio?.toLocaleString() || 0}</td>
+                        <td className="subtotal-cell">${item.subtotal?.toLocaleString() || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="total-row">
+                      <td colSpan="3"><strong>Total</strong></td>
+                      <td className="total-cell">${ventaExitosa.total?.toLocaleString() || 0}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div className="mensaje-agradecimiento">
+                <p>🎉 ¡Gracias por tu compra!</p>
+                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
+              </div>
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
+                Aceptar
+              </button>
+            </div>
           </div>
-          <div className="carrito-total">
-            <strong>Total: ${totalCarrito.toLocaleString()}</strong>
-            <button className="registrar-btn" onClick={registrarVentaFinal}>
-              Registrar Venta
-            </button>
+        </div>
+      )}
+
+      {/* Modal de Cuadre de Caja */}
+      {mostrarCuadre && (
+        <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <CashRegister
+              usuario={usuario}
+              inventario={inventario}
+              onClose={() => setMostrarCuadre(false)}
+            />
           </div>
-        </>
+        </div>
+      )}
+
+      {/* Modal de cierre de sesión */}
+      {mostrarModalCierre && (
+        <div className="modal-overlay" onClick={cancelarCierre}>
+          <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
+            {!cerrando ? (
+              <>
+                <div className="modal-header">
+                  <h2>🔓 Cerrar Sesión</h2>
+                  <button className="close-btn" onClick={cancelarCierre}>✕</button>
+                </div>
+                <div className="modal-body">
+                  <p className="cierre-mensaje">¿Estás seguro de que deseas cerrar sesión?</p>
+                  <div className="cierre-buttons">
+                    <button className="btn-cancelar" onClick={cancelarCierre}>Cancelar</button>
+                    <button className="btn-confirmar" onClick={confirmarCierre}>Sí, cerrar sesión</button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="modal-body cerrando">
+                <div className="spinner"></div>
+                <p>🔄 Cerrando sesión...</p>
+                <p className="cerrando-mensaje">Por favor espera</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
-
-    {/* Modal de venta exitosa (sin cambios) */}
-    {mostrarModalExito && ventaExitosa && (
-      <div className="modal-overlay" onClick={() => {}}>
-        <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header exito-header">
-            <FiCheckCircle className="exito-icono" />
-            <h2>¡Venta Exitosa!</h2>
-            <button className="close-btn" onClick={cerrarModalExito}>✕</button>
-          </div>
-          <div className="modal-body">
-            <div className="venta-info">
-              <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
-              <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
-              <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
-            </div>
-            <div className="detalle-venta">
-              <h3>Detalle de la compra</h3>
-              <table className="detalle-tabla">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unit.</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventaExitosa.productos.map((item, idx) => (
-                    <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
-                      <td className={item.esCombo ? "combo-producto" : ""}>
-                        {item.nombre}
-                      </td>
-                      <td>{item.cantidad}</td>
-                      <td>${item.precio?.toLocaleString() || 0}</td>
-                      <td className="subtotal-cell">${item.subtotal?.toLocaleString() || 0}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="total-row">
-                    <td colSpan="3"><strong>Total</strong></td>
-                    <td className="total-cell">${ventaExitosa.total?.toLocaleString() || 0}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-            <div className="mensaje-agradecimiento">
-              <p>🎉 ¡Gracias por tu compra!</p>
-              <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
-            </div>
-            <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-              Aceptar
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Modal de Cuadre de Caja */}
-    {mostrarCuadre && (
-      <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <CashRegister
-            usuario={usuario}
-            inventario={inventario}
-            onClose={() => setMostrarCuadre(false)}
-          />
-        </div>
-      </div>
-    )}
-
-    {/* Modal de cierre de sesión */}
-    {mostrarModalCierre && (
-      <div className="modal-overlay" onClick={cancelarCierre}>
-        <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
-          {!cerrando ? (
-            <>
-              <div className="modal-header">
-                <h2>🔓 Cerrar Sesión</h2>
-                <button className="close-btn" onClick={cancelarCierre}>✕</button>
-              </div>
-              <div className="modal-body">
-                <p className="cierre-mensaje">¿Estás seguro de que deseas cerrar sesión?</p>
-                <div className="cierre-buttons">
-                  <button className="btn-cancelar" onClick={cancelarCierre}>Cancelar</button>
-                  <button className="btn-confirmar" onClick={confirmarCierre}>Sí, cerrar sesión</button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="modal-body cerrando">
-              <div className="spinner"></div>
-              <p>🔄 Cerrando sesión...</p>
-              <p className="cerrando-mensaje">Por favor espera</p>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
-      </div>
   );
 }
 
