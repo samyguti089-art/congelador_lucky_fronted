@@ -6,10 +6,10 @@ import "./POS.css";
 import CashRegister from './CashRegister';
 
 // Importar imágenes de categorías (deben estar en src/components/images/)
-import deditosImg from "./components/image/deditos.jpg";
-import empanadasImg from "./components/image/empanadas.jpg";
-import otrosImg from "./components/image/otros.jpg";
-import combosImg from "./components/image/combos.jpg";
+import deditosImg from "./components/image/portada 2 deditos.jpg";
+import empanadasImg from "./components/image/empanadas portada.jpg";
+import otrosImg from "./components/image/portada de otros.jpg";
+import combosImg from "./components/image/imagen de portada de combos.jpg";
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
