@@ -311,7 +311,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     <div className="combo-info">
                       <h4>{combo.nombre}</h4>
                       <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
-                      <p className="combo-precio">${combo.precio}</p>
+                      <p className="combo-precio">{formatPrice(combo.precio)}</p>
+
                     </div>
                     <button
                       className="agregar-combo-btn"
@@ -341,8 +342,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     {item.esCombo && "🍱 "}{item.nombre}
                   </span>
                   <span className="carrito-cantidad">x{item.cantidad}</span>
-                  <span className="carrito-precio">${item.precio}</span>
-                  <span className="carrito-subtotal">${item.subtotal}</span>
+                  <span className="carrito-precio">{formatPrice(item.precio)}</span>
+                  <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
                   <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
                 </div>
               ))}
