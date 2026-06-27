@@ -4,6 +4,7 @@ import { FiLogOut, FiCheckCircle } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
+import { formatPrice } from './utils/format';
 
 // Importar imágenes de categorías (deben estar en src/components/images/)
 import deditosImg from "./components/images/portada 2 deditos.jpg";
