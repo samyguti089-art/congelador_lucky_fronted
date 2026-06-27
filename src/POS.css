@@ -474,6 +474,27 @@
 .logo-area {
   display: flex;
   flex-direction: column;
+.logo-img {
+  height: 50px;        /* Ajusta la altura según tu logo */
+  width: auto;         /* Mantiene la proporción */
+  max-width: 200px;    /* Evita que se desborde en móviles */
+  object-fit: contain;
+}
+
+/* Responsive: ajustar tamaño en móviles */
+@media (max-width: 768px) {
+  .logo-img {
+    height: 40px;
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-img {
+    height: 32px;
+    max-width: 120px;
+  }
+}
 }
 
 .logo-area h1 {
