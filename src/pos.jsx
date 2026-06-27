@@ -6,13 +6,14 @@ import "./POS.css";
 import CashRegister from './CashRegister';
 import { formatPrice } from './utils/formatPrice.js';
 
-// Importar imágenes de categorías (deben estar en src/components/images/)
-import deditosImg from "./components/images/portada 2 deditos.jpg";
-import empanadasImg from "./components/images/empanadas portada.jpg";
-import otrosImg from "./components/images/portada de otros.jpg";
-import combosImg from "./components/images/imagen de portada de combos.jpg";
-import logoImg from "./components/images/logo.jpeg";
+// Importar imágenes de categorías
+import deditosImg from "./components/images/deditos.jpg";
+import empanadasImg from "./components/images/empanadas.jpg";
+import otrosImg from "./components/images/otros.jpg";
+import combosImg from "./components/images/combos.jpg";
 
+// Importar logo
+import logoImg from "./components/images/logo.png";
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
@@ -43,7 +44,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // Categorías con imágenes (reemplazando íconos)
+  // Categorías con imágenes (solo 4)
   const categorias = [
     {
       id: "deditos",
@@ -207,6 +208,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   return (
     <div className="pos-container">
+      {/* HEADER CON LOGO */}
       <div className="pos-header">
         <div className="logo-area">
           <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
@@ -231,7 +233,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* Grid de categorías con imágenes de fondo */}
+      {/* GRID DE CATEGORÍAS CON IMÁGENES */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -252,7 +254,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         ))}
       </div>
 
-      {/* Modal de productos con imágenes */}
+      {/* MODAL DE PRODUCTOS CON IMÁGENES Y PRECIOS FORMATEADOS */}
       {mostrarModalProductos && (
         <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -275,7 +277,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     </div>
                     <div className="producto-info">
                       <h4>{producto.subcategoria || producto.nombre}</h4>
-                      <p className="producto-precio">${producto.precio.toLocaleString('es-CO')}</p>
+                      <p className="producto-precio">{formatPrice(producto.precio)}</p>
                       <p className="producto-stock">Stock: {producto.cantidad}</p>
                     </div>
                     <button
@@ -293,7 +295,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Modal de Combos */}
+      {/* MODAL DE COMBOS CON PRECIOS FORMATEADOS */}
       {mostrarModalCombos && (
         <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
           <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
@@ -312,7 +314,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       <h4>{combo.nombre}</h4>
                       <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
                       <p className="combo-precio">{formatPrice(combo.precio)}</p>
-
                     </div>
                     <button
                       className="agregar-combo-btn"
@@ -328,7 +329,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Carrito de compras */}
+      {/* CARRITO DE COMPRAS CON PRECIOS FORMATEADOS */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -349,7 +350,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               ))}
             </div>
             <div className="carrito-total">
-              <strong>Total: ${totalCarrito.toLocaleString()}</strong>
+              <strong>Total: {formatPrice(totalCarrito)}</strong>
               <button className="registrar-btn" onClick={registrarVentaFinal}>
                 Registrar Venta
               </button>
@@ -358,7 +359,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* Modal de venta exitosa */}
+      {/* MODAL DE VENTA EXITOSA CON PRECIOS FORMATEADOS */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay" onClick={() => {}}>
           <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
@@ -391,15 +392,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                           {item.nombre}
                         </td>
                         <td>{item.cantidad}</td>
-                        <td>${item.precio?.toLocaleString() || 0}</td>
-                        <td className="subtotal-cell">${item.subtotal?.toLocaleString() || 0}</td>
+                        <td>{formatPrice(item.precio)}</td>
+                        <td className="subtotal-cell">{formatPrice(item.subtotal)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="total-row">
                       <td colSpan="3"><strong>Total</strong></td>
-                      <td className="total-cell">${ventaExitosa.total?.toLocaleString() || 0}</td>
+                      <td className="total-cell">{formatPrice(ventaExitosa.total)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -416,7 +417,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Modal de Cuadre de Caja */}
+      {/* MODAL DE CUADRE DE CAJA */}
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -429,7 +430,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* Modal de cierre de sesión */}
+      {/* MODAL DE CIERRE DE SESIÓN */}
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
           <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
