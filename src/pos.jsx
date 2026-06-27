@@ -7,13 +7,13 @@ import CashRegister from './CashRegister';
 import { formatPrice } from './utils/formatPrice.js';
 
 // Importar imágenes de categorías
-import deditosImg from "./components/images/deditos.jpg";
-import empanadasImg from "./components/images/empanadas.jpg";
-import otrosImg from "./components/images/otros.jpg";
-import combosImg from "./components/images/combos.jpg";
+import deditosImg from "./components/images/portada 2 deditos.jpg";
+import empanadasImg from "./components/images/empanadas portada.jpg";
+import otrosImg from "./components/images/portada de otros.jpg";
+import combosImg from "./components/images/imagen de portada de combos.jpg";
 
 // Importar logo
-import logoImg from "./components/images/logo.png";
+import logoImg from "./components/images/logo.jpeg";
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
