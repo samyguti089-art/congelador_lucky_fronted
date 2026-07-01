@@ -331,34 +331,50 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {/* CARRITO DE COMPRAS CON PRECIOS FORMATEADOS */}
       <div className="carrito-container">
-        <h2>🛒 Carrito de Compras</h2>
-        {carrito.length === 0 ? (
-          <p className="carrito-vacio">El carrito está vacío</p>
-        ) : (
-          <>
-            <div className="carrito-items">
-              {carrito.map((item, idx) => (
-                <div key={idx} className="carrito-item">
-                  <span className="carrito-nombre">
-                    {item.esCombo && "🍱 "}{item.nombre}
-                  </span>
-                  <span className="carrito-cantidad">x{item.cantidad}</span>
-                  <span className="carrito-precio">{formatPrice(item.precio)}</span>
-                  <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
-                  <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
-                </div>
-              ))}
-            </div>
-            <div className="carrito-total">
-              <strong>Total: {formatPrice(totalCarrito)}</strong>
-              <button className="registrar-btn" onClick={registrarVentaFinal}>
-                Registrar Venta
+  <h2>🛒 Carrito de Compras</h2>
+  {carrito.length === 0 ? (
+    <p className="carrito-vacio">El carrito está vacío</p>
+  ) : (
+    <>
+      <div className="carrito-items">
+        {carrito.map((item, idx) => (
+          <div key={idx} className="carrito-item">
+            <span className="carrito-nombre">
+              {item.esCombo && "🍱 "}{item.nombre}
+            </span>
+            
+            <div className="carrito-cantidad-control">
+              <button 
+                className="cantidad-btn" 
+                onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
+                disabled={item.cantidad <= 1}
+              >
+                −
+              </button>
+              <span className="carrito-cantidad">{item.cantidad}</span>
+              <button 
+                className="cantidad-btn" 
+                onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
+              >
+                +
               </button>
             </div>
-          </>
-        )}
+            
+            <span className="carrito-precio">{formatPrice(item.precio)}</span>
+            <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
+            <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
+          </div>
+        ))}
       </div>
-
+      <div className="carrito-total">
+        <strong>Total: {formatPrice(totalCarrito)}</strong>
+        <button className="registrar-btn" onClick={registrarVentaFinal}>
+          Registrar Venta
+        </button>
+      </div>
+    </>
+  )}
+</div>
       {/* MODAL DE VENTA EXITOSA CON PRECIOS FORMATEADOS */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay" onClick={() => {}}>
