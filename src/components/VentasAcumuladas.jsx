@@ -7,7 +7,7 @@ import { formatPrice } from '../utils/formatPrice';
 import './OwnerDashboard.css';
 
 // Importar logo (ajusta la ruta según tu estructura)
-import logoImg from '../components/images/logo.png'; // o desde public: "/images/logo.png"
+import logoImg from '../components/images/logo.jpeg'; // o desde public: "/images/logo.png"
 
 function VentasAcumuladas() {
   const [datos, setDatos] = useState([]);
