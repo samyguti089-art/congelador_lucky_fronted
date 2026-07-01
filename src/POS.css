@@ -2014,3 +2014,72 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
+/* ===== CONTROLES DE CANTIDAD EN CARRITO ===== */
+.carrito-cantidad-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.cantidad-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 50%;
+  background: white;
+  color: var(--marron);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cantidad-btn:hover:not(:disabled) {
+  background: var(--rojo-marron);
+  color: white;
+  border-color: var(--rojo-marron);
+}
+
+.cantidad-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.carrito-cantidad {
+  min-width: 24px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: var(--marron);
+}
+
+/* Ajustar la grid del carrito para los nuevos controles */
+.carrito-item {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 1fr 0.5fr;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+@media (max-width: 768px) {
+  .carrito-item {
+    grid-template-columns: 1.5fr 1fr 0.7fr 0.8fr 0.4fr;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+  .cantidad-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+  }
+  .carrito-cantidad {
+    min-width: 18px;
+    font-size: 0.8rem;
+  }
+}
