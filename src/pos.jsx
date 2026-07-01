@@ -4,7 +4,7 @@ import { FiLogOut, FiCheckCircle } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
-import ModalPago from './ModalPago';
+import ModalPago from './components/ModalPago';
 import { formatPrice } from './utils/formatPrice.js';
 
 // Importar imágenes de categorías
