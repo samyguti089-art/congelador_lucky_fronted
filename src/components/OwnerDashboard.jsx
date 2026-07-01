@@ -5,8 +5,8 @@ import RealtimeSales from './RealtimeSales';
 import TopProducts from './TopProducts';
 import StockBajoKPI from './StockBajoKPI';
 import DailySalesKPI from './DailySalesKPI';
-import './OwnerDashboard.css';
 import VentasAcumuladas from './VentasAcumuladas';
+import './OwnerDashboard.css';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   return (
@@ -20,12 +20,9 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
-      {/* KPIs de stock bajo */}
       <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
       
-      {/* Layout de dos columnas */}
       <div className="dashboard-two-columns">
-        {/* Columna izquierda: Gestión de Inventario + Top Productos */}
         <div className="column-left">
           <div className="dashboard-card inventory-card">
             <InventoryPanel />
@@ -35,7 +32,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           </div>
         </div>
         
-        {/* Columna derecha: Reportes y Ventas en Tiempo Real */}
         <div className="column-right">
           <div className="dashboard-card sales-card">
             <SalesReports />
@@ -43,6 +39,10 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           </div>
           <div className="dashboard-card realtime-card">
             <RealtimeSales />
+          </div>
+          {/* 👇 Agrega VentasAcumuladas aquí */}
+          <div className="dashboard-card">
+            <VentasAcumuladas />
           </div>
         </div>
       </div>
