@@ -6,8 +6,8 @@ import TopProducts from './TopProducts';
 import StockBajoKPI from './StockBajoKPI';
 import DailySalesKPI from './DailySalesKPI';
 import VentasAcumuladas from './VentasAcumuladas';
-import './OwnerDashboard.css';
 import DespachosPanel from './DespachosPanel';
+import './OwnerDashboard.css';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   return (
@@ -38,15 +38,19 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
             <SalesReports />
             <DailySalesKPI />
           </div>
+          
           <div className="dashboard-card realtime-card">
             <RealtimeSales />
           </div>
-          {/* 👇 Aquí está el componente VentasAcumuladas */}
+          
+          {/* Ventas Acumuladas - tarjeta independiente */}
           <div className="dashboard-card">
             <VentasAcumuladas />
-            <div className="dashboard-card">
-            <DespachosPanel inventario={inventario} usuario={usuario} />
           </div>
+          
+          {/* Despachos Panel - tarjeta independiente */}
+          <div className="dashboard-card">
+            <DespachosPanel inventario={inventario} usuario={usuario} />
           </div>
         </div>
       </div>
