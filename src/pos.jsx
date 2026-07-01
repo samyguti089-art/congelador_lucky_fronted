@@ -4,6 +4,7 @@ import { FiLogOut, FiCheckCircle } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
+import ModalPago from './ModalPago';
 import { formatPrice } from './utils/formatPrice.js';
 
 // Importar imágenes de categorías
@@ -24,6 +25,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
+  const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
@@ -117,26 +119,28 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCarrito(nuevoCarrito);
   };
 
+  // ===== ACTUALIZAR CANTIDAD EN CARRITO =====
+  const actualizarCantidadCarrito = (index, nuevaCantidad) => {
+    if (nuevaCantidad < 1) return;
+    const nuevoCarrito = [...carrito];
+    const item = nuevoCarrito[index];
+    item.cantidad = nuevaCantidad;
+    item.subtotal = nuevaCantidad * item.precio;
+    setCarrito(nuevoCarrito);
+  };
 
-const actualizarCantidadCarrito = (index, nuevaCantidad) => {
-  // Evitar que la cantidad sea menor a 1
-  if (nuevaCantidad < 1) return;
-  
-  const nuevoCarrito = [...carrito];
-  const item = nuevoCarrito[index];
-  
-  // Actualizar cantidad y recalcular subtotal
-  item.cantidad = nuevaCantidad;
-  item.subtotal = nuevaCantidad * item.precio;
-  
-  setCarrito(nuevoCarrito);
-};
-
-  const registrarVentaFinal = async () => {
+  // ===== REGISTRAR VENTA (abre modal de pago) =====
+  const registrarVentaFinal = () => {
     if (carrito.length === 0) {
       alert("El carrito está vacío");
       return;
     }
+    setMostrarModalPago(true);
+  };
+
+  // ===== CONFIRMAR PAGO Y REGISTRAR VENTA =====
+  const confirmarPago = async (datosPago) => {
+    setMostrarModalPago(false);
 
     const productosParaBackend = carrito.map(item => ({
       producto_id: item.esCombo ? null : item.id,
@@ -151,7 +155,9 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
     try {
       const response = await axios.post(`${API_URL}/venta-carrito`, {
         cajero_id: usuario.id,
-        productos: productosParaBackend
+        productos: productosParaBackend,
+        metodo_pago: datosPago.metodo_pago,
+        cambio: datosPago.cambio
       });
 
       console.log("Respuesta exitosa:", response.data);
@@ -169,7 +175,9 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
         productos: productosMostrados,
         total: totalVenta,
         fecha: new Date().toLocaleString(),
-        cajero: usuario.nombre
+        cajero: usuario.nombre,
+        metodo_pago: datosPago.metodo_pago,
+        cambio: datosPago.cambio
       });
       setMostrarModalExito(true);
 
@@ -197,6 +205,7 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
     }
   };
 
+  // ===== MANEJO DE CIERRE DE SESIÓN =====
   const handleCerrarSesion = () => {
     setMostrarModalCierre(true);
   };
@@ -269,7 +278,7 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
         ))}
       </div>
 
-      {/* MODAL DE PRODUCTOS CON IMÁGENES Y PRECIOS FORMATEADOS */}
+      {/* MODAL DE PRODUCTOS */}
       {mostrarModalProductos && (
         <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -310,7 +319,7 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
         </div>
       )}
 
-      {/* MODAL DE COMBOS CON PRECIOS FORMATEADOS */}
+      {/* MODAL DE COMBOS */}
       {mostrarModalCombos && (
         <div className="modal-overlay" onClick={() => setMostrarModalCombos(false)}>
           <div className="modal-content combos-modal" onClick={(e) => e.stopPropagation()}>
@@ -344,53 +353,54 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
         </div>
       )}
 
-      {/* CARRITO DE COMPRAS CON PRECIOS FORMATEADOS */}
+      {/* CARRITO DE COMPRAS CON CONTROLES DE CANTIDAD */}
       <div className="carrito-container">
-  <h2>🛒 Carrito de Compras</h2>
-  {carrito.length === 0 ? (
-    <p className="carrito-vacio">El carrito está vacío</p>
-  ) : (
-    <>
-      <div className="carrito-items">
-        {carrito.map((item, idx) => (
-          <div key={idx} className="carrito-item">
-            <span className="carrito-nombre">
-              {item.esCombo && "🍱 "}{item.nombre}
-            </span>
-            
-            <div className="carrito-cantidad-control">
-              <button 
-                className="cantidad-btn" 
-                onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
-                disabled={item.cantidad <= 1}
-              >
-                −
-              </button>
-              <span className="carrito-cantidad">{item.cantidad}</span>
-              <button 
-                className="cantidad-btn" 
-                onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
-              >
-                +
+        <h2>🛒 Carrito de Compras</h2>
+        {carrito.length === 0 ? (
+          <p className="carrito-vacio">El carrito está vacío</p>
+        ) : (
+          <>
+            <div className="carrito-items">
+              {carrito.map((item, idx) => (
+                <div key={idx} className="carrito-item">
+                  <span className="carrito-nombre">
+                    {item.esCombo && "🍱 "}{item.nombre}
+                  </span>
+
+                  <div className="carrito-cantidad-control">
+                    <button
+                      className="cantidad-btn"
+                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
+                      disabled={item.cantidad <= 1}
+                    >
+                      −
+                    </button>
+                    <span className="carrito-cantidad">{item.cantidad}</span>
+                    <button
+                      className="cantidad-btn"
+                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <span className="carrito-precio">{formatPrice(item.precio)}</span>
+                  <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
+                  <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
+                </div>
+              ))}
+            </div>
+            <div className="carrito-total">
+              <strong>Total: {formatPrice(totalCarrito)}</strong>
+              <button className="registrar-btn" onClick={registrarVentaFinal}>
+                Registrar Venta
               </button>
             </div>
-            
-            <span className="carrito-precio">{formatPrice(item.precio)}</span>
-            <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
-            <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
-          </div>
-        ))}
+          </>
+        )}
       </div>
-      <div className="carrito-total">
-        <strong>Total: {formatPrice(totalCarrito)}</strong>
-        <button className="registrar-btn" onClick={registrarVentaFinal}>
-          Registrar Venta
-        </button>
-      </div>
-    </>
-  )}
-</div>
-      {/* MODAL DE VENTA EXITOSA CON PRECIOS FORMATEADOS */}
+
+      {/* MODAL DE VENTA EXITOSA */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay" onClick={() => {}}>
           <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
@@ -404,6 +414,10 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
                 <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
                 <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
                 <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
+                <p><strong>💳 Método de pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {ventaExitosa.cambio > 0 && (
+                  <p><strong>🔄 Cambio:</strong> {formatPrice(ventaExitosa.cambio)}</p>
+                )}
               </div>
               <div className="detalle-venta">
                 <h3>Detalle de la compra</h3>
@@ -446,6 +460,16 @@ const actualizarCantidadCarrito = (index, nuevaCantidad) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* MODAL DE PAGO */}
+      {mostrarModalPago && (
+        <ModalPago
+          total={totalCarrito}
+          usuario={usuario}
+          onConfirm={confirmarPago}
+          onCancel={() => setMostrarModalPago(false)}
+        />
       )}
 
       {/* MODAL DE CUADRE DE CAJA */}
