@@ -1555,3 +1555,147 @@
     margin-top: 4px;
   }
 }
+/* ===== DESPACHOS PANEL ===== */
+.despachos-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.despachos-panel h3 {
+  margin: 0 0 15px 0;
+  color: var(--marron);
+}
+
+.despacho-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  background: var(--crema);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.despacho-total-hoy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.despacho-total-hoy span {
+  font-size: 0.85rem;
+  color: var(--marron-claro);
+}
+
+.despacho-total-hoy strong {
+  font-size: 1.3rem;
+  color: var(--rojo-marron);
+}
+
+.despacho-fecha label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--marron);
+}
+
+.despacho-fecha input {
+  padding: 4px 8px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 6px;
+  background: white;
+}
+
+.despacho-form {
+  background: var(--crema);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row select,
+.form-row input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.btn-registrar-despacho {
+  background: var(--rojo-marron);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn-registrar-despacho:hover {
+  background: var(--rojo-marron-oscuro);
+}
+
+.observaciones-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  margin-top: 8px;
+  background: white;
+  font-size: 0.85rem;
+}
+
+.despachos-lista h4 {
+  margin: 0 0 10px 0;
+  color: var(--marron);
+  font-size: 0.95rem;
+}
+
+.despachos-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.despachos-table th,
+.despachos-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+.despachos-table th {
+  background: var(--crema);
+  color: var(--marron);
+  font-weight: 600;
+}
+
+.cantidad-cell {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.hora-cell {
+  font-size: 0.75rem;
+  color: var(--marron-claro);
+}
+
+.loading-text {
+  text-align: center;
+  color: var(--marron-claro);
+  padding: 20px;
+}
