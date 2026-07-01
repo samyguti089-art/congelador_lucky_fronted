@@ -1308,3 +1308,117 @@
   align-items: center;
   justify-content: center;
 }
+/* ===== VENTAS ACUMULADAS ===== */
+.ventas-acumuladas {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.ventas-acumuladas h3 {
+  margin: 0 0 20px 0;
+  color: var(--marron);
+}
+
+.rango-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.rango-buttons button {
+  background: var(--crema);
+  border: 1px solid var(--crema-oscuro);
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--marron);
+  transition: all 0.2s;
+}
+
+.rango-buttons button.active {
+  background: var(--rojo-marron);
+  color: white;
+  border-color: var(--rojo-marron);
+}
+
+.rango-buttons button:hover:not(.active) {
+  background: var(--crema-oscuro);
+}
+
+.tabla-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--crema-oscuro);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ventas-acumuladas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ventas-acumuladas-table th,
+.ventas-acumuladas-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--crema-oscuro);
+}
+
+.ventas-acumuladas-table th {
+  background: var(--crema);
+  color: var(--marron);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dia-sin-ventas {
+  background: #faf7f2;
+}
+
+.sin-ventas-msg {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.75rem;
+}
+
+.acumulado-cell {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.total-footer-acumulado {
+  background: var(--crema);
+  font-weight: bold;
+}
+
+.total-footer-acumulado td {
+  border-bottom: none;
+  padding: 12px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ventas-acumuladas-table {
+    font-size: 0.75rem;
+  }
+  .ventas-acumuladas-table th,
+  .ventas-acumuladas-table td {
+    padding: 6px 8px;
+  }
+  .sin-ventas-msg {
+    font-size: 0.65rem;
+  }
+}
