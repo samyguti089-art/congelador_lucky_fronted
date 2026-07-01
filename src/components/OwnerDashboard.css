@@ -1822,3 +1822,43 @@
     border-radius: 8px;
   }
 }
+/* ===== CORRECCIÓN DE COLORES EN DESPACHOS ===== */
+.despacho-form select,
+.despacho-form input,
+.despacho-form textarea,
+.observaciones-input {
+  color: #1a1a1a !important; /* Negro fuerte para contraste */
+  background: white !important;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+/* Estilo específico para el select y sus opciones */
+.despacho-form select {
+  appearance: auto; /* Asegura que el navegador muestre el selector correctamente */
+  -webkit-appearance: auto;
+}
+
+.despacho-form select option {
+  color: #1a1a1a !important;
+  background: white !important;
+}
+
+/* Placeholder visible */
+.despacho-form input::placeholder,
+.observaciones-input::placeholder {
+  color: #6b7280 !important; /* Gris medio, visible */
+  opacity: 1;
+}
+
+/* Asegurar que el texto en el input de cantidad sea visible */
+.despacho-form input[type="number"] {
+  color: #1a1a1a !important;
+}
+
+/* Estilo para el texto de las etiquetas (no afectado) */
+.despacho-form label {
+  color: var(--marron);
+}
