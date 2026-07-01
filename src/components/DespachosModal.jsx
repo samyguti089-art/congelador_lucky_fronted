@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FaTimes, FaBox, FaClock } from 'react-icons/fa';
 import './DespachosModal.css';
 
-function DespachosModal({ onClose }) {
+function DespachosModal({ onClose, inventario }) {
   const [despachos, setDespachos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(
@@ -31,6 +31,13 @@ function DespachosModal({ onClose }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ===== OBTENER NOMBRE DEL PRODUCTO DESDE INVENTARIO =====
+  const getProductoNombre = (productoId) => {
+    if (!inventario) return `Producto #${productoId}`;
+    const producto = inventario.find(p => p.id === productoId);
+    return producto ? (producto.subcategoria || producto.nombre) : `Producto #${productoId}`;
   };
 
   const formatearHora = (fecha) => {
@@ -100,7 +107,7 @@ function DespachosModal({ onClose }) {
                     <div className="despacho-producto">
                       <FaBox className="despacho-icono" />
                       <span className="despacho-nombre">
-                        {d.productos?.subcategoria || d.productos?.nombre || `Producto #${d.producto_id}`}
+                        {getProductoNombre(d.producto_id)}
                       </span>
                     </div>
                     <div className="despacho-detalles">
