@@ -1699,79 +1699,103 @@
   color: var(--marron-claro);
   padding: 20px;
 }
-/* ===== PESTAÑAS (TABS) ===== */
+/* ===== PESTAÑAS (TABS) - DISEÑO GASTRONÓMICO ===== */
 .tabs-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 25px;
   background: var(--crema);
-  padding: 6px;
-  border-radius: 16px;
+  padding: 8px;
+  border-radius: 20px;
   border: 1px solid var(--crema-oscuro);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .tab-btn {
-  padding: 10px 20px;
+  padding: 10px 22px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: transparent;
-  color: var(--marron);
+  color: var(--marron-claro);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   flex: 1;
   min-width: 80px;
   white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.3px;
 }
 
 .tab-btn:hover {
   background: var(--crema-oscuro);
+  color: var(--marron);
+  transform: translateY(-1px);
 }
 
 .tab-btn.active {
-  background: var(--rojo-marron);
+  background: linear-gradient(135deg, var(--rojo-marron), var(--terracota));
   color: white;
-  box-shadow: 0 4px 12px rgba(155, 44, 44, 0.3);
+  box-shadow: 0 6px 18px rgba(155, 44, 44, 0.35);
+  transform: translateY(-2px);
+  font-weight: 600;
 }
 
 .tab-btn.active:hover {
-  background: var(--rojo-marron-oscuro);
+  background: linear-gradient(135deg, var(--rojo-marron-oscuro), #a8350a);
+  box-shadow: 0 8px 22px rgba(155, 44, 44, 0.45);
 }
 
-/* Contenido de la pestaña */
+/* Animación suave al cambiar de contenido */
 .tab-content {
   animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Responsive para móviles */
+/* ===== RESPONSIVE PARA PESTAÑAS ===== */
 @media (max-width: 768px) {
   .tabs-container {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding: 4px;
-    gap: 2px;
+    padding: 6px;
+    gap: 4px;
+    border-radius: 14px;
+    -webkit-overflow-scrolling: touch;
   }
   
   .tab-btn {
-    padding: 8px 12px;
+    padding: 8px 14px;
     font-size: 0.75rem;
     min-width: 60px;
     flex: 0 0 auto;
     white-space: nowrap;
+    border-radius: 10px;
   }
 }
 
 @media (max-width: 480px) {
+  .tabs-container {
+    padding: 4px;
+    gap: 3px;
+    border-radius: 12px;
+  }
+  
   .tab-btn {
     font-size: 0.65rem;
     padding: 6px 10px;
     min-width: 50px;
+    border-radius: 8px;
   }
 }
