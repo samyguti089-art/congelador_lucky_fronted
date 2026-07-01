@@ -8,11 +8,6 @@ import DailySalesKPI from './DailySalesKPI';
 import './OwnerDashboard.css';
 import VentasAcumuladas from './VentasAcumuladas';
 
-// En el render, dentro de la columna derecha:
-<div className="dashboard-card">
-  <VentasAcumuladas />
-</div>
-
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   return (
     <div className="owner-dashboard">
