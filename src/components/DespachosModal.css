@@ -1,0 +1,231 @@
+/* ===== DESPACHOS MODAL ===== */
+.despachos-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(59, 42, 31, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.despachos-modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.despachos-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: var(--crema);
+  border-bottom: 1px solid var(--crema-oscuro);
+  flex-shrink: 0;
+}
+
+.despachos-modal-header h2 {
+  margin: 0;
+  color: var(--marron);
+  font-size: 1.3rem;
+}
+
+.despachos-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--marron-claro);
+  transition: color 0.2s;
+}
+
+.despachos-modal-close:hover {
+  color: var(--rojo-marron);
+}
+
+.despachos-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.despachos-fecha-selector {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.despachos-fecha-selector label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--marron);
+}
+
+.despachos-fecha-selector input {
+  padding: 6px 10px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  background: white;
+}
+
+.btn-refresh-despachos {
+  background: var(--marron);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.btn-refresh-despachos:hover {
+  background: var(--marron-oscuro);
+}
+
+.despachos-error {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.despachos-loading {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+}
+
+.despachos-vacio {
+  text-align: center;
+  padding: 30px;
+  color: var(--marron-claro);
+}
+
+.despachos-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--crema);
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.despachos-total strong {
+  color: var(--rojo-marron);
+}
+
+.despachos-cantidad {
+  color: var(--marron-claro);
+}
+
+.despachos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.despacho-item {
+  background: var(--crema);
+  border-radius: 12px;
+  padding: 12px 16px;
+  border-left: 4px solid var(--rojo-marron);
+  transition: background 0.2s;
+}
+
+.despacho-item:hover {
+  background: var(--crema-oscuro);
+}
+
+.despacho-producto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--marron);
+}
+
+.despacho-icono {
+  color: var(--rojo-marron);
+  font-size: 1rem;
+}
+
+.despacho-detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.85rem;
+}
+
+.despacho-cantidad {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.despacho-hora {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--marron-claro);
+  font-size: 0.75rem;
+}
+
+.hora-icono {
+  font-size: 0.7rem;
+}
+
+.despacho-observacion {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--marron-claro);
+  padding: 4px 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--crema-oscuro);
+}
+
+.despachos-modal-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--crema-oscuro);
+  background: var(--crema);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-cerrar-despachos {
+  background: var(--rojo-marron);
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn-cerrar-despachos:hover {
+  background: var(--rojo-marron-oscuro);
+}
