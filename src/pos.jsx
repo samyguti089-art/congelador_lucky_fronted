@@ -6,6 +6,7 @@ import "./POS.css";
 import CashRegister from './CashRegister';
 import ModalPago from './components/ModalPago';
 import { formatPrice } from './utils/formatPrice.js';
+import DespachosModal from './components/DespachosModal';
 
 // Importar imágenes de categorías
 import deditosImg from "./components/images/portada 2 deditos.jpg";
@@ -29,6 +30,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
+  const [mostrarDespachos, setMostrarDespachos] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -251,6 +253,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </button>
           <button onClick={handleCerrarSesion} className="logout-btn">
             <FiLogOut className="logout-icon" /> Salir
+          </button>
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
+          📥 Despachos
           </button>
         </div>
       </div>
@@ -483,6 +488,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             />
           </div>
         </div>
+      )}
+      {mostrarDespachos && (
+        <DespachosModal onClose={() => setMostrarDespachos(false)} />
       )}
 
       {/* MODAL DE CIERRE DE SESIÓN */}
