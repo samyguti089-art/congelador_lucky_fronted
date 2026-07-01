@@ -1623,6 +1623,29 @@
   flex-wrap: wrap;
 }
 
+/* ===== AJUSTE DE COLOR EN SELECT ===== */
+.despacho-form select,
+.despacho-form select option {
+  color: #1a120e; /* Marrón muy oscuro (casi negro) */
+  background-color: white;
+}
+
+.despacho-form select:focus {
+  outline: 2px solid var(--rojo-marron);
+  outline-offset: 2px;
+}
+
+.despacho-form select option {
+  background-color: white;
+  color: #1a120e;
+  padding: 6px 8px;
+}
+
+.despacho-form select:invalid {
+  color: #8b5e3c;
+}
+/* ===== FIN AJUSTE DE COLOR EN SELECT ===== */
+
 .form-row select,
 .form-row input {
   flex: 1;
