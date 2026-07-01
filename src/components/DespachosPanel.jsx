@@ -64,7 +64,7 @@ function DespachosPanel({ inventario, usuario }) {
       }
     } catch (error) {
       console.error('Error registrando despacho:', error);
-      alert('❌ Error al registrar despacho');
+      alert('❌ Error: ' + (error.response?.data?.detail || error.message));
     }
   };
 
