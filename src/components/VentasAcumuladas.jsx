@@ -7,25 +7,33 @@ import { formatPrice } from '../utils/formatPrice';
 import './OwnerDashboard.css';
 
 // Importar logo (ajusta la ruta según tu estructura)
-import logoImg from '../components/images/logo.jpeg'; // o desde public: "/images/logo.png"
+import logoImg from '../components/images/logo.png'; // o desde public: "/images/logo.png"
 
 function VentasAcumuladas() {
   const [datos, setDatos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
+  const [fechaInicioTemp, setFechaInicioTemp] = useState(''); // para el input
+  const [fechaFinTemp, setFechaFinTemp] = useState('');       // para el input
   const [rangoSeleccionado, setRangoSeleccionado] = useState('30dias');
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Inicializar fechas con los últimos 30 días
   useEffect(() => {
     const fin = new Date();
     const inicio = new Date();
     inicio.setDate(inicio.getDate() - 30);
-    setFechaFin(fin.toISOString().split('T')[0]);
-    setFechaInicio(inicio.toISOString().split('T')[0]);
+    const finStr = fin.toISOString().split('T')[0];
+    const inicioStr = inicio.toISOString().split('T')[0];
+    setFechaFin(finStr);
+    setFechaInicio(inicioStr);
+    setFechaFinTemp(finStr);
+    setFechaInicioTemp(inicioStr);
   }, []);
 
+  // Cargar datos cuando cambien las fechas
   useEffect(() => {
     if (fechaInicio && fechaFin) {
       cargarDatos();
@@ -47,13 +55,33 @@ function VentasAcumuladas() {
     }
   };
 
+  // Cambiar rango con botones predefinidos
   const cambiarRango = (dias) => {
     const fin = new Date();
     const inicio = new Date();
     inicio.setDate(inicio.getDate() - dias);
-    setFechaFin(fin.toISOString().split('T')[0]);
-    setFechaInicio(inicio.toISOString().split('T')[0]);
+    const finStr = fin.toISOString().split('T')[0];
+    const inicioStr = inicio.toISOString().split('T')[0];
+    setFechaFin(finStr);
+    setFechaInicio(inicioStr);
+    setFechaFinTemp(finStr);
+    setFechaInicioTemp(inicioStr);
     setRangoSeleccionado(`${dias}dias`);
+  };
+
+  // Aplicar rango personalizado desde el calendario
+  const aplicarRangoPersonalizado = () => {
+    if (!fechaInicioTemp || !fechaFinTemp) {
+      alert('Por favor selecciona ambas fechas');
+      return;
+    }
+    if (fechaInicioTemp > fechaFinTemp) {
+      alert('La fecha de inicio no puede ser mayor que la fecha de fin');
+      return;
+    }
+    setFechaInicio(fechaInicioTemp);
+    setFechaFin(fechaFinTemp);
+    setRangoSeleccionado('personalizado');
   };
 
   const formatearFecha = (fecha) => {
@@ -74,14 +102,12 @@ function VentasAcumuladas() {
       return;
     }
 
-    // Preparar datos para Excel
     const excelData = datos.map(row => ({
       'Fecha': formatearFecha(row.fecha),
       'Ventas del día': row.total_dia === 0 ? 'Sin ventas' : `$${Number(row.total_dia).toLocaleString('es-CO')}`,
       'Total acumulado': `$${Number(row.acumulado).toLocaleString('es-CO')}`
     }));
 
-    // Agregar fila de totales
     const totalGeneral = datos.reduce((sum, row) => sum + row.total_dia, 0);
     const ultimoAcumulado = datos.length > 0 ? datos[datos.length - 1].acumulado : 0;
     excelData.push({
@@ -97,7 +123,7 @@ function VentasAcumuladas() {
   };
 
   // ============================================================
-  // EXPORTAR A PDF (CON BRANDING)
+  // EXPORTAR A PDF
   // ============================================================
   const exportToPDF = () => {
     if (datos.length === 0) {
@@ -108,22 +134,17 @@ function VentasAcumuladas() {
     const doc = new jsPDF('landscape', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-
-    // ---------- ENCABEZADO CON LOGO ----------
-    const logoWidth = 40;
-    const logoHeight = 20;
     const marginX = 14;
     const marginY = 14;
 
-    // Logo (asegúrate de que la ruta sea correcta)
+    // Logo
     try {
-      doc.addImage(logoImg, 'PNG', marginX, marginY, logoWidth, logoHeight);
+      doc.addImage(logoImg, 'PNG', marginX, marginY, 40, 20);
     } catch (e) {
-      // Si no carga el logo, solo texto
-      console.warn('Logo no cargado, usando solo texto');
+      console.warn('Logo no cargado');
     }
 
-    // Título y subtítulo
+    // Título
     doc.setFontSize(18);
     doc.setTextColor('#5c3a21');
     doc.setFont('helvetica', 'bold');
@@ -133,21 +154,18 @@ function VentasAcumuladas() {
     doc.setTextColor('#8b5e3c');
     doc.setFont('helvetica', 'normal');
     doc.text(`Período: ${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`, pageWidth - marginX, marginY + 16, { align: 'right' });
-
     doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, pageWidth - marginX, marginY + 24, { align: 'right' });
 
-    // Línea separadora
     doc.setDrawColor('#e6d5c3');
     doc.line(marginX, marginY + 32, pageWidth - marginX, marginY + 32);
 
-    // ---------- TABLA ----------
+    // Tabla
     const tableData = datos.map(row => [
       formatearFecha(row.fecha),
       row.total_dia === 0 ? 'Sin ventas' : `$${Number(row.total_dia).toLocaleString('es-CO')}`,
       `$${Number(row.acumulado).toLocaleString('es-CO')}`
     ]);
 
-    // Totales
     const totalGeneral = datos.reduce((sum, row) => sum + row.total_dia, 0);
     const ultimoAcumulado = datos.length > 0 ? datos[datos.length - 1].acumulado : 0;
     tableData.push([
@@ -181,13 +199,11 @@ function VentasAcumuladas() {
       margin: { left: marginX, right: marginX },
     });
 
-    // ---------- PIE DE PÁGINA ----------
     const finalY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(9);
     doc.setTextColor('#8b5e3c');
     doc.text('© Congelados Lucky - Todos los derechos reservados', pageWidth / 2, finalY, { align: 'center' });
 
-    // ---------- GUARDAR PDF ----------
     doc.save(`Reporte_Ventas_Acumuladas_${fechaInicio}_a_${fechaFin}.pdf`);
   };
 
@@ -212,31 +228,56 @@ function VentasAcumuladas() {
         </div>
       </div>
 
-      <div className="rango-buttons">
-        <button 
-          className={rangoSeleccionado === '7dias' ? 'active' : ''} 
-          onClick={() => cambiarRango(7)}
-        >
-          Última semana
-        </button>
-        <button 
-          className={rangoSeleccionado === '15dias' ? 'active' : ''} 
-          onClick={() => cambiarRango(15)}
-        >
-          15 días
-        </button>
-        <button 
-          className={rangoSeleccionado === '30dias' ? 'active' : ''} 
-          onClick={() => cambiarRango(30)}
-        >
-          30 días
-        </button>
-        <button 
-          className={rangoSeleccionado === '90dias' ? 'active' : ''} 
-          onClick={() => cambiarRango(90)}
-        >
-          90 días
-        </button>
+      {/* Selector de fechas con calendario */}
+      <div className="filtro-fechas">
+        <div className="rango-buttons">
+          <button 
+            className={rangoSeleccionado === '7dias' ? 'active' : ''} 
+            onClick={() => cambiarRango(7)}
+          >
+            Última semana
+          </button>
+          <button 
+            className={rangoSeleccionado === '15dias' ? 'active' : ''} 
+            onClick={() => cambiarRango(15)}
+          >
+            15 días
+          </button>
+          <button 
+            className={rangoSeleccionado === '30dias' ? 'active' : ''} 
+            onClick={() => cambiarRango(30)}
+          >
+            30 días
+          </button>
+          <button 
+            className={rangoSeleccionado === '90dias' ? 'active' : ''} 
+            onClick={() => cambiarRango(90)}
+          >
+            90 días
+          </button>
+        </div>
+
+        <div className="calendario-custom">
+          <label>
+            Desde:
+            <input
+              type="date"
+              value={fechaInicioTemp}
+              onChange={(e) => setFechaInicioTemp(e.target.value)}
+            />
+          </label>
+          <label>
+            Hasta:
+            <input
+              type="date"
+              value={fechaFinTemp}
+              onChange={(e) => setFechaFinTemp(e.target.value)}
+            />
+          </label>
+          <button onClick={aplicarRangoPersonalizado} className="btn-aplicar">
+            Aplicar filtro
+          </button>
+        </div>
       </div>
 
       <div className="tabla-container">
