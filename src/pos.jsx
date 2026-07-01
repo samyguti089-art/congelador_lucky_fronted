@@ -117,6 +117,21 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCarrito(nuevoCarrito);
   };
 
+
+const actualizarCantidadCarrito = (index, nuevaCantidad) => {
+  // Evitar que la cantidad sea menor a 1
+  if (nuevaCantidad < 1) return;
+  
+  const nuevoCarrito = [...carrito];
+  const item = nuevoCarrito[index];
+  
+  // Actualizar cantidad y recalcular subtotal
+  item.cantidad = nuevaCantidad;
+  item.subtotal = nuevaCantidad * item.precio;
+  
+  setCarrito(nuevoCarrito);
+};
+
   const registrarVentaFinal = async () => {
     if (carrito.length === 0) {
       alert("El carrito está vacío");
