@@ -40,7 +40,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           <div className="dashboard-card realtime-card">
             <RealtimeSales />
           </div>
-          {/* 👇 Agrega VentasAcumuladas aquí */}
+          {/* 👇 Aquí está el componente VentasAcumuladas */}
           <div className="dashboard-card">
             <VentasAcumuladas />
           </div>
