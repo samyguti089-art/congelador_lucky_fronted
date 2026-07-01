@@ -1,0 +1,159 @@
+.modal-pago-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-pago-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-pago-content h2 {
+  margin-top: 0;
+  color: #5c3a21;
+  text-align: center;
+}
+
+.total-pago {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #5c3a21;
+}
+
+.total-pago strong {
+  font-size: 1.8rem;
+  color: #9b2c2c;
+}
+
+.cajero-info {
+  text-align: center;
+  color: #8b5e3c;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.metodos-pago {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.metodo-btn {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e6d5c3;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  font-weight: bold;
+  color: #5c3a21;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.metodo-btn.active {
+  border-color: #9b2c2c;
+  background: #faf7f2;
+}
+
+.metodo-btn:hover {
+  border-color: #9b2c2c;
+}
+
+.monto-recibido label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: bold;
+  color: #5c3a21;
+}
+
+.monto-recibido input {
+  padding: 12px;
+  border: 1px solid #e6d5c3;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.cambio-calculo {
+  margin-top: 12px;
+  padding: 10px;
+  background: #dcfce7;
+  border-radius: 10px;
+  text-align: center;
+  color: #166534;
+  font-size: 1.1rem;
+}
+
+.monto-insuficiente {
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.transferencia-info {
+  text-align: center;
+  padding: 15px;
+  background: #faf7f2;
+  border-radius: 12px;
+}
+
+.transferencia-detalle {
+  font-weight: bold;
+  color: #9b2c2c;
+  font-size: 1.2rem;
+}
+
+.modal-pago-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.btn-cancelar-pago {
+  flex: 1;
+  padding: 12px;
+  background: #e6d5c3;
+  color: #5c3a21;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-confirmar-pago {
+  flex: 2;
+  padding: 12px;
+  background: #9b2c2c;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btn-confirmar-pago:hover {
+  background: #7c1e1e;
+}
