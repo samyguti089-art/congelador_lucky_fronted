@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import InventoryPanel from './InventoryPanel';
 import SalesReports from './SalesReports';
 import RealtimeSales from './RealtimeSales';
@@ -10,6 +10,27 @@ import DespachosPanel from './DespachosPanel';
 import './OwnerDashboard.css';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
+  const [tabActiva, setTabActiva] = useState('dashboard');
+
+  const tabs = [
+    { id: 'dashboard', label: '📊 Dashboard', component: (
+      <>
+        <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
+        <DailySalesKPI />
+      </>
+    )},
+    { id: 'inventario', label: '📦 Inventario', component: <InventoryPanel /> },
+    { id: 'top', label: '🏆 Top Productos', component: <TopProducts /> },
+    { id: 'ventas', label: '📈 Ventas', component: (
+      <>
+        <SalesReports />
+        <VentasAcumuladas />
+      </>
+    )},
+    { id: 'tiempo-real', label: '🔄 Tiempo Real', component: <RealtimeSales /> },
+    { id: 'despachos', label: '📦 Despachos', component: <DespachosPanel inventario={inventario} usuario={usuario} /> }
+  ];
+
   return (
     <div className="owner-dashboard">
       <header className="dashboard-header">
@@ -21,38 +42,22 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
-      <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
+      {/* Pestañas */}
+      <div className="tabs-container">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab-btn ${tabActiva === tab.id ? 'active' : ''}`}
+            onClick={() => setTabActiva(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
       
-      <div className="dashboard-two-columns">
-        <div className="column-left">
-          <div className="dashboard-card inventory-card">
-            <InventoryPanel />
-          </div>
-          <div className="dashboard-card top-products-card">
-            <TopProducts />
-          </div>
-        </div>
-        
-        <div className="column-right">
-          <div className="dashboard-card sales-card">
-            <SalesReports />
-            <DailySalesKPI />
-          </div>
-          
-          <div className="dashboard-card realtime-card">
-            <RealtimeSales />
-          </div>
-          
-          {/* Ventas Acumuladas - tarjeta independiente */}
-          <div className="dashboard-card">
-            <VentasAcumuladas />
-          </div>
-          
-          {/* Despachos Panel - tarjeta independiente */}
-          <div className="dashboard-card">
-            <DespachosPanel inventario={inventario} usuario={usuario} />
-          </div>
-        </div>
+      {/* Contenido de la pestaña activa */}
+      <div className="tab-content">
+        {tabs.find(t => t.id === tabActiva)?.component}
       </div>
     </div>
   );
