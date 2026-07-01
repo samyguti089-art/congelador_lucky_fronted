@@ -489,8 +489,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
-      {mostrarDespachos && (
-        <DespachosModal onClose={() => setMostrarDespachos(false)} />
+     {mostrarDespachos && (
+        <DespachosModal 
+          onClose={() => setMostrarDespachos(false)} 
+          inventario={inventario}  // ✅ Pasar inventario
+        />
       )}
 
       {/* MODAL DE CIERRE DE SESIÓN */}
