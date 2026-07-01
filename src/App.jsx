@@ -14,10 +14,8 @@ function App() {
   const [mensajeInventario, setMensajeInventario] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ✅ Solo cambié localStorage → sessionStorage aquí
   useEffect(() => {
     const usuarioGuardado = sessionStorage.getItem("usuario");
     if (usuarioGuardado) {
@@ -27,15 +25,14 @@ function App() {
 
   const manejarLogin = (user) => {
     setUsuario(user);
-    sessionStorage.setItem("usuario", JSON.stringify(user)); // ✅ cambio
+    sessionStorage.setItem("usuario", JSON.stringify(user));
   };
 
   const cerrarSesion = () => {
-    sessionStorage.removeItem("usuario"); // ✅ cambio
+    sessionStorage.removeItem("usuario");
     setUsuario(null);
   };
 
-  // Funciones Supabase (sin cambios)
   const cargarInventario = async () => {
     const { data, error } = await supabase.from("inventario").select("*");
     if (!error) setInventario(data);
@@ -78,7 +75,6 @@ function App() {
     setInventario(inventario.filter(p => p.id !== id));
   };
 
-  // Actualizar inventario para cajero (sin cambios)
   const actualizarInventario = async (forzarRecarga = false) => {
     try {
       const res = await axios.get(`${API_URL}/inventario`);
@@ -96,14 +92,20 @@ function App() {
     }
   };
 
+  // ===== EFECTO PARA CARGAR DATOS SEGÚN ROL =====
   useEffect(() => {
-    if (usuario && usuario.rol === "cajero") {
-      actualizarInventario();
-    }
-    if (usuario && usuario.rol === "admin") {
-      cargarInventario();
-      cargarUsuarios();
-      cargarVentas();
+    if (usuario) {
+      if (usuario.rol === "cajero") {
+        actualizarInventario();
+      }
+      if (usuario.rol === "admin") {
+        cargarInventario();
+        cargarUsuarios();
+        cargarVentas();
+      }
+      if (usuario.rol === "dueño") {
+        cargarInventario(); // ✅ Ahora el dueño también carga inventario
+      }
     }
   }, [usuario]);
 
@@ -162,7 +164,6 @@ function App() {
     }
   };
 
-  // Renderizado principal (sin cambios)
   if (!usuario) {
     return <Login setUsuario={manejarLogin} />;
   }
@@ -200,16 +201,16 @@ function App() {
   }
 
   if (usuario.rol === "dueño") {
-  return (
-    <OwnerDashboard
-      usuario={usuario}
-      cerrarSesion={cerrarSesion}
-      actualizarInventario={actualizarInventario}
-      mensajeInventario={mensajeInventario}
-      inventario={inventario}  // ← agregar esta línea
-    />
-  );
-}
+    return (
+      <OwnerDashboard
+        usuario={usuario}
+        cerrarSesion={cerrarSesion}
+        actualizarInventario={actualizarInventario}
+        mensajeInventario={mensajeInventario}
+        inventario={inventario}
+      />
+    );
+  }
 
   return <div>Rol desconocido</div>;
 }
