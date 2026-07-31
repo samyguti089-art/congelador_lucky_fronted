@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { FaMoneyBillWave, FaShoppingCart, FaUsers, FaCalendarDay } from 'react-icons/fa';
+import { formatHoraColombia, formatFechaColombia } from '../utils/dateUtils';
 import './OwnerDashboard.css';
 
 function DailySalesKPI() {
@@ -23,7 +24,6 @@ function DailySalesKPI() {
     try {
       const hoy = new Date().toISOString().split('T')[0];
       
-      // Obtener ventas del día desde ventas_cabecera
       const { data, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
@@ -43,7 +43,6 @@ function DailySalesKPI() {
           promedio: promedio
         });
         
-        // Obtener detalle de cada venta (productos vendidos)
         const idsVentas = data.map(v => v.id_venta);
         const { data: detalles, error: detError } = await supabase
           .from('detalle_ventas')
@@ -54,7 +53,6 @@ function DailySalesKPI() {
           .in('id_venta', idsVentas);
         
         if (!detError && detalles) {
-          // Agrupar por venta
           const ventasConDetalle = data.map(venta => ({
             ...venta,
             detalles: detalles.filter(d => d.id_venta === venta.id_venta)
@@ -146,7 +144,7 @@ function DailySalesKPI() {
               <tbody>
                 {ventasDetalle.map((venta, idx) => (
                   <tr key={idx}>
-                    <td>{new Date(venta.fecha).toLocaleTimeString()}</td>
+                    <td>{formatHoraColombia(venta.fecha)}</td>
                     <td>{venta.id_venta}</td>
                     <td>
                       <div className="productos-lista">
