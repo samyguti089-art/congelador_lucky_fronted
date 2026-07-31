@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import { FaMoneyBillWave, FaBoxes, FaCheckCircle, FaExclamationTriangle, FaSave } from 'react-icons/fa';
+import axios from 'axios';
+import { supabase } from '../services/supabaseClient';
+import { FaMoneyBillWave, FaCreditCard, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { formatPrice } from '../utils/formatPrice';
 import './CashRegister.css';
 
 function CashRegister({ usuario, inventario, onClose }) {
   const [ventasDelDia, setVentasDelDia] = useState([]);
-  const [resumenVentas, setResumenVentas] = useState({ total: 0, cantidad: 0 });
+  const [resumenVentas, setResumenVentas] = useState({
+    total: 0,
+    efectivo: 0,
+    transferencia: 0,
+    cantidad: 0
+  });
   const [efectivoContado, setEfectivoContado] = useState('');
-  const [diferencia, setDiferencia] = useState(null);
+  const [transferenciaContada, setTransferenciaContada] = useState('');
+  const [diferenciaEfectivo, setDiferenciaEfectivo] = useState(null);
+  const [diferenciaTransferencia, setDiferenciaTransferencia] = useState(null);
   const [cuadreRealizado, setCuadreRealizado] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [inventarioFisico, setInventarioFisico] = useState({});
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [fecha] = useState(new Date().toISOString().split('T')[0]);
@@ -22,6 +30,7 @@ function CashRegister({ usuario, inventario, onClose }) {
   const cargarVentasDelDia = async () => {
     setLoading(true);
     try {
+      // Obtener ventas del día agrupadas por método de pago
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
@@ -31,66 +40,96 @@ function CashRegister({ usuario, inventario, onClose }) {
 
       if (error) throw error;
 
-      const total = ventas?.reduce((sum, v) => sum + v.total_venta, 0) || 0;
-      setVentasDelDia(ventas || []);
-      setResumenVentas({ total, cantidad: ventas?.length || 0 });
-    } catch (error) {
-      console.error('Error cargando ventas:', error);
+      if (ventas && ventas.length > 0) {
+        // Agrupar por método de pago
+        const totalEfectivo = ventas
+          .filter(v => v.metodo_pago === 'efectivo')
+          .reduce((sum, v) => sum + v.total_venta, 0);
+        const totalTransferencia = ventas
+          .filter(v => v.metodo_pago === 'transferencia')
+          .reduce((sum, v) => sum + v.total_venta, 0);
+
+        setResumenVentas({
+          total: totalEfectivo + totalTransferencia,
+          efectivo: totalEfectivo,
+          transferencia: totalTransferencia,
+          cantidad: ventas.length
+        });
+        setVentasDelDia(ventas);
+      } else {
+        setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
+        setVentasDelDia([]);
+      }
+    } catch (err) {
+      console.error('Error cargando ventas:', err);
       alert('Error al cargar las ventas del día');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCalcularDiferencia = () => {
-    const contado = parseFloat(efectivoContado);
-    if (isNaN(contado) || contado < 0) {
-      alert('Ingresa un monto válido');
+  const handleCalcularDiferencias = () => {
+    const efectivo = parseFloat(efectivoContado);
+    const transferencia = parseFloat(transferenciaContada);
+    if (isNaN(efectivo) || efectivo < 0) {
+      alert('Ingresa un monto válido para efectivo');
       return;
     }
-    const diff = contado - resumenVentas.total;
-    setDiferencia(diff);
-    setCuadreRealizado(true);
-  };
+    if (isNaN(transferencia) || transferencia < 0) {
+      alert('Ingresa un monto válido para transferencias');
+      return;
+    }
 
-  const handleConteoInventario = (productoId, cantidadContada) => {
-    setInventarioFisico(prev => ({
-      ...prev,
-      [productoId]: parseInt(cantidadContada) || 0
-    }));
+    const diffEfectivo = efectivo - resumenVentas.efectivo;
+    const diffTransferencia = transferencia - resumenVentas.transferencia;
+
+    setDiferenciaEfectivo(diffEfectivo);
+    setDiferenciaTransferencia(diffTransferencia);
+    setCuadreRealizado(true);
   };
 
   const handleGuardarCuadre = async () => {
     if (!cuadreRealizado) {
-      alert('Primero debes calcular la diferencia');
+      alert('Primero debes calcular las diferencias');
       return;
     }
 
     setGuardando(true);
     try {
-      const { error } = await supabase
-        .from('cuadres_caja')
-        .insert({
-          fecha: fecha,
-          cajero_id: usuario.id,
-          total_ventas_sistema: resumenVentas.total,
-          efectivo_contado: parseFloat(efectivoContado),
-          diferencia: diferencia,
-          estado: 'cerrado',
-          inventario_conteo: inventarioFisico,
-          observaciones: observaciones
-        });
+      const payload = {
+        fecha: fecha,
+        cajero_id: usuario.id,
+        total_ventas_sistema: resumenVentas.total,
+        total_efectivo_sistema: resumenVentas.efectivo,
+        total_transferencia_sistema: resumenVentas.transferencia,
+        efectivo_contado: parseFloat(efectivoContado),
+        transferencia_contada: parseFloat(transferenciaContada),
+        diferencia_efectivo: diferenciaEfectivo,
+        diferencia_transferencia: diferenciaTransferencia,
+        observaciones: observaciones
+      };
 
-      if (error) throw error;
-
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/cuadre/guardar`, payload);
+      console.log('Cuadre guardado:', response.data);
       alert('✅ Cuadre de caja guardado exitosamente');
+
+      // Cerrar el modal y resetear estado
       onClose();
     } catch (error) {
       console.error('Error guardando cuadre:', error);
-      alert('Error al guardar el cuadre: ' + error.message);
+      alert('❌ Error al guardar el cuadre: ' + (error.response?.data?.detail || error.message));
     } finally {
       setGuardando(false);
     }
+  };
+
+  const resetearCuadre = () => {
+    setEfectivoContado('');
+    setTransferenciaContada('');
+    setDiferenciaEfectivo(null);
+    setDiferenciaTransferencia(null);
+    setCuadreRealizado(false);
+    setObservaciones('');
   };
 
   const formatCurrency = (value) => {
@@ -115,11 +154,19 @@ function CashRegister({ usuario, inventario, onClose }) {
 
       {/* Resumen de Ventas */}
       <div className="ventas-resumen">
-        <div className="resumen-item">
+        <div className="resumen-item total">
           <span className="label">Total Ventas</span>
           <span className="value">{formatCurrency(resumenVentas.total)}</span>
         </div>
-        <div className="resumen-item">
+        <div className="resumen-item efectivo">
+          <span className="label">💵 Efectivo (Sistema)</span>
+          <span className="value">{formatCurrency(resumenVentas.efectivo)}</span>
+        </div>
+        <div className="resumen-item transferencia">
+          <span className="label">💳 Transferencia (Sistema)</span>
+          <span className="value">{formatCurrency(resumenVentas.transferencia)}</span>
+        </div>
+        <div className="resumen-item transacciones">
           <span className="label">Transacciones</span>
           <span className="value">{resumenVentas.cantidad}</span>
         </div>
@@ -137,54 +184,50 @@ function CashRegister({ usuario, inventario, onClose }) {
               onChange={(e) => setEfectivoContado(e.target.value)}
               placeholder="0"
               disabled={cuadreRealizado}
+              step="100"
             />
           </label>
-          <button
-            onClick={handleCalcularDiferencia}
-            disabled={cuadreRealizado || !efectivoContado}
-            className="btn-calcular"
-          >
-            Calcular
-          </button>
         </div>
-
-        {cuadreRealizado && diferencia !== null && (
-          <div className={`diferencia-resultado ${diferencia === 0 ? 'exacto' : diferencia > 0 ? 'sobrante' : 'faltante'}`}>
-            {diferencia === 0 ? (
-              <>
-                <FaCheckCircle /> <span>✅ Cuadre perfecto</span>
-              </>
-            ) : diferencia > 0 ? (
-              <>
-                <FaExclamationTriangle /> <span>Sobrante: {formatCurrency(diferencia)}</span>
-              </>
+        {cuadreRealizado && diferenciaEfectivo !== null && (
+          <div className={`diferencia-resultado ${diferenciaEfectivo === 0 ? 'exacto' : diferenciaEfectivo > 0 ? 'sobrante' : 'faltante'}`}>
+            {diferenciaEfectivo === 0 ? (
+              <><FaCheckCircle /> <span>✅ Efectivo cuadra perfecto</span></>
+            ) : diferenciaEfectivo > 0 ? (
+              <><FaExclamationTriangle /> <span>Sobrante en efectivo: {formatCurrency(diferenciaEfectivo)}</span></>
             ) : (
-              <>
-                <FaExclamationTriangle /> <span>Faltante: {formatCurrency(Math.abs(diferencia))}</span>
-              </>
+              <><FaExclamationTriangle /> <span>Faltante en efectivo: {formatCurrency(Math.abs(diferenciaEfectivo))}</span></>
             )}
           </div>
         )}
       </div>
 
-      {/* Conteo de Inventario */}
-      <div className="inventario-section">
-        <h3>📦 Conteo de Inventario</h3>
-        <p className="instruccion">Ingresa la cantidad física de cada producto</p>
-        <div className="conteo-grid">
-          {inventario.map((producto) => (
-            <div key={producto.id} className="conteo-item">
-              <span className="producto-nombre">{producto.subcategoria || producto.nombre}</span>
-              <span className="producto-sistema">Sistema: {producto.cantidad}</span>
-              <input
-                type="number"
-                placeholder="Contado"
-                value={inventarioFisico[producto.id] || ''}
-                onChange={(e) => handleConteoInventario(producto.id, e.target.value)}
-              />
-            </div>
-          ))}
+      {/* Cuadre de Transferencias */}
+      <div className="cuadre-section">
+        <h3>💳 Cuadre de Transferencias</h3>
+        <div className="cuadre-input-group">
+          <label>
+            Transferencias contadas (comprobantes):
+            <input
+              type="number"
+              value={transferenciaContada}
+              onChange={(e) => setTransferenciaContada(e.target.value)}
+              placeholder="0"
+              disabled={cuadreRealizado}
+              step="100"
+            />
+          </label>
         </div>
+        {cuadreRealizado && diferenciaTransferencia !== null && (
+          <div className={`diferencia-resultado ${diferenciaTransferencia === 0 ? 'exacto' : diferenciaTransferencia > 0 ? 'sobrante' : 'faltante'}`}>
+            {diferenciaTransferencia === 0 ? (
+              <><FaCheckCircle /> <span>✅ Transferencias cuadran perfecto</span></>
+            ) : diferenciaTransferencia > 0 ? (
+              <><FaExclamationTriangle /> <span>Sobrante en transferencias: {formatCurrency(diferenciaTransferencia)}</span></>
+            ) : (
+              <><FaExclamationTriangle /> <span>Faltante en transferencias: {formatCurrency(Math.abs(diferenciaTransferencia))}</span></>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Observaciones */}
@@ -194,7 +237,7 @@ function CashRegister({ usuario, inventario, onClose }) {
           <textarea
             value={observaciones}
             onChange={(e) => setObservaciones(e.target.value)}
-            placeholder="Notas adicionales sobre el cuadre..."
+            placeholder="Notas adicionales..."
             rows="2"
           />
         </label>
@@ -203,12 +246,32 @@ function CashRegister({ usuario, inventario, onClose }) {
       {/* Acciones */}
       <div className="cash-register-actions">
         <button
+          onClick={handleCalcularDiferencias}
+          disabled={cuadreRealizado}
+          className="btn-calcular"
+        >
+          Calcular diferencias
+        </button>
+        <button
+          onClick={resetearCuadre}
+          className="btn-reset"
+        >
+          🔄 Reiniciar
+        </button>
+        <button
           onClick={handleGuardarCuadre}
           disabled={!cuadreRealizado || guardando}
           className="btn-guardar"
         >
-          <FaSave /> {guardando ? 'Guardando...' : 'Guardar Cuadre'}
+          {guardando ? 'Guardando...' : '💾 Guardar Cuadre'}
         </button>
+      </div>
+
+      <div className="cuadre-info">
+        <p className="info-text">
+          Nota: Al cerrar el cuadre, la caja se reinicia a cero en el sistema (visualmente).
+          Los datos históricos se guardan en la base de datos.
+        </p>
       </div>
     </div>
   );
