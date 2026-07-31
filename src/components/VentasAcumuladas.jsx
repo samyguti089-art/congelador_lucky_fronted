@@ -4,24 +4,23 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatPrice } from '../utils/formatPrice';
-import './OwnerDashboard.css';
 import { formatFechaColombia } from '../utils/dateUtils';
+import './OwnerDashboard.css';
 
-// Importar logo (ajusta la ruta según tu estructura)
-import logoImg from '../components/images/logo.jpeg'; // o desde public: "/images/logo.png"
+// Importar logo
+import logoImg from '../components/images/logo.jpeg';
 
 function VentasAcumuladas() {
   const [datos, setDatos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [fechaInicioTemp, setFechaInicioTemp] = useState(''); // para el input
-  const [fechaFinTemp, setFechaFinTemp] = useState('');       // para el input
+  const [fechaInicioTemp, setFechaInicioTemp] = useState('');
+  const [fechaFinTemp, setFechaFinTemp] = useState('');
   const [rangoSeleccionado, setRangoSeleccionado] = useState('30dias');
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Inicializar fechas con los últimos 30 días
   useEffect(() => {
     const fin = new Date();
     const inicio = new Date();
@@ -34,7 +33,6 @@ function VentasAcumuladas() {
     setFechaInicioTemp(inicioStr);
   }, []);
 
-  // Cargar datos cuando cambien las fechas
   useEffect(() => {
     if (fechaInicio && fechaFin) {
       cargarDatos();
@@ -56,7 +54,6 @@ function VentasAcumuladas() {
     }
   };
 
-  // Cambiar rango con botones predefinidos
   const cambiarRango = (dias) => {
     const fin = new Date();
     const inicio = new Date();
@@ -70,7 +67,6 @@ function VentasAcumuladas() {
     setRangoSeleccionado(`${dias}dias`);
   };
 
-  // Aplicar rango personalizado desde el calendario
   const aplicarRangoPersonalizado = () => {
     if (!fechaInicioTemp || !fechaFinTemp) {
       alert('Por favor selecciona ambas fechas');
@@ -83,15 +79,6 @@ function VentasAcumuladas() {
     setFechaInicio(fechaInicioTemp);
     setFechaFin(fechaFinTemp);
     setRangoSeleccionado('personalizado');
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   // ============================================================
@@ -134,18 +121,15 @@ function VentasAcumuladas() {
 
     const doc = new jsPDF('landscape', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
     const marginX = 14;
     const marginY = 14;
 
-    // Logo
     try {
       doc.addImage(logoImg, 'PNG', marginX, marginY, 40, 20);
     } catch (e) {
       console.warn('Logo no cargado');
     }
 
-    // Título
     doc.setFontSize(18);
     doc.setTextColor('#5c3a21');
     doc.setFont('helvetica', 'bold');
@@ -154,15 +138,25 @@ function VentasAcumuladas() {
     doc.setFontSize(11);
     doc.setTextColor('#8b5e3c');
     doc.setFont('helvetica', 'normal');
-    doc.text(`Período: ${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`, pageWidth - marginX, marginY + 16, { align: 'right' });
-    doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, pageWidth - marginX, marginY + 24, { align: 'right' });
+    doc.text(
+      `Período: ${formatFechaColombia(fechaInicio)} - ${formatFechaColombia(fechaFin)}`,
+      pageWidth - marginX,
+      marginY + 16,
+      { align: 'right' }
+    );
+    doc.text(
+      `Generado: ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`,
+      pageWidth - marginX,
+      marginY + 24,
+      { align: 'right' }
+    );
 
     doc.setDrawColor('#e6d5c3');
     doc.line(marginX, marginY + 32, pageWidth - marginX, marginY + 32);
 
     // Tabla
     const tableData = datos.map(row => [
-      formatearFecha(row.fecha),
+      formatFechaColombia(row.fecha),
       row.total_dia === 0 ? 'Sin ventas' : `$${Number(row.total_dia).toLocaleString('es-CO')}`,
       `$${Number(row.acumulado).toLocaleString('es-CO')}`
     ]);
@@ -229,7 +223,6 @@ function VentasAcumuladas() {
         </div>
       </div>
 
-      {/* Selector de fechas con calendario */}
       <div className="filtro-fechas">
         <div className="rango-buttons">
           <button 
@@ -298,7 +291,7 @@ function VentasAcumuladas() {
             ) : (
               datos.map((row, index) => (
                 <tr key={index} className={row.total_dia === 0 ? 'dia-sin-ventas' : ''}>
-                  <td>{formatearFecha(row.fecha)}</td>
+                  <td>{formatFechaColombia(row.fecha)}</td>
                   <td>
                     {row.total_dia === 0 ? (
                       <span className="sin-ventas-msg">No se registraron ventas en este día</span>
