@@ -17,6 +17,17 @@ import combosImg from "./components/images/imagen de portada de combos.jpg";
 // Importar logo
 import logoImg from "./components/images/logo.jpeg";
 
+// ============================================================
+//  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
+// ============================================================
+// Carga todas las imágenes de la carpeta y las mapea por nombre de archivo
+const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
+const imageMap = {};
+Object.keys(imageModules).forEach((path) => {
+  const fileName = path.split('/').pop(); // ej: "Especiales x10.jpeg"
+  imageMap[fileName] = imageModules[path].default;
+});
+
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
@@ -36,15 +47,16 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ===== FUNCIÓN PARA CARGAR IMAGEN DESDE src/components/images/ =====
+  // ===== FUNCIÓN PARA OBTENER IMAGEN DEL PRODUCTO =====
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
-    try {
-      // Resuelve la ruta relativa a la carpeta images usando import.meta.url
-      return new URL(`./components/images/${nombreArchivo}`, import.meta.url).href;
-    } catch {
-      return null;
+    // Buscar en el mapa de imágenes
+    if (imageMap[nombreArchivo]) {
+      return imageMap[nombreArchivo];
     }
+    // Si no se encuentra, mostrar advertencia en consola
+    console.warn(`⚠️ Imagen no encontrada: ${nombreArchivo}`);
+    return null;
   };
 
   useEffect(() => {
