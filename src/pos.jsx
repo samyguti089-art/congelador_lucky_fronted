@@ -36,6 +36,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // ===== FUNCIÓN PARA CARGAR IMAGEN DESDE src/components/images/ =====
+  const getImagenProducto = (nombreArchivo) => {
+    if (!nombreArchivo) return null;
+    try {
+      // Resuelve la ruta relativa a la carpeta images usando import.meta.url
+      return new URL(`./components/images/${nombreArchivo}`, import.meta.url).href;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchCombos();
   }, []);
@@ -315,7 +326,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={producto.id} className="producto-card">
                     <div className="producto-imagen">
                       {producto.imagen_url ? (
-                        <img src={producto.imagen_url} alt={producto.subcategoria || producto.nombre} />
+                        <img
+                          src={getImagenProducto(producto.imagen_url)}
+                          alt={producto.subcategoria || producto.nombre}
+                        />
                       ) : (
                         <div className="producto-sin-imagen">📷</div>
                       )}
