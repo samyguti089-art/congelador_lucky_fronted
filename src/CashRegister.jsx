@@ -48,6 +48,7 @@ function CashRegister({ usuario, inventario, onClose }) {
   const cargarVentasDelDia = async () => {
     setLoading(true);
     try {
+      // Consulta usando rango UTC para incluir todas las ventas del día colombiano
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
@@ -128,6 +129,7 @@ function CashRegister({ usuario, inventario, onClose }) {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/cuadre/guardar`, payload);
       console.log('Cuadre guardado:', response.data);
       alert('✅ Cuadre de caja guardado exitosamente');
+
       onClose();
     } catch (error) {
       console.error('Error guardando cuadre:', error);
