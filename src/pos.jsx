@@ -5,8 +5,8 @@ import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
 import ModalPago from './components/ModalPago';
-import { formatPrice } from './utils/formatPrice.js';
 import DespachosModal from './components/DespachosModal';
+import { formatPrice } from './utils/formatPrice.js';
 
 // Importar imágenes de categorías
 import deditosImg from "./components/images/portada 2 deditos.jpg";
@@ -27,6 +27,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [datosPagoConfirmacion, setDatosPagoConfirmacion] = useState(null);
   const [ventaExitosa, setVentaExitosa] = useState(null);
   const [cerrando, setCerrando] = useState(false);
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
@@ -140,9 +142,19 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalPago(true);
   };
 
-  // ===== CONFIRMAR PAGO Y REGISTRAR VENTA =====
-  const confirmarPago = async (datosPago) => {
+  // ===== CONFIRMAR PAGO (abre modal de confirmación) =====
+  const confirmarPago = (datosPago) => {
     setMostrarModalPago(false);
+    setDatosPagoConfirmacion(datosPago);
+    setMostrarConfirmacion(true);
+  };
+
+  // ===== EJECUTAR PAGO (llamada real a la API) =====
+  const ejecutarPago = async () => {
+    const datosPago = datosPagoConfirmacion;
+    if (!datosPago) return;
+
+    setMostrarConfirmacion(false);
 
     const productosParaBackend = carrito.map(item => ({
       producto_id: item.esCombo ? null : item.id,
@@ -195,6 +207,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         }, 100);
       }
 
+      setDatosPagoConfirmacion(null);
+
     } catch (error) {
       console.error("Error al registrar venta del carrito:", error);
       if (error.response) {
@@ -204,6 +218,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       } else {
         alert("Error al preparar la solicitud: " + error.message);
       }
+      // Volver a abrir modal de pago en caso de error
+      setMostrarModalPago(true);
     }
   };
 
@@ -255,7 +271,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             <FiLogOut className="logout-icon" /> Salir
           </button>
           <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
-          📥 Despachos
+            📥 Despachos
           </button>
         </div>
       </div>
@@ -477,6 +493,56 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         />
       )}
 
+      {/* MODAL DE CONFIRMACIÓN DE PAGO */}
+      {mostrarConfirmacion && datosPagoConfirmacion && (
+        <div className="modal-overlay" onClick={() => {
+          setMostrarConfirmacion(false);
+          setDatosPagoConfirmacion(null);
+          setMostrarModalPago(true);
+        }}>
+          <div className="modal-content confirmacion-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header confirmacion-header">
+              <h2>⚠️ Confirmar Pago</h2>
+              <button className="close-btn" onClick={() => {
+                setMostrarConfirmacion(false);
+                setDatosPagoConfirmacion(null);
+                setMostrarModalPago(true);
+              }}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p className="confirmacion-mensaje">
+                ¿Estás seguro de confirmar el pago de los productos seleccionados?
+              </p>
+              <div className="confirmacion-resumen">
+                <p><strong>Total:</strong> {formatPrice(totalCarrito)}</p>
+                <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
+                  <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
+                )}
+              </div>
+              <div className="confirmacion-buttons">
+                <button
+                  className="btn-cancelar-confirmacion"
+                  onClick={() => {
+                    setMostrarConfirmacion(false);
+                    setDatosPagoConfirmacion(null);
+                    setMostrarModalPago(true);
+                  }}
+                >
+                  No
+                </button>
+                <button
+                  className="btn-aceptar-confirmacion"
+                  onClick={ejecutarPago}
+                >
+                  Sí, confirmar pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL DE CUADRE DE CAJA */}
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
@@ -489,10 +555,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           </div>
         </div>
       )}
-     {mostrarDespachos && (
-        <DespachosModal 
-          onClose={() => setMostrarDespachos(false)} 
-          inventario={inventario}  // ✅ Pasar inventario
+
+      {mostrarDespachos && (
+        <DespachosModal
+          onClose={() => setMostrarDespachos(false)}
+          inventario={inventario}
         />
       )}
 
