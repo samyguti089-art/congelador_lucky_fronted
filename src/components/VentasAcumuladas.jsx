@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatPrice } from '../utils/formatPrice';
 import './OwnerDashboard.css';
+import { formatFechaColombia } from '../utils/dateUtils';
 
 // Importar logo (ajusta la ruta según tu estructura)
 import logoImg from '../components/images/logo.jpeg'; // o desde public: "/images/logo.png"
@@ -103,7 +104,7 @@ function VentasAcumuladas() {
     }
 
     const excelData = datos.map(row => ({
-      'Fecha': formatearFecha(row.fecha),
+      'Fecha': formatFechaColombia(row.fecha),
       'Ventas del día': row.total_dia === 0 ? 'Sin ventas' : `$${Number(row.total_dia).toLocaleString('es-CO')}`,
       'Total acumulado': `$${Number(row.acumulado).toLocaleString('es-CO')}`
     }));
