@@ -380,7 +380,16 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               ) : (
                 combos.map((combo) => (
                   <div key={combo.id} className="combo-card">
-                    <div className="combo-icono">🍱</div>
+                    <div className="combo-imagen">
+                    {combo.imagen_url ? (
+                      <img
+                        src={getImagenProducto(combo.imagen_url)}
+                        alt={combo.nombre}
+                      />
+                    ) : (
+                      <div className="combo-sin-imagen">🍱</div>
+                    )}
+                  </div>
                     <div className="combo-info">
                       <h4>{combo.nombre}</h4>
                       <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
