@@ -28,13 +28,21 @@ function CashRegister({ usuario, inventario, onClose }) {
     return hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   });
 
-  // ✅ Rango UTC para consulta en Supabase (captura todo el día colombiano)
+  // ✅ Rango UTC correcto para el día colombiano
   const [rangoUTC] = useState(() => {
     const hoy = new Date();
     const fechaStr = hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
     const [year, month, day] = fechaStr.split('-').map(Number);
-    const inicio = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-    const fin = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+    
+    // Inicio del día en Colombia: 00:00:00 UTC-5 = 05:00:00 UTC del mismo día
+    const inicio = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
+    // Fin del día en Colombia: 23:59:59 UTC-5 = 04:59:59 UTC del día siguiente
+    const fin = new Date(Date.UTC(year, month - 1, day + 1, 4, 59, 59));
+    
+    console.log('📅 Rango UTC calculado:');
+    console.log('  Inicio:', inicio.toISOString());
+    console.log('  Fin:', fin.toISOString());
+    
     return {
       inicio: inicio.toISOString(),
       fin: fin.toISOString()
@@ -48,7 +56,9 @@ function CashRegister({ usuario, inventario, onClose }) {
   const cargarVentasDelDia = async () => {
     setLoading(true);
     try {
-      // Consulta usando rango UTC para incluir todas las ventas del día colombiano
+      console.log('🔍 Consultando ventas para cajero:', usuario.id);
+      console.log('  Rango UTC:', rangoUTC.inicio, '→', rangoUTC.fin);
+
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
@@ -57,6 +67,8 @@ function CashRegister({ usuario, inventario, onClose }) {
         .lte('fecha', rangoUTC.fin);
 
       if (error) throw error;
+
+      console.log('📊 Ventas encontradas:', ventas?.length || 0);
 
       if (ventas && ventas.length > 0) {
         const totalEfectivo = ventas
@@ -168,7 +180,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         <button className="close-btn" onClick={onClose}>✕</button>
       </div>
 
-      {/* Resumen de Ventas */}
       <div className="ventas-resumen">
         <div className="resumen-item total">
           <span className="label">Total Ventas</span>
@@ -188,7 +199,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         </div>
       </div>
 
-      {/* Cuadre de Efectivo */}
       <div className="cuadre-section">
         <h3>💵 Cuadre de Efectivo</h3>
         <div className="cuadre-input-group">
@@ -217,7 +227,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         )}
       </div>
 
-      {/* Cuadre de Transferencias */}
       <div className="cuadre-section">
         <h3>💳 Cuadre de Transferencias</h3>
         <div className="cuadre-input-group">
@@ -246,7 +255,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         )}
       </div>
 
-      {/* Observaciones */}
       <div className="observaciones-section">
         <label>
           Observaciones:
@@ -259,7 +267,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         </label>
       </div>
 
-      {/* Acciones */}
       <div className="cash-register-actions">
         <button
           onClick={handleCalcularDiferencias}
