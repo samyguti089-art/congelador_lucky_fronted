@@ -21,7 +21,6 @@ function CashRegister({ usuario, inventario, onClose }) {
   const [loading, setLoading] = useState(true);
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
-  const [fecha] = useState(() => {
   const [fecha] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
