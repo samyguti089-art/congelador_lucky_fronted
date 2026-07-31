@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { subscribeToSales } from '../services/realtimeService';
 import { supabase } from '../services/supabaseClient';
 import './OwnerDashboard.css';
+import { formatHoraColombia } from '../utils/dateUtils';
 
 function RealtimeSales() {
   const [recentSales, setRecentSales] = useState([]);
@@ -93,7 +94,7 @@ function RealtimeSales() {
               <div className="sale-info">
                 <span className="sale-id">Venta #{sale.id_venta}</span>
                 <span className="sale-time">
-                  {new Date(sale.fecha).toLocaleTimeString()}
+                  {formatHoraColombia(sale.fecha)}
                 </span>
               </div>
               <div className="sale-amount">
