@@ -22,10 +22,23 @@ function CashRegister({ usuario, inventario, onClose }) {
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  // ✅ Fecha en zona horaria Colombia (UTC-5)
-  const [fecha] = useState(() => {
+  // ✅ Fecha en zona horaria Colombia (UTC-5) para mostrar en el badge
+  const [fechaColombia] = useState(() => {
     const hoy = new Date();
     return hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+  });
+
+  // ✅ Rango UTC para consulta en Supabase (captura todo el día colombiano)
+  const [rangoUTC] = useState(() => {
+    const hoy = new Date();
+    const fechaStr = hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const inicio = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const fin = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+    return {
+      inicio: inicio.toISOString(),
+      fin: fin.toISOString()
+    };
   });
 
   useEffect(() => {
@@ -39,8 +52,8 @@ function CashRegister({ usuario, inventario, onClose }) {
         .from('ventas_cabecera')
         .select('*')
         .eq('cajero_id', usuario.id)
-        .gte('fecha::DATE', fecha)
-        .lte('fecha::DATE', fecha);
+        .gte('fecha', rangoUTC.inicio)
+        .lte('fecha', rangoUTC.fin);
 
       if (error) throw error;
 
@@ -70,6 +83,7 @@ function CashRegister({ usuario, inventario, onClose }) {
       setLoading(false);
     }
   };
+
   const handleCalcularDiferencias = () => {
     const efectivo = parseFloat(efectivoContado);
     const transferencia = parseFloat(transferenciaContada);
@@ -99,7 +113,7 @@ function CashRegister({ usuario, inventario, onClose }) {
     setGuardando(true);
     try {
       const payload = {
-        fecha: fecha,
+        fecha: fechaColombia,
         cajero_id: usuario.id,
         total_ventas_sistema: resumenVentas.total,
         total_efectivo_sistema: resumenVentas.efectivo,
@@ -114,8 +128,6 @@ function CashRegister({ usuario, inventario, onClose }) {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/cuadre/guardar`, payload);
       console.log('Cuadre guardado:', response.data);
       alert('✅ Cuadre de caja guardado exitosamente');
-
-      // Cerrar el modal y resetear estado
       onClose();
     } catch (error) {
       console.error('Error guardando cuadre:', error);
@@ -150,7 +162,7 @@ function CashRegister({ usuario, inventario, onClose }) {
     <div className="cash-register-container">
       <div className="cash-register-header">
         <h2>💰 Cuadre de Caja</h2>
-        <span className="fecha-badge">📅 {fecha}</span>
+        <span className="fecha-badge">📅 {fechaColombia}</span>
         <button className="close-btn" onClick={onClose}>✕</button>
       </div>
 
