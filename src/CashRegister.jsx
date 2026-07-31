@@ -21,7 +21,12 @@ function CashRegister({ usuario, inventario, onClose }) {
   const [loading, setLoading] = useState(true);
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
-  const [fecha] = useState(new Date().toISOString().split('T')[0]);
+
+  // ✅ Fecha en zona horaria Colombia (UTC-5)
+  const [fecha] = useState(() => {
+    const hoy = new Date();
+    return hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+  });
 
   useEffect(() => {
     cargarVentasDelDia();
@@ -30,18 +35,16 @@ function CashRegister({ usuario, inventario, onClose }) {
   const cargarVentasDelDia = async () => {
     setLoading(true);
     try {
-      // Obtener ventas del día agrupadas por método de pago
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
-        .gte('fecha', `${fecha} 00:00:00`)
-        .lte('fecha', `${fecha} 23:59:59`)
-        .eq('cajero_id', usuario.id);
+        .eq('cajero_id', usuario.id)
+        .gte('fecha::DATE', fecha)
+        .lte('fecha::DATE', fecha);
 
       if (error) throw error;
 
       if (ventas && ventas.length > 0) {
-        // Agrupar por método de pago
         const totalEfectivo = ventas
           .filter(v => v.metodo_pago === 'efectivo')
           .reduce((sum, v) => sum + v.total_venta, 0);
@@ -67,7 +70,6 @@ function CashRegister({ usuario, inventario, onClose }) {
       setLoading(false);
     }
   };
-
   const handleCalcularDiferencias = () => {
     const efectivo = parseFloat(efectivoContado);
     const transferencia = parseFloat(transferenciaContada);
