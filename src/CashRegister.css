@@ -1,3 +1,7 @@
+/* ============================================================
+   CASH REGISTER - CUADRE DE CAJA (MEJORADO)
+   ============================================================ */
+
 .cash-register-container {
   max-width: 700px;
   margin: 0 auto;
@@ -8,6 +12,7 @@
   overflow-y: auto;
 }
 
+/* ===== HEADER ===== */
 .cash-register-header {
   display: flex;
   justify-content: space-between;
@@ -21,6 +26,7 @@
   margin: 0;
   color: #5c3a21;
 }
+
 .fecha-badge {
   background: #faf7f2;
   padding: 4px 12px;
@@ -28,54 +34,78 @@
   color: #5c3a21;
   font-size: 0.9rem;
 }
+
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   color: #5c3a21;
+  transition: color 0.2s;
 }
 
+.close-btn:hover {
+  color: #9b2c2c;
+}
+
+/* ===== RESUMEN DE VENTAS ===== */
 .ventas-resumen {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
+
 .resumen-item {
   background: #faf7f2;
   padding: 12px 16px;
   border-radius: 12px;
   text-align: center;
 }
+
 .resumen-item .label {
   display: block;
   font-size: 0.7rem;
   color: #8b5e3c;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
+
 .resumen-item .value {
   display: block;
   font-size: 1.3rem;
   font-weight: bold;
   color: #5c3a21;
 }
-.resumen-item.total .value { color: #9b2c2c; }
-.resumen-item.efectivo .value { color: #2d7d46; }
-.resumen-item.transferencia .value { color: #6b21a5; }
-.resumen-item.transacciones .value { color: #d97706; }
 
+.resumen-item.total .value {
+  color: #9b2c2c;
+}
+.resumen-item.efectivo .value {
+  color: #2d7d46;
+}
+.resumen-item.transferencia .value {
+  color: #6b21a5;
+}
+.resumen-item.transacciones .value {
+  color: #d97706;
+}
+
+/* ===== SECCIÓN DE CUADRE ===== */
 .cuadre-section {
   background: #faf7f2;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 15px;
 }
+
 .cuadre-section h3 {
   margin: 0 0 10px 0;
   color: #5c3a21;
   font-size: 1rem;
 }
+
+/* ===== INPUTS MEJORADOS ===== */
 .cuadre-input-group label {
   display: flex;
   flex-direction: column;
@@ -83,14 +113,47 @@
   font-size: 0.85rem;
   color: #5c3a21;
 }
+
 .cuadre-input-group input {
-  padding: 10px;
-  border: 1px solid #e6d5c3;
+  padding: 12px 16px;
+  border: 1px solid #d1c4b4;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   background: white;
+  color: #1a1a1a;           /* ✅ Texto negro para máxima legibilidad */
+  font-weight: 600;          /* ✅ Negrita para que resalte */
+  text-align: right;         /* ✅ Alinear números a la derecha */
+  transition: border-color 0.3s, box-shadow 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+  -moz-appearance: textfield; /* Eliminar flechas en Firefox */
 }
 
+/* ✅ Quitar flechas en inputs number (Chrome, Safari, Edge) */
+.cuadre-input-group input::-webkit-outer-spin-button,
+.cuadre-input-group input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cuadre-input-group input:focus {
+  outline: none;
+  border-color: #9b2c2c;
+  box-shadow: 0 0 0 3px rgba(155, 44, 44, 0.15);
+}
+
+.cuadre-input-group input::placeholder {
+  color: #b0a08a;
+  font-weight: normal;
+}
+
+.cuadre-input-group input:disabled {
+  background: #f0ece6;
+  color: #8b5e3c;
+  cursor: not-allowed;
+}
+
+/* ===== DIFERENCIAS ===== */
 .diferencia-resultado {
   margin-top: 12px;
   padding: 10px 14px;
@@ -100,6 +163,7 @@
   gap: 10px;
   font-weight: bold;
 }
+
 .diferencia-resultado.exacto {
   background: #dcfce7;
   color: #166534;
@@ -113,9 +177,11 @@
   color: #991b1b;
 }
 
+/* ===== OBSERVACIONES ===== */
 .observaciones-section {
   margin-bottom: 15px;
 }
+
 .observaciones-section label {
   display: flex;
   flex-direction: column;
@@ -123,19 +189,38 @@
   font-size: 0.85rem;
   color: #5c3a21;
 }
+
 .observaciones-section textarea {
-  padding: 10px;
-  border: 1px solid #e6d5c3;
+  padding: 10px 14px;
+  border: 1px solid #d1c4b4;
   border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
+  color: #1a1a1a;
   resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.observaciones-section textarea:focus {
+  outline: none;
+  border-color: #9b2c2c;
+  box-shadow: 0 0 0 3px rgba(155, 44, 44, 0.15);
+}
+
+.observaciones-section textarea::placeholder {
+  color: #b0a08a;
+}
+
+/* ===== BOTONES ===== */
 .cash-register-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  margin-top: 10px;
 }
+
 .btn-calcular {
   background: #5c3a21;
   color: white;
@@ -144,11 +229,18 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  transition: background 0.2s;
 }
+
+.btn-calcular:hover:not(:disabled) {
+  background: #3b2a1f;
+}
+
 .btn-calcular:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .btn-reset {
   background: #e6d5c3;
   color: #5c3a21;
@@ -157,7 +249,13 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  transition: background 0.2s;
 }
+
+.btn-reset:hover {
+  background: #d4c5b5;
+}
+
 .btn-guardar {
   background: #9b2c2c;
   color: white;
@@ -166,19 +264,67 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  transition: background 0.2s;
 }
+
+.btn-guardar:hover:not(:disabled) {
+  background: #7c1e1e;
+}
+
 .btn-guardar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* ===== INFO ===== */
 .cuadre-info {
   margin-top: 15px;
   padding-top: 10px;
   border-top: 1px solid #e6d5c3;
 }
+
 .info-text {
   font-size: 0.75rem;
   color: #8b5e3c;
   margin: 0;
+}
+
+/* ===== LOADING ===== */
+.cash-register-loading {
+  text-align: center;
+  padding: 40px;
+  color: #8b5e3c;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .ventas-resumen {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .resumen-item {
+    padding: 8px 10px;
+  }
+
+  .resumen-item .value {
+    font-size: 1.1rem;
+  }
+
+  .cuadre-input-group input {
+    font-size: 1rem;
+    padding: 10px 12px;
+  }
+
+  .cash-register-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-calcular,
+  .btn-reset,
+  .btn-guardar {
+    text-align: center;
+    justify-content: center;
+  }
 }
