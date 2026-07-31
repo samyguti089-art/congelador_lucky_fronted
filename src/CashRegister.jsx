@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from './supabaseClient';
 import { FaMoneyBillWave, FaCreditCard, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatPrice';
 import './CashRegister.css';
