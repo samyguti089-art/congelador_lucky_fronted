@@ -21,7 +21,10 @@ function CashRegister({ usuario, inventario, onClose }) {
   const [loading, setLoading] = useState(true);
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
-  const [fecha] = useState(new Date().toISOString().split('T')[0]);
+  const [fecha] = useState(() => {
+  const hoy = new Date();
+  return hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+  });
 
   useEffect(() => {
     cargarVentasDelDia();
