@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { FaMoneyBillWave, FaCreditCard, FaCheckCircle } from 'react-icons/fa';
+import { FaMoneyBillWave, FaCreditCard, FaExchangeAlt, FaCheckCircle } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatPrice';
 import './ModalPago.css';
 
-function ModalPago({ total, onConfirm, onCancel, usuario }) {
+function ModalPago({ total, usuario, onConfirm, onCancel }) {
   const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [montoEfectivo, setMontoEfectivo] = useState('');
+  const [montoTransferencia, setMontoTransferencia] = useState('');
   const [montoRecibido, setMontoRecibido] = useState('');
   const [cambio, setCambio] = useState(0);
 
   useEffect(() => {
-    calcularCambio();
+    if (metodoPago === 'efectivo') {
+      calcularCambio();
+    }
   }, [montoRecibido, total]);
 
   const calcularCambio = () => {
@@ -22,18 +26,47 @@ function ModalPago({ total, onConfirm, onCancel, usuario }) {
   };
 
   const handleConfirm = () => {
+    let payload = { 
+      metodo_pago: metodoPago, 
+      cambio: 0, 
+      monto_efectivo: 0, 
+      monto_transferencia: 0 
+    };
+
     if (metodoPago === 'efectivo') {
       const monto = parseFloat(montoRecibido);
       if (isNaN(monto) || monto < total) {
         alert(`El monto recibido (${formatPrice(monto)}) es menor al total (${formatPrice(total)})`);
         return;
       }
+      payload.cambio = monto - total;
+      payload.monto_efectivo = total;
+      payload.monto_transferencia = 0;
+
+    } else if (metodoPago === 'transferencia') {
+      payload.monto_efectivo = 0;
+      payload.monto_transferencia = total;
+
+    } else if (metodoPago === 'compartida') {
+      const efectivo = parseFloat(montoEfectivo) || 0;
+      const transferencia = parseFloat(montoTransferencia) || 0;
+      
+      if (efectivo < 0 || transferencia < 0) {
+        alert('Ingresa montos válidos');
+        return;
+      }
+      if (efectivo + transferencia < total) {
+        alert(`La suma de efectivo (${formatPrice(efectivo)}) y transferencia (${formatPrice(transferencia)}) es menor al total (${formatPrice(total)})`);
+        return;
+      }
+      // Si hay excedente, se asume cambio en efectivo
+      const cambioCalculado = (efectivo + transferencia) - total;
+      payload.cambio = cambioCalculado > 0 ? cambioCalculado : 0;
+      payload.monto_efectivo = efectivo;
+      payload.monto_transferencia = transferencia;
     }
-    onConfirm({
-      metodo_pago: metodoPago,
-      cambio: metodoPago === 'efectivo' ? cambio : 0,
-      monto_recibido: metodoPago === 'efectivo' ? parseFloat(montoRecibido) : total
-    });
+
+    onConfirm(payload);
   };
 
   return (
@@ -55,6 +88,12 @@ function ModalPago({ total, onConfirm, onCancel, usuario }) {
             onClick={() => setMetodoPago('transferencia')}
           >
             <FaCreditCard /> Transferencia
+          </button>
+          <button
+            className={`metodo-btn ${metodoPago === 'compartida' ? 'active' : ''}`}
+            onClick={() => setMetodoPago('compartida')}
+          >
+            <FaExchangeAlt /> Compartida
           </button>
         </div>
 
@@ -88,6 +127,40 @@ function ModalPago({ total, onConfirm, onCancel, usuario }) {
           <div className="transferencia-info">
             <p>✅ El pago se confirmará por transferencia</p>
             <p className="transferencia-detalle">Total a pagar: {formatPrice(total)}</p>
+          </div>
+        )}
+
+        {metodoPago === 'compartida' && (
+          <div className="compartida-info">
+            <div className="compartida-inputs">
+              <label>
+                Monto en Efectivo:
+                <input
+                  type="number"
+                  value={montoEfectivo}
+                  onChange={(e) => setMontoEfectivo(e.target.value)}
+                  placeholder="0"
+                  step="100"
+                />
+              </label>
+              <label>
+                Monto en Transferencia:
+                <input
+                  type="number"
+                  value={montoTransferencia}
+                  onChange={(e) => setMontoTransferencia(e.target.value)}
+                  placeholder="0"
+                  step="100"
+                />
+              </label>
+            </div>
+            <div className="compartida-resumen">
+              <p>Total pagado: <strong>{formatPrice((parseFloat(montoEfectivo) || 0) + (parseFloat(montoTransferencia) || 0))}</strong></p>
+              <p>Total venta: <strong>{formatPrice(total)}</strong></p>
+              {((parseFloat(montoEfectivo) || 0) + (parseFloat(montoTransferencia) || 0) - total) > 0 && (
+                <p className="cambio-compartida">Cambio en efectivo: <strong>{formatPrice((parseFloat(montoEfectivo) || 0) + (parseFloat(montoTransferencia) || 0) - total)}</strong></p>
+              )}
+            </div>
           </div>
         )}
 
