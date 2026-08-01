@@ -65,7 +65,7 @@ function RealtimeSales() {
     setCargandoDetalle(true);
 
     try {
-      // Obtener detalles de la venta (productos y cajero)
+      // Obtener detalles de la venta (productos) - ✅ CONSULTA CORRECTA
       const { data: detalles, error } = await supabase
         .from('detalle_ventas')
         .select(`
@@ -89,6 +89,9 @@ function RealtimeSales() {
       if (cajeroError && cajeroError.code !== 'PGRST116') {
         console.warn('No se pudo obtener el nombre del cajero:', cajeroError);
       }
+
+      // ✅ Depuración: Ver qué datos llegan
+      console.log('Detalles de la venta:', detalles);
 
       setDetalleVenta({
         ...venta,
@@ -194,7 +197,11 @@ function RealtimeSales() {
                       </div>
                       <div className="info-item">
                         <span className="label">💳 Método de pago:</span>
-                        <span className="value">{detalleVenta.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</span>
+                        <span className="value">
+                          {detalleVenta.metodo_pago === 'efectivo' ? 'Efectivo' : 
+                           detalleVenta.metodo_pago === 'compartida' ? 'Compartida (Efectivo + Transferencia)' : 
+                           'Transferencia'}
+                        </span>
                       </div>
                       {detalleVenta.cambio > 0 && (
                         <div className="info-item">
@@ -209,10 +216,10 @@ function RealtimeSales() {
                     </div>
                   </div>
 
-                  {/* Tabla de productos */}
+                  {/* Tabla de productos - ✅ AHORA SIEMPRE VISIBLE */}
                   <div className="detalle-productos-tabla">
                     <h4>📦 Productos</h4>
-                    {detalleVenta.detalles.length === 0 ? (
+                    {!detalleVenta.detalles || detalleVenta.detalles.length === 0 ? (
                       <p className="sin-productos">No hay productos detallados para esta venta</p>
                     ) : (
                       <table className="detalle-productos-table">
@@ -225,14 +232,20 @@ function RealtimeSales() {
                           </tr>
                         </thead>
                         <tbody>
-                          {detalleVenta.detalles.map((d, idx) => (
-                            <tr key={idx}>
-                              <td>{d.inventario?.subcategoria || d.inventario?.nombre || `Producto #${d.producto_id}`}</td>
-                              <td>{d.cantidad}</td>
-                              <td>{formatPrice(d.precio_unitario)}</td>
-                              <td>{formatPrice(d.subtotal)}</td>
-                            </tr>
-                          ))}
+                          {detalleVenta.detalles.map((d, idx) => {
+                            // ✅ Obtener nombre del producto correctamente
+                            const nombreProducto = d.inventario?.subcategoria || 
+                                                    d.inventario?.nombre || 
+                                                    `Producto #${d.producto_id}`;
+                            return (
+                              <tr key={idx}>
+                                <td>{nombreProducto}</td>
+                                <td>{d.cantidad}</td>
+                                <td>{formatPrice(d.precio_unitario)}</td>
+                                <td>{formatPrice(d.subtotal)}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                         <tfoot>
                           <tr className="total-row-detalle">
