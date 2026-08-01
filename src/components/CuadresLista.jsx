@@ -82,7 +82,7 @@ function CuadresLista() {
     return formatFechaColombia(fechaStr);
   };
 
-  // ===== VER DETALLE DEL CUADRE (CORREGIDO CON RANGO UTC) =====
+  // ===== VER DETALLE DEL CUADRE (SIN CONSULTA ANIDADA) =====
   const verDetalleCuadre = async (cuadre) => {
     setCuadreSeleccionado(cuadre);
     setMostrarDetalle(true);
@@ -101,22 +101,10 @@ function CuadresLista() {
       console.log('  Fecha Colombia:', fechaStr);
       console.log('  Rango UTC:', inicio, '→', fin);
 
+      // Obtener ventas del día (SOLO CABECERA, sin detalles)
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
-        .select(`
-          id_venta,
-          total_venta,
-          metodo_pago,
-          monto_efectivo,
-          monto_transferencia,
-          detalle_ventas (
-            producto_id,
-            cantidad,
-            precio_unitario,
-            subtotal,
-            inventario:producto_id (nombre, subcategoria)
-          )
-        `)
+        .select('id_venta, total_venta, metodo_pago, monto_efectivo, monto_transferencia')
         .eq('cajero_id', cuadre.cajero_id)
         .gte('fecha', inicio)
         .lte('fecha', fin)
@@ -126,6 +114,7 @@ function CuadresLista() {
 
       console.log('📊 Ventas encontradas:', ventas?.length || 0);
 
+      // Extraer montos correctamente
       const efectivo = [];
       const transferencia = [];
       ventas.forEach(v => {
@@ -141,6 +130,7 @@ function CuadresLista() {
 
       setVentasEfectivo(efectivo);
       setVentasTransferencia(transferencia);
+
     } catch (err) {
       console.error('Error cargando detalle del cuadre:', err);
       alert('Error al cargar el detalle del cuadre: ' + err.message);
@@ -271,7 +261,7 @@ function CuadresLista() {
       )}
 
       {/* ============================================================
-          MODAL DE DETALLE DEL CUADRE
+          MODAL DE DETALLE DEL CUADRE (SOLO MONTOS)
           ============================================================ */}
       {mostrarDetalle && cuadreSeleccionado && (
         <div className="modal-overlay" onClick={() => setMostrarDetalle(false)}>
