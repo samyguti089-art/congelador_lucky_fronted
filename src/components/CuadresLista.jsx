@@ -82,7 +82,7 @@ function CuadresLista() {
     return formatFechaColombia(fechaStr);
   };
 
-  // ===== FUNCIÓN PARA VER DETALLE DEL CUADRE =====
+  // ===== VER DETALLE DEL CUADRE (SOLO MONTOS) =====
   const verDetalleCuadre = async (cuadre) => {
     setCuadreSeleccionado(cuadre);
     setMostrarDetalle(true);
@@ -93,16 +93,8 @@ function CuadresLista() {
         .from('ventas_cabecera')
         .select(`
           id_venta,
-          fecha,
           total_venta,
-          metodo_pago,
-          detalle_ventas (
-            producto_id,
-            cantidad,
-            precio_unitario,
-            subtotal,
-            inventario:producto_id (subcategoria)
-          )
+          metodo_pago
         `)
         .eq('cajero_id', cuadre.cajero_id)
         .gte('fecha', `${cuadre.fecha} 00:00:00`)
@@ -111,8 +103,8 @@ function CuadresLista() {
 
       if (error) throw error;
 
-      const efectivo = ventas.filter(v => v.metodo_pago === 'efectivo');
-      const transferencia = ventas.filter(v => v.metodo_pago === 'transferencia');
+      const efectivo = ventas.filter(v => v.metodo_pago === 'efectivo').map(v => v.total_venta);
+      const transferencia = ventas.filter(v => v.metodo_pago === 'transferencia').map(v => v.total_venta);
 
       setVentasEfectivo(efectivo);
       setVentasTransferencia(transferencia);
@@ -123,6 +115,9 @@ function CuadresLista() {
       setCargandoDetalle(false);
     }
   };
+
+  // ===== FUNCIÓN PARA SUMAR UN ARRAY =====
+  const sumArray = (arr) => arr.reduce((acc, val) => acc + val, 0);
 
   if (loading) {
     return (
@@ -246,7 +241,7 @@ function CuadresLista() {
       )}
 
       {/* ============================================================
-          MODAL DE DETALLE DEL CUADRE
+          MODAL DE DETALLE DEL CUADRE (VISTA DE DOS COLUMNAS)
           ============================================================ */}
       {mostrarDetalle && cuadreSeleccionado && (
         <div className="modal-overlay" onClick={() => setMostrarDetalle(false)}>
@@ -265,77 +260,49 @@ function CuadresLista() {
               {cargandoDetalle ? (
                 <div className="loading-state">Cargando detalle...</div>
               ) : (
-                <>
-                  {/* Ventas en Efectivo */}
-                  <div className="detalle-seccion">
-                    <h4>💵 Ventas en Efectivo ({ventasEfectivo.length})</h4>
+                <div className="detalle-dos-columnas">
+                  {/* Columna Efectivo */}
+                  <div className="columna-efectivo">
+                    <h4>💵 Efectivo</h4>
                     {ventasEfectivo.length === 0 ? (
-                      <p className="sin-ventas">No hay ventas en efectivo en este cuadre</p>
+                      <p className="sin-ventas">No hay ventas en efectivo</p>
                     ) : (
-                      ventasEfectivo.map((venta) => (
-                        <div key={venta.id_venta} className="detalle-item">
-                          <div className="detalle-header">
-                            <span className="detalle-venta-id">Venta #{venta.id_venta}</span>
-                            <span className="detalle-venta-hora">
-                              {formatHoraColombia(venta.fecha)}
-                            </span>
-                            <span className="detalle-venta-total">{formatPrice(venta.total_venta)}</span>
-                          </div>
-                          <div className="detalle-productos">
-                            {venta.detalle_ventas && venta.detalle_ventas.length > 0 ? (
-                              venta.detalle_ventas.map((d, idx) => (
-                                <div key={idx} className="detalle-producto">
-                                  <span className="producto-nombre">
-                                    {d.inventario?.subcategoria || `Producto #${d.producto_id}`}
-                                  </span>
-                                  <span className="producto-cantidad">x{d.cantidad}</span>
-                                  <span className="producto-subtotal">{formatPrice(d.subtotal)}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="sin-productos">Sin productos detallados</span>
-                            )}
-                          </div>
+                      <>
+                        <div className="lista-valores">
+                          {ventasEfectivo.map((monto, idx) => (
+                            <div key={idx} className="valor-item">
+                              {formatPrice(monto)}
+                            </div>
+                          ))}
                         </div>
-                      ))
+                        <div className="total-columna">
+                          <strong>Total Efectivo:</strong> {formatPrice(sumArray(ventasEfectivo))}
+                        </div>
+                      </>
                     )}
                   </div>
 
-                  {/* Ventas en Transferencia */}
-                  <div className="detalle-seccion">
-                    <h4>💳 Ventas en Transferencia ({ventasTransferencia.length})</h4>
+                  {/* Columna Transferencia */}
+                  <div className="columna-transferencia">
+                    <h4>💳 Transferencia</h4>
                     {ventasTransferencia.length === 0 ? (
-                      <p className="sin-ventas">No hay ventas en transferencia en este cuadre</p>
+                      <p className="sin-ventas">No hay ventas en transferencia</p>
                     ) : (
-                      ventasTransferencia.map((venta) => (
-                        <div key={venta.id_venta} className="detalle-item">
-                          <div className="detalle-header">
-                            <span className="detalle-venta-id">Venta #{venta.id_venta}</span>
-                            <span className="detalle-venta-hora">
-                              {formatHoraColombia(venta.fecha)}
-                            </span>
-                            <span className="detalle-venta-total">{formatPrice(venta.total_venta)}</span>
-                          </div>
-                          <div className="detalle-productos">
-                            {venta.detalle_ventas && venta.detalle_ventas.length > 0 ? (
-                              venta.detalle_ventas.map((d, idx) => (
-                                <div key={idx} className="detalle-producto">
-                                  <span className="producto-nombre">
-                                    {d.inventario?.subcategoria || `Producto #${d.producto_id}`}
-                                  </span>
-                                  <span className="producto-cantidad">x{d.cantidad}</span>
-                                  <span className="producto-subtotal">{formatPrice(d.subtotal)}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="sin-productos">Sin productos detallados</span>
-                            )}
-                          </div>
+                      <>
+                        <div className="lista-valores">
+                          {ventasTransferencia.map((monto, idx) => (
+                            <div key={idx} className="valor-item">
+                              {formatPrice(monto)}
+                            </div>
+                          ))}
                         </div>
-                      ))
+                        <div className="total-columna">
+                          <strong>Total Transferencia:</strong> {formatPrice(sumArray(ventasTransferencia))}
+                        </div>
+                      </>
                     )}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
