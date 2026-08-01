@@ -46,64 +46,69 @@ function CashRegister({ usuario, inventario, onClose }) {
     cargarVentasDelDia();
   }, []);
 
-  const cargarVentasDelDia = async () => {
-    setLoading(true);
-    try {
-      // 1. Verificar si ya existe un cuadre para hoy y este cajero
-      const { data: cuadreExistente, error: errorCuadre } = await supabase
-        .from('cuadres_caja')
-        .select('id')
-        .eq('cajero_id', usuario.id)
-        .eq('fecha', fechaColombia)
-        .maybeSingle();
+ const cargarVentasDelDia = async () => {
+  setLoading(true);
+  try {
+    // 1. Verificar si ya existe un cuadre para hoy y este cajero
+    const { data: cuadreExistente, error: errorCuadre } = await supabase
+      .from('cuadres_caja')
+      .select('id')
+      .eq('cajero_id', usuario.id)
+      .eq('fecha', fechaColombia)
+      .maybeSingle();
 
-      if (errorCuadre) throw errorCuadre;
+    if (errorCuadre) throw errorCuadre;
 
-      if (cuadreExistente) {
-        // Ya hay un cuadre para hoy → mostrar en cero
-        setCuadreYaRealizado(true);
-        setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
-        setVentasDelDia([]);
-        setLoading(false);
-        return;
-      }
-
-      // 2. No hay cuadre → cargar ventas del día
-      const { data: ventas, error } = await supabase
-        .from('ventas_cabecera')
-        .select('*')
-        .eq('cajero_id', usuario.id)
-        .gte('fecha', rangoUTC.inicio)
-        .lte('fecha', rangoUTC.fin);
-
-      if (error) throw error;
-
-      if (ventas && ventas.length > 0) {
-        const totalEfectivo = ventas
-          .filter(v => v.metodo_pago === 'efectivo')
-          .reduce((sum, v) => sum + v.total_venta, 0);
-        const totalTransferencia = ventas
-          .filter(v => v.metodo_pago === 'transferencia')
-          .reduce((sum, v) => sum + v.total_venta, 0);
-
-        setResumenVentas({
-          total: totalEfectivo + totalTransferencia,
-          efectivo: totalEfectivo,
-          transferencia: totalTransferencia,
-          cantidad: ventas.length
-        });
-        setVentasDelDia(ventas);
-      } else {
-        setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
-        setVentasDelDia([]);
-      }
-    } catch (err) {
-      console.error('Error cargando ventas:', err);
-      alert('Error al cargar las ventas del día');
-    } finally {
+    if (cuadreExistente) {
+      setCuadreYaRealizado(true);
+      setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
+      setVentasDelDia([]);
       setLoading(false);
+      return;
     }
-  };
+
+    // 2. No hay cuadre → cargar ventas del día
+    const { data: ventas, error } = await supabase
+      .from('ventas_cabecera')
+      .select('*')
+      .eq('cajero_id', usuario.id)
+      .gte('fecha', rangoUTC.inicio)
+      .lte('fecha', rangoUTC.fin);
+
+    if (error) throw error;
+
+    if (ventas && ventas.length > 0) {
+      // 🆕 Cálculo CORRECTO para ventas compartidas
+      const totalEfectivo = ventas.reduce((sum, v) => {
+        if (v.metodo_pago === 'efectivo') return sum + v.total_venta;
+        if (v.metodo_pago === 'compartida') return sum + (v.monto_efectivo || 0);
+        return sum;
+      }, 0);
+
+      const totalTransferencia = ventas.reduce((sum, v) => {
+        if (v.metodo_pago === 'transferencia') return sum + v.total_venta;
+        if (v.metodo_pago === 'compartida') return sum + (v.monto_transferencia || 0);
+        return sum;
+      }, 0);
+
+      setResumenVentas({
+        total: totalEfectivo + totalTransferencia,
+        efectivo: totalEfectivo,
+        transferencia: totalTransferencia,
+        cantidad: ventas.length
+      });
+      setVentasDelDia(ventas);
+    } else {
+      setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
+      setVentasDelDia([]);
+    }
+  } catch (err) {
+    console.error('Error cargando ventas:', err);
+    alert('Error al cargar las ventas del día');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCalcularDiferencias = () => {
     const efectivo = parseFloat(efectivoContado);
