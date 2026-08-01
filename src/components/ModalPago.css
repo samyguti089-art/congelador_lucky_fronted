@@ -157,3 +157,48 @@
 .btn-confirmar-pago:hover {
   background: #7c1e1e;
 }
+/* ===== COMPARTIDA ===== */
+.compartida-info {
+  margin: 15px 0;
+  padding: 15px;
+  background: #faf7f2;
+  border-radius: 12px;
+}
+
+.compartida-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.compartida-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: bold;
+  color: #5c3a21;
+}
+
+.compartida-inputs input {
+  padding: 10px;
+  border: 1px solid #e6d5c3;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.compartida-resumen {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e6d5c3;
+  font-size: 0.9rem;
+}
+
+.compartida-resumen p {
+  margin: 4px 0;
+}
+
+.cambio-compartida {
+  color: #9b2c2c;
+  font-weight: bold;
+}
