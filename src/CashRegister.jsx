@@ -21,28 +21,21 @@ function CashRegister({ usuario, inventario, onClose }) {
   const [loading, setLoading] = useState(true);
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [cuadreYaRealizado, setCuadreYaRealizado] = useState(false);
 
-  // ✅ Fecha en zona horaria Colombia (UTC-5) para mostrar en el badge
+  // ✅ Fecha en zona horaria Colombia
   const [fechaColombia] = useState(() => {
     const hoy = new Date();
     return hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   });
 
-  // ✅ Rango UTC correcto para el día colombiano
+  // ✅ Rango UTC para el día colombiano
   const [rangoUTC] = useState(() => {
     const hoy = new Date();
     const fechaStr = hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
     const [year, month, day] = fechaStr.split('-').map(Number);
-    
-    // Inicio del día en Colombia: 00:00:00 UTC-5 = 05:00:00 UTC del mismo día
     const inicio = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
-    // Fin del día en Colombia: 23:59:59 UTC-5 = 04:59:59 UTC del día siguiente
     const fin = new Date(Date.UTC(year, month - 1, day + 1, 4, 59, 59));
-    
-    console.log('📅 Rango UTC calculado:');
-    console.log('  Inicio:', inicio.toISOString());
-    console.log('  Fin:', fin.toISOString());
-    
     return {
       inicio: inicio.toISOString(),
       fin: fin.toISOString()
@@ -56,9 +49,26 @@ function CashRegister({ usuario, inventario, onClose }) {
   const cargarVentasDelDia = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Consultando ventas para cajero:', usuario.id);
-      console.log('  Rango UTC:', rangoUTC.inicio, '→', rangoUTC.fin);
+      // 1. Verificar si ya existe un cuadre para hoy y este cajero
+      const { data: cuadreExistente, error: errorCuadre } = await supabase
+        .from('cuadres_caja')
+        .select('id')
+        .eq('cajero_id', usuario.id)
+        .eq('fecha', fechaColombia)
+        .maybeSingle();
 
+      if (errorCuadre) throw errorCuadre;
+
+      if (cuadreExistente) {
+        // Ya hay un cuadre para hoy → mostrar en cero
+        setCuadreYaRealizado(true);
+        setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
+        setVentasDelDia([]);
+        setLoading(false);
+        return;
+      }
+
+      // 2. No hay cuadre → cargar ventas del día
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
@@ -67,8 +77,6 @@ function CashRegister({ usuario, inventario, onClose }) {
         .lte('fecha', rangoUTC.fin);
 
       if (error) throw error;
-
-      console.log('📊 Ventas encontradas:', ventas?.length || 0);
 
       if (ventas && ventas.length > 0) {
         const totalEfectivo = ventas
@@ -140,9 +148,24 @@ function CashRegister({ usuario, inventario, onClose }) {
 
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/cuadre/guardar`, payload);
       console.log('Cuadre guardado:', response.data);
-      alert('✅ Cuadre de caja guardado exitosamente');
 
-      onClose();
+      // ✅ Éxito: marcar como realizado y resetear a cero
+      setCuadreYaRealizado(true);
+      setResumenVentas({ total: 0, efectivo: 0, transferencia: 0, cantidad: 0 });
+      setVentasDelDia([]);
+      setEfectivoContado('');
+      setTransferenciaContada('');
+      setDiferenciaEfectivo(null);
+      setDiferenciaTransferencia(null);
+      setCuadreRealizado(false);
+      setObservaciones('');
+
+      alert('✅ Cuadre de caja guardado exitosamente. La caja está reiniciada a cero para el próximo día.');
+
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+
     } catch (error) {
       console.error('Error guardando cuadre:', error);
       alert('❌ Error al guardar el cuadre: ' + (error.response?.data?.detail || error.message));
@@ -170,6 +193,26 @@ function CashRegister({ usuario, inventario, onClose }) {
 
   if (loading) {
     return <div className="cash-register-loading">Cargando datos del día...</div>;
+  }
+
+  // Si el cuadre ya se realizó, mostrar mensaje y valores en cero
+  if (cuadreYaRealizado) {
+    return (
+      <div className="cash-register-container">
+        <div className="cash-register-header">
+          <h2>💰 Cuadre de Caja</h2>
+          <span className="fecha-badge">📅 {fechaColombia}</span>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="cuadre-realizado">
+          <div className="icono-grande">✅</div>
+          <h3>Cuadre ya realizado</h3>
+          <p>El cuadre de caja para hoy ya fue guardado.</p>
+          <p className="info-text">La caja está reiniciada a cero para el próximo día.</p>
+          <button onClick={onClose} className="btn-cerrar-cuadre">Cerrar</button>
+        </div>
+      </div>
+    );
   }
 
   return (
