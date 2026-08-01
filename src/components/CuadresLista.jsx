@@ -3,7 +3,7 @@ import axios from 'axios';
 import { supabase } from '../services/supabaseClient';
 import { FaSearch, FaMoneyBillWave, FaCreditCard, FaChartBar } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatPrice';
-import { formatFechaColombia, formatHoraColombia } from '../utils/dateUtils';
+import { formatFechaColombia } from '../utils/dateUtils';
 import './OwnerDashboard.css';
 
 function CuadresLista() {
@@ -82,25 +82,50 @@ function CuadresLista() {
     return formatFechaColombia(fechaStr);
   };
 
-  // ===== VER DETALLE DEL CUADRE (CORREGIDO - CONSULTA SIMPLE) =====
+  // ===== VER DETALLE DEL CUADRE (CORREGIDO CON RANGO UTC) =====
   const verDetalleCuadre = async (cuadre) => {
     setCuadreSeleccionado(cuadre);
     setMostrarDetalle(true);
     setCargandoDetalle(true);
 
     try {
-      // 1. Obtener ventas del día y cajero correspondiente
+      // Calcular rango UTC para la fecha del cuadre (Colombia)
+      const fechaStr = cuadre.fecha;
+      const [year, month, day] = fechaStr.split('-').map(Number);
+      const inicioUTC = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
+      const finUTC = new Date(Date.UTC(year, month - 1, day + 1, 4, 59, 59));
+      const inicio = inicioUTC.toISOString();
+      const fin = finUTC.toISOString();
+
+      console.log('🔍 Buscando ventas para el cuadre:');
+      console.log('  Fecha Colombia:', fechaStr);
+      console.log('  Rango UTC:', inicio, '→', fin);
+
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
-        .select('*')
+        .select(`
+          id_venta,
+          total_venta,
+          metodo_pago,
+          monto_efectivo,
+          monto_transferencia,
+          detalle_ventas (
+            producto_id,
+            cantidad,
+            precio_unitario,
+            subtotal,
+            inventario:producto_id (nombre, subcategoria)
+          )
+        `)
         .eq('cajero_id', cuadre.cajero_id)
-        .gte('fecha', `${cuadre.fecha} 00:00:00`)
-        .lte('fecha', `${cuadre.fecha} 23:59:59`)
+        .gte('fecha', inicio)
+        .lte('fecha', fin)
         .order('fecha', { ascending: false });
 
       if (error) throw error;
 
-      // 2. Extraer montos de efectivo y transferencia
+      console.log('📊 Ventas encontradas:', ventas?.length || 0);
+
       const efectivo = [];
       const transferencia = [];
       ventas.forEach(v => {
@@ -123,9 +148,6 @@ function CuadresLista() {
       setCargandoDetalle(false);
     }
   };
-
-  // ===== FUNCIÓN PARA SUMAR UN ARRAY =====
-  const sumArray = (arr) => arr.reduce((acc, val) => acc + val, 0);
 
   if (loading) {
     return (
@@ -269,6 +291,7 @@ function CuadresLista() {
                 <div className="loading-state">Cargando detalle...</div>
               ) : (
                 <div className="detalle-dos-columnas">
+                  {/* Columna Efectivo */}
                   <div className="columna-efectivo">
                     <h4>💵 Efectivo</h4>
                     {ventasEfectivo.length === 0 ? (
@@ -283,12 +306,13 @@ function CuadresLista() {
                           ))}
                         </div>
                         <div className="total-columna">
-                          <strong>Total Efectivo:</strong> {formatPrice(sumArray(ventasEfectivo))}
+                          <strong>Total Efectivo:</strong> {formatPrice(ventasEfectivo.reduce((a, b) => a + b, 0))}
                         </div>
                       </>
                     )}
                   </div>
 
+                  {/* Columna Transferencia */}
                   <div className="columna-transferencia">
                     <h4>💳 Transferencia</h4>
                     {ventasTransferencia.length === 0 ? (
@@ -303,7 +327,7 @@ function CuadresLista() {
                           ))}
                         </div>
                         <div className="total-columna">
-                          <strong>Total Transferencia:</strong> {formatPrice(sumArray(ventasTransferencia))}
+                          <strong>Total Transferencia:</strong> {formatPrice(ventasTransferencia.reduce((a, b) => a + b, 0))}
                         </div>
                       </>
                     )}
