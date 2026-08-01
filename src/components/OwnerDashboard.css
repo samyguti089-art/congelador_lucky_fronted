@@ -2058,3 +2058,41 @@
     padding: 6px 4px;
   }
 }
+.btn-ver-detalle {
+  background: var(--rojo-marron);
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-ver-detalle:hover {
+  background: var(--rojo-marron-oscuro);
+}
+
+.detalle-resumen-cuadre {
+  background: var(--crema);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.detalle-resumen-cuadre p {
+  margin: 4px 0;
+  color: var(--marron);
+}
+
+.detalle-seccion {
+  margin-top: 20px;
+}
+
+.detalle-seccion h4 {
+  color: var(--marron);
+  border-bottom: 2px solid var(--crema-oscuro);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
