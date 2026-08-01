@@ -58,28 +58,54 @@ function RealtimeSales() {
     }
   };
 
-  // ===== FUNCIÓN PARA VER DETALLE DE VENTA =====
+  // ===== FUNCIÓN PARA VER DETALLE DE VENTA (CORREGIDA) =====
   const verDetalleVenta = async (venta) => {
     setVentaSeleccionada(venta);
     setMostrarDetalle(true);
     setCargandoDetalle(true);
 
     try {
-      // Obtener detalles de la venta (productos) - ✅ CONSULTA CORRECTA
+      // 1. Obtener detalles de la venta (productos)
       const { data: detalles, error } = await supabase
         .from('detalle_ventas')
-        .select(`
-          producto_id,
-          cantidad,
-          precio_unitario,
-          subtotal,
-          inventario:producto_id (nombre, subcategoria)
-        `)
+        .select('*')
         .eq('id_venta', venta.id_venta);
 
       if (error) throw error;
 
-      // Obtener nombre del cajero
+      // 2. Obtener nombres de productos de inventario
+      let productosConNombre = [];
+      if (detalles && detalles.length > 0) {
+        const productoIds = detalles.map(d => d.producto_id);
+        const { data: inventario, error: invError } = await supabase
+          .from('inventario')
+          .select('id, nombre, subcategoria')
+          .in('id', productoIds);
+
+        if (invError) {
+          console.warn('Error obteniendo nombres de productos:', invError);
+          // Fallback: usar nombres genéricos
+          productosConNombre = detalles.map(d => ({
+            ...d,
+            inventario: { nombre: `Producto #${d.producto_id}`, subcategoria: '' }
+          }));
+        } else {
+          // Mapear inventario a los detalles
+          const inventarioMap = {};
+          inventario.forEach(p => {
+            inventarioMap[p.id] = p;
+          });
+          productosConNombre = detalles.map(d => ({
+            ...d,
+            inventario: inventarioMap[d.producto_id] || { 
+              nombre: `Producto #${d.producto_id}`, 
+              subcategoria: '' 
+            }
+          }));
+        }
+      }
+
+      // 3. Obtener nombre del cajero
       const { data: cajero, error: cajeroError } = await supabase
         .from('usuarios')
         .select('nombre')
@@ -90,18 +116,15 @@ function RealtimeSales() {
         console.warn('No se pudo obtener el nombre del cajero:', cajeroError);
       }
 
-      // ✅ Depuración: Ver qué datos llegan
-      console.log('Detalles de la venta:', detalles);
-
       setDetalleVenta({
         ...venta,
-        detalles: detalles || [],
+        detalles: productosConNombre,
         cajero_nombre: cajero?.nombre || 'Cajero #' + venta.cajero_id
       });
 
     } catch (err) {
       console.error('Error cargando detalle de venta:', err);
-      alert('Error al cargar el detalle de la venta');
+      alert('Error al cargar el detalle de la venta: ' + err.message);
     } finally {
       setCargandoDetalle(false);
     }
@@ -184,7 +207,6 @@ function RealtimeSales() {
                 <div className="loading-state">Cargando detalle...</div>
               ) : (
                 <>
-                  {/* Información de la venta */}
                   <div className="detalle-venta-info">
                     <div className="info-grid">
                       <div className="info-item">
@@ -216,7 +238,6 @@ function RealtimeSales() {
                     </div>
                   </div>
 
-                  {/* Tabla de productos - ✅ AHORA SIEMPRE VISIBLE */}
                   <div className="detalle-productos-tabla">
                     <h4>📦 Productos</h4>
                     {!detalleVenta.detalles || detalleVenta.detalles.length === 0 ? (
@@ -233,7 +254,6 @@ function RealtimeSales() {
                         </thead>
                         <tbody>
                           {detalleVenta.detalles.map((d, idx) => {
-                            // ✅ Obtener nombre del producto correctamente
                             const nombreProducto = d.inventario?.subcategoria || 
                                                     d.inventario?.nombre || 
                                                     `Producto #${d.producto_id}`;
