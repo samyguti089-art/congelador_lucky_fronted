@@ -173,79 +173,81 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   // ===== EJECUTAR PAGO (llamada real a la API) =====
-  const ejecutarPago = async () => {
-    const datosPago = datosPagoConfirmacion;
-    if (!datosPago) return;
+const ejecutarPago = async () => {
+  const datosPago = datosPagoConfirmacion;
+  if (!datosPago) return;
 
-    setMostrarConfirmacion(false);
+  setMostrarConfirmacion(false);
 
-    const productosParaBackend = carrito.map(item => ({
-      producto_id: item.esCombo ? null : item.id,
-      combo_id: item.esCombo ? item.id : null,
+  const productosParaBackend = carrito.map(item => ({
+    producto_id: item.esCombo ? null : item.id,
+    combo_id: item.esCombo ? item.id : null,
+    cantidad: item.cantidad,
+    total: item.subtotal
+  }));
+
+  const carritoCopy = [...carrito];
+  const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
+
+  try {
+    const response = await axios.post(`${API_URL}/venta-carrito`, {
+      cajero_id: usuario.id,
+      productos: productosParaBackend,
+      metodo_pago: datosPago.metodo_pago,
+      cambio: datosPago.cambio,
+      monto_efectivo: datosPago.monto_efectivo || 0,      // 🆕
+      monto_transferencia: datosPago.monto_transferencia || 0  // 🆕
+    });
+
+    console.log("Respuesta exitosa:", response.data);
+
+    const productosMostrados = carritoCopy.map(item => ({
+      nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
       cantidad: item.cantidad,
-      total: item.subtotal
+      precio: item.precio,
+      subtotal: item.subtotal,
+      esCombo: item.esCombo
     }));
 
-    const carritoCopy = [...carrito];
-    const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
+    setVentaExitosa({
+      id: response.data.id_venta,
+      productos: productosMostrados,
+      total: totalVenta,
+      fecha: new Date().toLocaleString(),
+      cajero: usuario.nombre,
+      metodo_pago: datosPago.metodo_pago,
+      cambio: datosPago.cambio,
+      monto_efectivo: datosPago.monto_efectivo || 0,
+      monto_transferencia: datosPago.monto_transferencia || 0
+    });
+    setMostrarModalExito(true);
 
-    try {
-      const response = await axios.post(`${API_URL}/venta-carrito`, {
-        cajero_id: usuario.id,
-        productos: productosParaBackend,
-        metodo_pago: datosPago.metodo_pago,
-        cambio: datosPago.cambio
-      });
+    setCarrito([]);
 
-      console.log("Respuesta exitosa:", response.data);
-
-      const productosMostrados = carritoCopy.map(item => ({
-        nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
-        cantidad: item.cantidad,
-        precio: item.precio,
-        subtotal: item.subtotal,
-        esCombo: item.esCombo
-      }));
-
-      setVentaExitosa({
-        id: response.data.id_venta,
-        productos: productosMostrados,
-        total: totalVenta,
-        fecha: new Date().toLocaleString(),
-        cajero: usuario.nombre,
-        metodo_pago: datosPago.metodo_pago,
-        cambio: datosPago.cambio
-      });
-      setMostrarModalExito(true);
-
-      setCarrito([]);
-
-      if (response.data.inventario && actualizarInventario) {
-        actualizarInventario(false);
-      }
-
-      if (setRefreshTrigger) {
-        setTimeout(() => {
-          setRefreshTrigger(prev => prev + 1);
-        }, 100);
-      }
-
-      setDatosPagoConfirmacion(null);
-
-    } catch (error) {
-      console.error("Error al registrar venta del carrito:", error);
-      if (error.response) {
-        alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
-      } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
-      } else {
-        alert("Error al preparar la solicitud: " + error.message);
-      }
-      // Volver a abrir modal de pago en caso de error
-      setMostrarModalPago(true);
+    if (response.data.inventario && actualizarInventario) {
+      actualizarInventario(false);
     }
-  };
 
+    if (setRefreshTrigger) {
+      setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 100);
+    }
+
+    setDatosPagoConfirmacion(null);
+
+  } catch (error) {
+    console.error("Error al registrar venta del carrito:", error);
+    if (error.response) {
+      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+    } else {
+      alert("Error al preparar la solicitud: " + error.message);
+    }
+    setMostrarModalPago(true);
+  }
+};
   // ===== MANEJO DE CIERRE DE SESIÓN =====
   const handleCerrarSesion = () => {
     setMostrarModalCierre(true);
