@@ -328,3 +328,44 @@
     justify-content: center;
   }
 }
+.cuadre-realizado {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.cuadre-realizado .icono-grande {
+  font-size: 4rem;
+  margin-bottom: 10px;
+}
+
+.cuadre-realizado h3 {
+  color: #166534;
+  font-size: 1.5rem;
+  margin: 10px 0;
+}
+
+.cuadre-realizado p {
+  color: #5c3a21;
+  margin: 5px 0;
+}
+
+.cuadre-realizado .info-text {
+  color: #8b5e3c;
+  font-size: 0.85rem;
+}
+
+.btn-cerrar-cuadre {
+  background: #9b2c2c;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 15px;
+  transition: background 0.2s;
+}
+
+.btn-cerrar-cuadre:hover {
+  background: #7c1e1e;
+}
