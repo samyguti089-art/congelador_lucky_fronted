@@ -2096,3 +2096,68 @@
   padding-bottom: 8px;
   margin-bottom: 12px;
 }
+/* ===== INVENTARIO AGRUPADO POR CATEGORÍAS ===== */
+.categoria-group {
+  margin-bottom: 30px;
+}
+
+.categoria-title {
+  background: var(--crema);
+  color: var(--marron);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 20px 0 10px 0;
+  font-size: 1.1rem;
+  border-left: 4px solid var(--rojo-marron);
+  display: inline-block;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--crema-oscuro);
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 600px;
+}
+
+.inventory-table th {
+  background: var(--crema);
+  color: var(--marron);
+  font-weight: 600;
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 2px solid var(--crema-oscuro);
+}
+
+.inventory-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--crema-oscuro);
+  vertical-align: middle;
+}
+
+.inventory-table input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.inventory-table button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.inventory-table button:hover {
+  background: var(--crema-oscuro);
+}
