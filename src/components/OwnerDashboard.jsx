@@ -7,6 +7,7 @@ import StockBajoKPI from './StockBajoKPI';
 import DailySalesKPI from './DailySalesKPI';
 import VentasAcumuladas from './VentasAcumuladas';
 import DespachosPanel from './DespachosPanel';
+import CuadresLista from './CuadresLista';  // 👈 Importar el nuevo componente
 import './OwnerDashboard.css';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
@@ -28,7 +29,9 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       </>
     )},
     { id: 'tiempo-real', label: '🔄 Tiempo Real', component: <RealtimeSales /> },
-    { id: 'despachos', label: '📦 Despachos', component: <DespachosPanel inventario={inventario} usuario={usuario} /> }
+    { id: 'despachos', label: '📦 Despachos', component: <DespachosPanel inventario={inventario} usuario={usuario} /> },
+    // 👇 Nueva pestaña: Historial de Cuadres de Caja
+    { id: 'cuadres', label: '📋 Cuadres', component: <CuadresLista /> }
   ];
 
   return (
