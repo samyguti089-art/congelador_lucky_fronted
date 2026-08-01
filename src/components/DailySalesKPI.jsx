@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { FaMoneyBillWave, FaShoppingCart, FaUsers, FaCalendarDay } from 'react-icons/fa';
-import { formatHoraColombia, formatFechaColombia } from '../utils/dateUtils';
+import { formatHoraColombia } from '../utils/dateUtils';
 import './OwnerDashboard.css';
 
 function DailySalesKPI() {
@@ -13,7 +13,30 @@ function DailySalesKPI() {
   });
   const [ventasDetalle, setVentasDetalle] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fechaActual, setFechaActual] = useState(new Date());
+
+  // ✅ Fecha en zona horaria Colombia (UTC-5) para mostrar en el badge
+  const [fechaColombia] = useState(() => {
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-ES', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  });
+
+  // ✅ Rango UTC para el día colombiano
+  const [rangoUTC] = useState(() => {
+    const hoy = new Date();
+    const fechaStr = hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const inicio = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
+    const fin = new Date(Date.UTC(year, month - 1, day + 1, 4, 59, 59));
+    return {
+      inicio: inicio.toISOString(),
+      fin: fin.toISOString()
+    };
+  });
 
   useEffect(() => {
     fetchVentasDelDia();
@@ -22,28 +45,28 @@ function DailySalesKPI() {
   const fetchVentasDelDia = async () => {
     setLoading(true);
     try {
-      const hoy = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
+      // Consulta usando rango UTC para incluir todas las ventas del día colombiano
+      const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
-        .gte('fecha', `${hoy} 00:00:00`)
-        .lte('fecha', `${hoy} 23:59:59`);
-      
+        .gte('fecha', rangoUTC.inicio)
+        .lte('fecha', rangoUTC.fin);
+
       if (error) throw error;
-      
-      if (data && data.length > 0) {
-        const total = data.reduce((sum, venta) => sum + venta.total_venta, 0);
-        const promedio = total / data.length;
-        
+
+      if (ventas && ventas.length > 0) {
+        const total = ventas.reduce((sum, v) => sum + v.total_venta, 0);
+        const promedio = total / ventas.length;
+
         setVentasHoy({
           total: total,
-          cantidad: data.length,
-          transacciones: data.length,
+          cantidad: ventas.length,
+          transacciones: ventas.length,
           promedio: promedio
         });
-        
-        const idsVentas = data.map(v => v.id_venta);
+
+        // Obtener detalle de productos
+        const idsVentas = ventas.map(v => v.id_venta);
         const { data: detalles, error: detError } = await supabase
           .from('detalle_ventas')
           .select(`
@@ -51,15 +74,15 @@ function DailySalesKPI() {
             inventario:producto_id (nombre, subcategoria)
           `)
           .in('id_venta', idsVentas);
-        
+
         if (!detError && detalles) {
-          const ventasConDetalle = data.map(venta => ({
+          const ventasConDetalle = ventas.map(venta => ({
             ...venta,
             detalles: detalles.filter(d => d.id_venta === venta.id_venta)
           }));
           setVentasDetalle(ventasConDetalle);
         } else {
-          setVentasDetalle(data);
+          setVentasDetalle(ventas);
         }
       } else {
         setVentasHoy({ total: 0, cantidad: 0, transacciones: 0, promedio: 0 });
@@ -70,11 +93,6 @@ function DailySalesKPI() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatearFecha = () => {
-    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
-    return fechaActual.toLocaleDateString('es-ES', opciones);
   };
 
   if (loading) {
@@ -91,7 +109,7 @@ function DailySalesKPI() {
         <h3>📊 Ventas del Día</h3>
         <div className="fecha-badge">
           <FaCalendarDay />
-          <span>{formatearFecha()}</span>
+          <span>{fechaColombia}</span>
         </div>
       </div>
       
@@ -122,7 +140,7 @@ function DailySalesKPI() {
           </div>
           <div className="kpi-info">
             <span className="kpi-label">Ticket Promedio</span>
-            <span className="kpi-value">${ventasHoy.promedio.toLocaleString()}</span>
+            <span className="kpi-value">${Math.round(ventasHoy.promedio).toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -167,7 +185,9 @@ function DailySalesKPI() {
               <tfoot>
                 <tr className="total-footer">
                   <td colSpan="3"><strong>Total del Día</strong></td>
-                  <td className="total-footer-value"><strong>${ventasHoy.total.toLocaleString()}</strong></td>
+                  <td className="total-footer-value">
+                    <strong>${ventasHoy.total.toLocaleString()}</strong>
+                  </td>
                   <td></td>
                 </tr>
               </tfoot>
