@@ -2161,3 +2161,87 @@
 .inventory-table button:hover {
   background: var(--crema-oscuro);
 }
+/* ===== DETALLE DEL CUADRE – DOS COLUMNAS ===== */
+.detalle-dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 10px;
+}
+
+.columna-efectivo,
+.columna-transferencia {
+  background: var(--crema);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.columna-efectivo h4,
+.columna-transferencia h4 {
+  margin: 0 0 12px 0;
+  color: var(--marron);
+  text-align: center;
+  border-bottom: 1px solid var(--crema-oscuro);
+  padding-bottom: 8px;
+}
+
+.lista-valores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.valor-item {
+  font-size: 0.95rem;
+  padding: 6px 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid var(--rojo-marron);
+  text-align: right;
+  font-weight: 500;
+  color: var(--marron);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.total-columna {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 2px solid var(--crema-oscuro);
+  text-align: right;
+  font-size: 1.1rem;
+}
+
+.total-columna strong {
+  color: var(--rojo-marron);
+}
+
+.sin-ventas {
+  text-align: center;
+  color: var(--marron-claro);
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Scrollbar para la lista de valores */
+.lista-valores::-webkit-scrollbar {
+  width: 5px;
+}
+.lista-valores::-webkit-scrollbar-track {
+  background: var(--crema-oscuro);
+  border-radius: 4px;
+}
+.lista-valores::-webkit-scrollbar-thumb {
+  background: var(--rojo-marron);
+  border-radius: 4px;
+}
+
+/* Responsive: en móviles, una columna */
+@media (max-width: 768px) {
+  .detalle-dos-columnas {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
