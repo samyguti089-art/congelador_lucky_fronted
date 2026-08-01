@@ -65,8 +65,15 @@ function CuadresLista() {
     setTimeout(cargarCuadres, 100);
   };
 
+  // ===== FUNCIÓN PARA FORMATEAR FECHA CORREGIDA =====
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return '-';
+    // Si es solo fecha (YYYY-MM-DD), mostrar directamente sin conversión de zona horaria
+    if (fechaStr.length === 10) {
+      const [year, month, day] = fechaStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    // Si tiene hora, usar formatFechaColombia para conservar la zona horaria
     return formatFechaColombia(fechaStr);
   };
 
