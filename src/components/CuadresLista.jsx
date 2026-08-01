@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { supabase } from '../services/supabaseClient';
 import { FaSearch, FaMoneyBillWave, FaCreditCard, FaChartBar } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatPrice';
-import { formatFechaColombia } from '../utils/dateUtils';
+import { formatFechaColombia, formatHoraColombia } from '../utils/dateUtils';
 import './OwnerDashboard.css';
 
 function CuadresLista() {
@@ -14,6 +15,13 @@ function CuadresLista() {
     total_transferencia: 0,
     total_ventas: 0
   });
+
+  // Estados para el detalle del cuadre
+  const [cuadreSeleccionado, setCuadreSeleccionado] = useState(null);
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
+  const [ventasEfectivo, setVentasEfectivo] = useState([]);
+  const [ventasTransferencia, setVentasTransferencia] = useState([]);
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -65,16 +73,55 @@ function CuadresLista() {
     setTimeout(cargarCuadres, 100);
   };
 
-  // ===== FUNCIÓN PARA FORMATEAR FECHA CORREGIDA =====
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return '-';
-    // Si es solo fecha (YYYY-MM-DD), mostrar directamente sin conversión de zona horaria
     if (fechaStr.length === 10) {
       const [year, month, day] = fechaStr.split('-');
       return `${day}/${month}/${year}`;
     }
-    // Si tiene hora, usar formatFechaColombia para conservar la zona horaria
     return formatFechaColombia(fechaStr);
+  };
+
+  // ===== FUNCIÓN PARA VER DETALLE DEL CUADRE =====
+  const verDetalleCuadre = async (cuadre) => {
+    setCuadreSeleccionado(cuadre);
+    setMostrarDetalle(true);
+    setCargandoDetalle(true);
+
+    try {
+      const { data: ventas, error } = await supabase
+        .from('ventas_cabecera')
+        .select(`
+          id_venta,
+          fecha,
+          total_venta,
+          metodo_pago,
+          detalle_ventas (
+            producto_id,
+            cantidad,
+            precio_unitario,
+            subtotal,
+            inventario:producto_id (subcategoria)
+          )
+        `)
+        .eq('cajero_id', cuadre.cajero_id)
+        .gte('fecha', `${cuadre.fecha} 00:00:00`)
+        .lte('fecha', `${cuadre.fecha} 23:59:59`)
+        .order('fecha', { ascending: false });
+
+      if (error) throw error;
+
+      const efectivo = ventas.filter(v => v.metodo_pago === 'efectivo');
+      const transferencia = ventas.filter(v => v.metodo_pago === 'transferencia');
+
+      setVentasEfectivo(efectivo);
+      setVentasTransferencia(transferencia);
+    } catch (err) {
+      console.error('Error cargando detalle del cuadre:', err);
+      alert('Error al cargar el detalle del cuadre');
+    } finally {
+      setCargandoDetalle(false);
+    }
   };
 
   if (loading) {
@@ -126,6 +173,7 @@ function CuadresLista() {
                   <th>Diferencia Efectivo</th>
                   <th>Diferencia Transferencia</th>
                   <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,6 +195,15 @@ function CuadresLista() {
                         {c.estado === 'cerrado' ? '✅ Cerrado' : '🔄 Abierto'}
                       </span>
                     </td>
+                    <td>
+                      <button
+                        className="btn-ver-detalle"
+                        onClick={() => verDetalleCuadre(c)}
+                        title="Ver detalle de ventas de este cuadre"
+                      >
+                        📋 Ver detalle
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -156,7 +213,7 @@ function CuadresLista() {
                   <td><strong>{formatPrice(totales.total_ventas)}</strong></td>
                   <td><strong>{formatPrice(totales.total_efectivo)}</strong></td>
                   <td><strong>{formatPrice(totales.total_transferencia)}</strong></td>
-                  <td colSpan="3"></td>
+                  <td colSpan="4"></td>
                 </tr>
               </tfoot>
             </table>
@@ -186,6 +243,103 @@ function CuadresLista() {
             </div>
           </div>
         </>
+      )}
+
+      {/* ============================================================
+          MODAL DE DETALLE DEL CUADRE
+          ============================================================ */}
+      {mostrarDetalle && cuadreSeleccionado && (
+        <div className="modal-overlay" onClick={() => setMostrarDetalle(false)}>
+          <div className="modal-content detalle-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>📋 Detalle del Cuadre</h2>
+              <button className="close-btn" onClick={() => setMostrarDetalle(false)}>✕</button>
+            </div>
+            <div className="modal-body detalle-body">
+              <div className="detalle-resumen-cuadre">
+                <p><strong>Fecha:</strong> {formatearFecha(cuadreSeleccionado.fecha)}</p>
+                <p><strong>Cajero:</strong> {cuadreSeleccionado.cajero_id || 'N/A'}</p>
+                <p><strong>Total Ventas:</strong> {formatPrice(cuadreSeleccionado.total_ventas_sistema)}</p>
+              </div>
+
+              {cargandoDetalle ? (
+                <div className="loading-state">Cargando detalle...</div>
+              ) : (
+                <>
+                  {/* Ventas en Efectivo */}
+                  <div className="detalle-seccion">
+                    <h4>💵 Ventas en Efectivo ({ventasEfectivo.length})</h4>
+                    {ventasEfectivo.length === 0 ? (
+                      <p className="sin-ventas">No hay ventas en efectivo en este cuadre</p>
+                    ) : (
+                      ventasEfectivo.map((venta) => (
+                        <div key={venta.id_venta} className="detalle-item">
+                          <div className="detalle-header">
+                            <span className="detalle-venta-id">Venta #{venta.id_venta}</span>
+                            <span className="detalle-venta-hora">
+                              {formatHoraColombia(venta.fecha)}
+                            </span>
+                            <span className="detalle-venta-total">{formatPrice(venta.total_venta)}</span>
+                          </div>
+                          <div className="detalle-productos">
+                            {venta.detalle_ventas && venta.detalle_ventas.length > 0 ? (
+                              venta.detalle_ventas.map((d, idx) => (
+                                <div key={idx} className="detalle-producto">
+                                  <span className="producto-nombre">
+                                    {d.inventario?.subcategoria || `Producto #${d.producto_id}`}
+                                  </span>
+                                  <span className="producto-cantidad">x{d.cantidad}</span>
+                                  <span className="producto-subtotal">{formatPrice(d.subtotal)}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="sin-productos">Sin productos detallados</span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Ventas en Transferencia */}
+                  <div className="detalle-seccion">
+                    <h4>💳 Ventas en Transferencia ({ventasTransferencia.length})</h4>
+                    {ventasTransferencia.length === 0 ? (
+                      <p className="sin-ventas">No hay ventas en transferencia en este cuadre</p>
+                    ) : (
+                      ventasTransferencia.map((venta) => (
+                        <div key={venta.id_venta} className="detalle-item">
+                          <div className="detalle-header">
+                            <span className="detalle-venta-id">Venta #{venta.id_venta}</span>
+                            <span className="detalle-venta-hora">
+                              {formatHoraColombia(venta.fecha)}
+                            </span>
+                            <span className="detalle-venta-total">{formatPrice(venta.total_venta)}</span>
+                          </div>
+                          <div className="detalle-productos">
+                            {venta.detalle_ventas && venta.detalle_ventas.length > 0 ? (
+                              venta.detalle_ventas.map((d, idx) => (
+                                <div key={idx} className="detalle-producto">
+                                  <span className="producto-nombre">
+                                    {d.inventario?.subcategoria || `Producto #${d.producto_id}`}
+                                  </span>
+                                  <span className="producto-cantidad">x{d.cantidad}</span>
+                                  <span className="producto-subtotal">{formatPrice(d.subtotal)}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="sin-productos">Sin productos detallados</span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
