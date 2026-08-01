@@ -82,60 +82,47 @@ function CuadresLista() {
     return formatFechaColombia(fechaStr);
   };
 
-  // ===== VER DETALLE DEL CUADRE (CON VENTA COMPARTIDA) =====
-const verDetalleCuadre = async (cuadre) => {
-  setCuadreSeleccionado(cuadre);
-  setMostrarDetalle(true);
-  setCargandoDetalle(true);
+  // ===== VER DETALLE DEL CUADRE (CORREGIDO - CONSULTA SIMPLE) =====
+  const verDetalleCuadre = async (cuadre) => {
+    setCuadreSeleccionado(cuadre);
+    setMostrarDetalle(true);
+    setCargandoDetalle(true);
 
-  try {
-    // Incluir monto_efectivo y monto_transferencia en la consulta
-    const { data: ventas, error } = await supabase
-      .from('ventas_cabecera')
-      .select(`
-        id_venta,
-        total_venta,
-        metodo_pago,
-        monto_efectivo,
-        monto_transferencia,
-        detalle_ventas (
-          producto_id,
-          cantidad,
-          precio_unitario,
-          subtotal,
-          inventario:producto_id (subcategoria)
-        )
-      `)
-      .eq('cajero_id', cuadre.cajero_id)
-      .gte('fecha', `${cuadre.fecha} 00:00:00`)
-      .lte('fecha', `${cuadre.fecha} 23:59:59`)
-      .order('fecha', { ascending: false });
+    try {
+      // 1. Obtener ventas del día y cajero correspondiente
+      const { data: ventas, error } = await supabase
+        .from('ventas_cabecera')
+        .select('*')
+        .eq('cajero_id', cuadre.cajero_id)
+        .gte('fecha', `${cuadre.fecha} 00:00:00`)
+        .lte('fecha', `${cuadre.fecha} 23:59:59`)
+        .order('fecha', { ascending: false });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    // 🆕 Extraer montos correctamente
-    const efectivo = [];
-    const transferencia = [];
-    ventas.forEach(v => {
-      if (v.metodo_pago === 'efectivo') {
-        efectivo.push(v.total_venta);
-      } else if (v.metodo_pago === 'transferencia') {
-        transferencia.push(v.total_venta);
-      } else if (v.metodo_pago === 'compartida') {
-        efectivo.push(v.monto_efectivo || 0);
-        transferencia.push(v.monto_transferencia || 0);
-      }
-    });
+      // 2. Extraer montos de efectivo y transferencia
+      const efectivo = [];
+      const transferencia = [];
+      ventas.forEach(v => {
+        if (v.metodo_pago === 'efectivo') {
+          efectivo.push(v.total_venta);
+        } else if (v.metodo_pago === 'transferencia') {
+          transferencia.push(v.total_venta);
+        } else if (v.metodo_pago === 'compartida') {
+          efectivo.push(v.monto_efectivo || 0);
+          transferencia.push(v.monto_transferencia || 0);
+        }
+      });
 
-    setVentasEfectivo(efectivo);
-    setVentasTransferencia(transferencia);
-  } catch (err) {
-    console.error('Error cargando detalle del cuadre:', err);
-    alert('Error al cargar el detalle del cuadre');
-  } finally {
-    setCargandoDetalle(false);
-  }
-};
+      setVentasEfectivo(efectivo);
+      setVentasTransferencia(transferencia);
+    } catch (err) {
+      console.error('Error cargando detalle del cuadre:', err);
+      alert('Error al cargar el detalle del cuadre: ' + err.message);
+    } finally {
+      setCargandoDetalle(false);
+    }
+  };
 
   // ===== FUNCIÓN PARA SUMAR UN ARRAY =====
   const sumArray = (arr) => arr.reduce((acc, val) => acc + val, 0);
@@ -262,7 +249,7 @@ const verDetalleCuadre = async (cuadre) => {
       )}
 
       {/* ============================================================
-          MODAL DE DETALLE DEL CUADRE (VISTA DE DOS COLUMNAS)
+          MODAL DE DETALLE DEL CUADRE
           ============================================================ */}
       {mostrarDetalle && cuadreSeleccionado && (
         <div className="modal-overlay" onClick={() => setMostrarDetalle(false)}>
@@ -282,7 +269,6 @@ const verDetalleCuadre = async (cuadre) => {
                 <div className="loading-state">Cargando detalle...</div>
               ) : (
                 <div className="detalle-dos-columnas">
-                  {/* Columna Efectivo */}
                   <div className="columna-efectivo">
                     <h4>💵 Efectivo</h4>
                     {ventasEfectivo.length === 0 ? (
@@ -303,7 +289,6 @@ const verDetalleCuadre = async (cuadre) => {
                     )}
                   </div>
 
-                  {/* Columna Transferencia */}
                   <div className="columna-transferencia">
                     <h4>💳 Transferencia</h4>
                     {ventasTransferencia.length === 0 ? (
