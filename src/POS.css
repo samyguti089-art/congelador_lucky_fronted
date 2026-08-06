@@ -411,12 +411,12 @@
 }
 
 /* ============================================================
-   COMBOS (CORREGIDO)
+   COMBOS - VERSIÓN MEJORADA
    ============================================================ */
 .combos-modal {
-  max-width: 800px;
-  width: 100%;
-  max-height: 80vh;
+  max-width: 900px;
+  width: 95%;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -424,9 +424,9 @@
 
 .combos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 25px;
   overflow-y: auto;
 }
 
@@ -439,7 +439,7 @@
   border: 1px solid #e6d5c3;
   display: flex;
   flex-direction: column;
-  min-height: 280px;
+  min-height: 320px;
   height: 100%;
 }
 
@@ -450,7 +450,7 @@
 
 .combo-imagen {
   width: 100%;
-  height: 150px;
+  height: 170px;
   overflow: hidden;
   background: #f8f6f2;
   display: flex;
@@ -463,18 +463,18 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 8px;
+  padding: 10px;
   background: white;
   box-sizing: border-box;
 }
 
 .combo-sin-imagen {
-  font-size: 3rem;
+  font-size: 3.5rem;
   color: #b0a08a;
 }
 
 .combo-info {
-  padding: 12px 16px;
+  padding: 16px 18px 14px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -482,37 +482,46 @@
 }
 
 .combo-info h4 {
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   color: #5c3a21;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .combo-descripcion {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #8b5e3c;
-  margin: 5px 0;
+  margin: 6px 0 10px;
   flex-grow: 1;
+  line-height: 1.5;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .combo-precio {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: bold;
   color: #9b2c2c;
-  margin: 10px 0 12px;
+  margin: 8px 0 12px;
 }
 
 .agregar-combo-btn {
   background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
   color: white;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 16px;
   border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s;
   width: 100%;
   margin-top: auto;
+  font-size: 0.95rem;
 }
 
 .agregar-combo-btn:hover {
@@ -863,14 +872,16 @@
    ============================================================ */
 
 body.dark-mode {
-  --bg: #0A0E17;
-  --card-bg: #131A2A;
-  --text-primary: #E6EDF3;
-  --text-secondary: #8B949E;
-  --border-color: #1F2937;
-  --input-bg: #1E2740;
-  --hover-bg: #1A2340;
+  --bg: #0A0E17;               /* Negro azabache profundo */
+  --card-bg: #131A2A;          /* Azul muy oscuro para paneles */
+  --text-primary: #E6EDF3;     /* Blanco ligeramente azulado */
+  --text-secondary: #8B949E;   /* Gris azulado */
+  --border-color: #1F2937;     /* Azul grisáceo oscuro */
+  --input-bg: #1E2740;         /* Fondo de inputs azul oscuro */
+  --hover-bg: #1A2340;         /* Hover con tono azul */
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  
+  /* Colores de acción */
   --purple: #7B61FF;
   --yellow: #FFC107;
   --orange: #FF7043;
@@ -1188,7 +1199,6 @@ body.dark-mode {
 .dark-mode ::-webkit-scrollbar-thumb:hover {
   background: #2d3a52;
 }
-
 .dark-mode input,
 .dark-mode select,
 .dark-mode textarea {
@@ -1252,16 +1262,19 @@ body.dark-mode {
     height: 50px;
     max-width: 250px;
   }
+  .combos-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+  .combo-card {
+    min-height: 280px;
+  }
 }
 
 @media (max-width: 480px) {
   .categoria-nombre {
     font-size: 0.9rem;
-  }
-  .combos-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 15px;
   }
   .exito-modal {
     max-width: 95%;
@@ -1278,6 +1291,22 @@ body.dark-mode {
     width: 32px;
     height: 32px;
     font-size: 0.9rem;
+  }
+  .combos-modal {
+    max-width: 100%;
+    width: 100%;
+  }
+  .combo-card {
+    min-height: 250px;
+  }
+  .combo-imagen {
+    height: 140px;
+  }
+  .combo-info h4 {
+    font-size: 1rem;
+  }
+  .combo-precio {
+    font-size: 1.2rem;
   }
 }
 
