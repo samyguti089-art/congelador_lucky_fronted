@@ -114,7 +114,7 @@ function Login({ setUsuario }) {
         </form>
 
         <div className="login-footer-modern">
-          <p>© 2024 Congelados Lucky - Todos los derechos reservados</p>
+          <p>© Congelados Lucky - Todos los derechos reservados</p>
         </div>
       </div>
     </div>
