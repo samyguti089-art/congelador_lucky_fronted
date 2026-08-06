@@ -20,15 +20,15 @@ import logoImg from "./components/images/logo.jpeg";
 // ============================================================
 //  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
 // ============================================================
-// Carga todas las imágenes de la carpeta y las mapea por nombre de archivo
 const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const imageMap = {};
 Object.keys(imageModules).forEach((path) => {
-  const fileName = path.split('/').pop(); // ej: "Especiales x10.jpeg"
+  const fileName = path.split('/').pop();
   imageMap[fileName] = imageModules[path].default;
 });
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
+  // ===== ESTADOS PRINCIPALES =====
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [productosCategoria, setProductosCategoria] = useState([]);
@@ -45,16 +45,36 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
   const [mostrarDespachos, setMostrarDespachos] = useState(false);
 
+  // ===== MODO OSCURO =====
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      return newMode;
+    });
+  };
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   // ===== FUNCIÓN PARA OBTENER IMAGEN DEL PRODUCTO =====
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
-    // Buscar en el mapa de imágenes
     if (imageMap[nombreArchivo]) {
       return imageMap[nombreArchivo];
     }
-    // Si no se encuentra, mostrar advertencia en consola
     console.warn(`⚠️ Imagen no encontrada: ${nombreArchivo}`);
     return null;
   };
@@ -73,7 +93,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // Categorías con imágenes (solo 4)
+  // ===== CATEGORÍAS =====
   const categorias = [
     {
       id: "deditos",
@@ -115,6 +135,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
+  // ===== FUNCIONES DEL CARRITO =====
   const agregarComboAlCarrito = (combo, cantidad = 1) => {
     const item = {
       id: combo.id,
@@ -146,7 +167,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCarrito(nuevoCarrito);
   };
 
-  // ===== ACTUALIZAR CANTIDAD EN CARRITO =====
   const actualizarCantidadCarrito = (index, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
     const nuevoCarrito = [...carrito];
@@ -156,7 +176,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCarrito(nuevoCarrito);
   };
 
-  // ===== REGISTRAR VENTA (abre modal de pago) =====
+  // ===== VENTA =====
   const registrarVentaFinal = () => {
     if (carrito.length === 0) {
       alert("El carrito está vacío");
@@ -165,90 +185,89 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalPago(true);
   };
 
-  // ===== CONFIRMAR PAGO (abre modal de confirmación) =====
   const confirmarPago = (datosPago) => {
     setMostrarModalPago(false);
     setDatosPagoConfirmacion(datosPago);
     setMostrarConfirmacion(true);
   };
 
-  // ===== EJECUTAR PAGO (llamada real a la API) =====
-const ejecutarPago = async () => {
-  const datosPago = datosPagoConfirmacion;
-  if (!datosPago) return;
+  const ejecutarPago = async () => {
+    const datosPago = datosPagoConfirmacion;
+    if (!datosPago) return;
 
-  setMostrarConfirmacion(false);
+    setMostrarConfirmacion(false);
 
-  const productosParaBackend = carrito.map(item => ({
-    producto_id: item.esCombo ? null : item.id,
-    combo_id: item.esCombo ? item.id : null,
-    cantidad: item.cantidad,
-    total: item.subtotal
-  }));
-
-  const carritoCopy = [...carrito];
-  const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
-
-  try {
-    const response = await axios.post(`${API_URL}/venta-carrito`, {
-      cajero_id: usuario.id,
-      productos: productosParaBackend,
-      metodo_pago: datosPago.metodo_pago,
-      cambio: datosPago.cambio,
-      monto_efectivo: datosPago.monto_efectivo || 0,      // 🆕
-      monto_transferencia: datosPago.monto_transferencia || 0  // 🆕
-    });
-
-    console.log("Respuesta exitosa:", response.data);
-
-    const productosMostrados = carritoCopy.map(item => ({
-      nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
+    const productosParaBackend = carrito.map(item => ({
+      producto_id: item.esCombo ? null : item.id,
+      combo_id: item.esCombo ? item.id : null,
       cantidad: item.cantidad,
-      precio: item.precio,
-      subtotal: item.subtotal,
-      esCombo: item.esCombo
+      total: item.subtotal
     }));
 
-    setVentaExitosa({
-      id: response.data.id_venta,
-      productos: productosMostrados,
-      total: totalVenta,
-      fecha: new Date().toLocaleString(),
-      cajero: usuario.nombre,
-      metodo_pago: datosPago.metodo_pago,
-      cambio: datosPago.cambio,
-      monto_efectivo: datosPago.monto_efectivo || 0,
-      monto_transferencia: datosPago.monto_transferencia || 0
-    });
-    setMostrarModalExito(true);
+    const carritoCopy = [...carrito];
+    const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
 
-    setCarrito([]);
+    try {
+      const response = await axios.post(`${API_URL}/venta-carrito`, {
+        cajero_id: usuario.id,
+        productos: productosParaBackend,
+        metodo_pago: datosPago.metodo_pago,
+        cambio: datosPago.cambio,
+        monto_efectivo: datosPago.monto_efectivo || 0,
+        monto_transferencia: datosPago.monto_transferencia || 0
+      });
 
-    if (response.data.inventario && actualizarInventario) {
-      actualizarInventario(false);
+      console.log("Respuesta exitosa:", response.data);
+
+      const productosMostrados = carritoCopy.map(item => ({
+        nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
+        cantidad: item.cantidad,
+        precio: item.precio,
+        subtotal: item.subtotal,
+        esCombo: item.esCombo
+      }));
+
+      setVentaExitosa({
+        id: response.data.id_venta,
+        productos: productosMostrados,
+        total: totalVenta,
+        fecha: new Date().toLocaleString(),
+        cajero: usuario.nombre,
+        metodo_pago: datosPago.metodo_pago,
+        cambio: datosPago.cambio,
+        monto_efectivo: datosPago.monto_efectivo || 0,
+        monto_transferencia: datosPago.monto_transferencia || 0
+      });
+      setMostrarModalExito(true);
+
+      setCarrito([]);
+
+      if (response.data.inventario && actualizarInventario) {
+        actualizarInventario(false);
+      }
+
+      if (setRefreshTrigger) {
+        setTimeout(() => {
+          setRefreshTrigger(prev => prev + 1);
+        }, 100);
+      }
+
+      setDatosPagoConfirmacion(null);
+
+    } catch (error) {
+      console.error("Error al registrar venta del carrito:", error);
+      if (error.response) {
+        alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
+      } else {
+        alert("Error al preparar la solicitud: " + error.message);
+      }
+      setMostrarModalPago(true);
     }
+  };
 
-    if (setRefreshTrigger) {
-      setTimeout(() => {
-        setRefreshTrigger(prev => prev + 1);
-      }, 100);
-    }
-
-    setDatosPagoConfirmacion(null);
-
-  } catch (error) {
-    console.error("Error al registrar venta del carrito:", error);
-    if (error.response) {
-      alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
-    } else if (error.request) {
-      alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
-    } else {
-      alert("Error al preparar la solicitud: " + error.message);
-    }
-    setMostrarModalPago(true);
-  }
-};
-  // ===== MANEJO DE CIERRE DE SESIÓN =====
+  // ===== CIERRE DE SESIÓN =====
   const handleCerrarSesion = () => {
     setMostrarModalCierre(true);
   };
@@ -297,6 +316,9 @@ const ejecutarPago = async () => {
           </button>
           <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
             📥 Despachos
+          </button>
+          <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
+            {darkMode ? '☀️' : '🌙'}
           </button>
         </div>
       </div>
@@ -383,15 +405,15 @@ const ejecutarPago = async () => {
                 combos.map((combo) => (
                   <div key={combo.id} className="combo-card">
                     <div className="combo-imagen">
-                    {combo.imagen_url ? (
-                      <img
-                        src={getImagenProducto(combo.imagen_url)}
-                        alt={combo.nombre}
-                      />
-                    ) : (
-                      <div className="combo-sin-imagen">🍱</div>
-                    )}
-                  </div>
+                      {combo.imagen_url ? (
+                        <img
+                          src={getImagenProducto(combo.imagen_url)}
+                          alt={combo.nombre}
+                        />
+                      ) : (
+                        <div className="combo-sin-imagen">🍱</div>
+                      )}
+                    </div>
                     <div className="combo-info">
                       <h4>{combo.nombre}</h4>
                       <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
