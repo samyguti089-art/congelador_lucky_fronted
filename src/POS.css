@@ -411,7 +411,7 @@
 }
 
 /* ============================================================
-   COMBOS
+   COMBOS (CORREGIDO)
    ============================================================ */
 .combos-modal {
   max-width: 800px;
@@ -421,6 +421,7 @@
   flex-direction: column;
   overflow: hidden;
 }
+
 .combos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -428,6 +429,7 @@
   padding: 20px;
   overflow-y: auto;
 }
+
 .combo-card {
   background: linear-gradient(135deg, #faf7f2, #e6d5c3);
   border-radius: 16px;
@@ -435,12 +437,17 @@
   text-align: center;
   transition: all 0.3s;
   border: 1px solid #e6d5c3;
-  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  height: 100%;
 }
+
 .combo-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
+
 .combo-imagen {
   width: 100%;
   height: 150px;
@@ -449,7 +456,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
+
 .combo-imagen img {
   width: 100%;
   height: 100%;
@@ -458,40 +467,54 @@
   background: white;
   box-sizing: border-box;
 }
+
 .combo-sin-imagen {
   font-size: 3rem;
   color: #b0a08a;
 }
+
 .combo-info {
-  padding: 12px;
+  padding: 12px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
+
 .combo-info h4 {
   margin: 0 0 8px 0;
   color: #5c3a21;
   font-size: 1rem;
+  font-weight: 600;
 }
+
 .combo-descripcion {
   font-size: 0.75rem;
   color: #8b5e3c;
   margin: 5px 0;
+  flex-grow: 1;
 }
+
 .combo-precio {
   font-size: 1.2rem;
   font-weight: bold;
   color: #9b2c2c;
-  margin: 10px 0;
+  margin: 10px 0 12px;
 }
+
 .agregar-combo-btn {
   background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s;
   width: 100%;
+  margin-top: auto;
 }
+
 .agregar-combo-btn:hover {
   transform: scale(1.02);
   background: linear-gradient(135deg, #7c1e1e, #6b1a1a);
@@ -840,16 +863,14 @@
    ============================================================ */
 
 body.dark-mode {
-  --bg: #0A0E17;               /* Negro azabache profundo */
-  --card-bg: #131A2A;          /* Azul muy oscuro para paneles */
-  --text-primary: #E6EDF3;     /* Blanco ligeramente azulado */
-  --text-secondary: #8B949E;   /* Gris azulado */
-  --border-color: #1F2937;     /* Azul grisáceo oscuro */
-  --input-bg: #1E2740;         /* Fondo de inputs azul oscuro */
-  --hover-bg: #1A2340;         /* Hover con tono azul */
+  --bg: #0A0E17;
+  --card-bg: #131A2A;
+  --text-primary: #E6EDF3;
+  --text-secondary: #8B949E;
+  --border-color: #1F2937;
+  --input-bg: #1E2740;
+  --hover-bg: #1A2340;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  
-  /* Colores de acción (se mantienen igual) */
   --purple: #7B61FF;
   --yellow: #FFC107;
   --orange: #FF7043;
@@ -863,34 +884,26 @@ body.dark-mode {
   background: var(--bg);
   color: var(--text-primary);
 }
-
 .dark-mode .pos-header {
   border-bottom-color: var(--border-color);
 }
-
 .dark-mode .logo-area h1 {
   color: var(--text-primary);
 }
-
 .dark-mode .pos-badge {
   background: var(--border-color);
   color: var(--text-secondary);
 }
-
 .dark-mode .user-area {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
 }
-
 .dark-mode .user-name {
   color: var(--text-primary);
 }
-
 .dark-mode .user-role {
   color: var(--text-secondary);
 }
-
-/* Botones de acción */
 .dark-mode .cuadre-btn {
   background: var(--purple);
   color: white;
@@ -898,7 +911,6 @@ body.dark-mode {
 .dark-mode .cuadre-btn:hover {
   background: #6a52e6;
 }
-
 .dark-mode .logout-btn {
   background: var(--yellow);
   color: #1a1a1a;
@@ -906,7 +918,6 @@ body.dark-mode {
 .dark-mode .logout-btn:hover {
   background: #e6b000;
 }
-
 .dark-mode .despachos-btn {
   background: var(--orange);
   color: white;
@@ -914,7 +925,6 @@ body.dark-mode {
 .dark-mode .despachos-btn:hover {
   background: #e65a2e;
 }
-
 .dark-mode .theme-toggle-btn {
   border-color: var(--border-color);
   color: var(--text-primary);
@@ -923,8 +933,6 @@ body.dark-mode {
 .dark-mode .theme-toggle-btn:hover {
   background: var(--hover-bg);
 }
-
-/* Categorías */
 .dark-mode .categoria-card {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
@@ -937,8 +945,6 @@ body.dark-mode {
 .dark-mode .categoria-nombre {
   color: white;
 }
-
-/* Modales */
 .dark-mode .modal-overlay {
   background: rgba(0, 0, 0, 0.85);
 }
@@ -959,8 +965,6 @@ body.dark-mode {
 .dark-mode .close-btn:hover {
   color: white;
 }
-
-/* Productos */
 .dark-mode .producto-card {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -994,11 +998,10 @@ body.dark-mode {
   background: var(--border-color);
   color: var(--text-secondary);
 }
-
-/* Combos */
 .dark-mode .combo-card {
   background: var(--card-bg);
   border-color: var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .dark-mode .combo-card:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
@@ -1019,8 +1022,12 @@ body.dark-mode {
 .dark-mode .agregar-combo-btn:hover {
   background: #6a52e6;
 }
-
-/* Carrito */
+.dark-mode .combo-imagen {
+  background: var(--input-bg);
+}
+.dark-mode .combo-imagen img {
+  background: var(--card-bg);
+}
 .dark-mode .carrito-container {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -1053,8 +1060,6 @@ body.dark-mode {
 .dark-mode .registrar-btn:hover {
   background: #9bd600;
 }
-
-/* Modal de pago y confirmación */
 .dark-mode .modal-pago-content {
   background: var(--card-bg);
 }
@@ -1105,8 +1110,6 @@ body.dark-mode {
 .dark-mode .btn-cancelar-pago:hover {
   background: var(--hover-bg);
 }
-
-/* Modal de venta exitosa */
 .dark-mode .exito-header {
   background: var(--lime);
   color: #1a1a1a;
@@ -1151,8 +1154,6 @@ body.dark-mode {
 .dark-mode .btn-cerrar-exito:hover {
   background: #9bd600;
 }
-
-/* Cierre de sesión */
 .dark-mode .cierre-modal .modal-body {
   background: var(--card-bg);
 }
@@ -1173,8 +1174,6 @@ body.dark-mode {
 .dark-mode .btn-confirmar:hover {
   background: #e6b000;
 }
-
-/* Scrollbar */
 .dark-mode ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1190,7 +1189,6 @@ body.dark-mode {
   background: #2d3a52;
 }
 
-/* Inputs y selects adicionales */
 .dark-mode input,
 .dark-mode select,
 .dark-mode textarea {
