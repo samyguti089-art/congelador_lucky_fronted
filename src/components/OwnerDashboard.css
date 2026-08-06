@@ -2409,3 +2409,12 @@
     padding: 4px 6px;
   }
 }
+.total-ventas-dia {
+  text-align: center;
+  padding: 8px 12px;
+  background: var(--crema-oscuro);
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--marron-claro);
+}
