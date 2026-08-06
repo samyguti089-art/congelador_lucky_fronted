@@ -17,13 +17,34 @@ function RealtimeSales() {
   const [detalleVenta, setDetalleVenta] = useState(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
 
+  // Obtener rango UTC del día actual en Colombia
+  const getRangoDiaActual = () => {
+    const hoy = new Date();
+    const fechaStr = hoy.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const inicioUTC = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
+    const finUTC = new Date(Date.UTC(year, month - 1, day + 1, 4, 59, 59));
+    return {
+      inicio: inicioUTC.toISOString(),
+      fin: finUTC.toISOString()
+    };
+  };
+
   useEffect(() => {
     loadRecentSales();
     const unsubscribe = subscribeToSales((newSale) => {
       console.log('Nueva venta recibida en tiempo real:', newSale);
       setRecentSales((prev) => {
-        const newList = [newSale, ...prev].slice(0, 10);
-        return newList;
+        // Verificar si la venta pertenece al día actual (usando rango UTC)
+        const rango = getRangoDiaActual();
+        if (newSale.fecha >= rango.inicio && newSale.fecha <= rango.fin) {
+          // Evitar duplicados
+          const exists = prev.some(s => s.id_venta === newSale.id_venta);
+          if (!exists) {
+            return [newSale, ...prev];
+          }
+        }
+        return prev;
       });
       setConnectionStatus('conectado');
     });
@@ -34,11 +55,13 @@ function RealtimeSales() {
   const loadRecentSales = async () => {
     setLoading(true);
     try {
+      const rango = getRangoDiaActual();
       const { data, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
-        .order('fecha', { ascending: false })
-        .limit(10);
+        .gte('fecha', rango.inicio)
+        .lte('fecha', rango.fin)
+        .order('fecha', { ascending: false });
 
       if (error) throw error;
 
@@ -58,14 +81,13 @@ function RealtimeSales() {
     }
   };
 
-  // ===== FUNCIÓN PARA VER DETALLE DE VENTA (CORREGIDA) =====
+  // ===== FUNCIÓN PARA VER DETALLE DE VENTA =====
   const verDetalleVenta = async (venta) => {
     setVentaSeleccionada(venta);
     setMostrarDetalle(true);
     setCargandoDetalle(true);
 
     try {
-      // 1. Obtener detalles de la venta (productos)
       const { data: detalles, error } = await supabase
         .from('detalle_ventas')
         .select('*')
@@ -73,7 +95,7 @@ function RealtimeSales() {
 
       if (error) throw error;
 
-      // 2. Obtener nombres de productos de inventario
+      // Obtener nombres de productos
       let productosConNombre = [];
       if (detalles && detalles.length > 0) {
         const productoIds = detalles.map(d => d.producto_id);
@@ -84,13 +106,11 @@ function RealtimeSales() {
 
         if (invError) {
           console.warn('Error obteniendo nombres de productos:', invError);
-          // Fallback: usar nombres genéricos
           productosConNombre = detalles.map(d => ({
             ...d,
             inventario: { nombre: `Producto #${d.producto_id}`, subcategoria: '' }
           }));
         } else {
-          // Mapear inventario a los detalles
           const inventarioMap = {};
           inventario.forEach(p => {
             inventarioMap[p.id] = p;
@@ -105,7 +125,6 @@ function RealtimeSales() {
         }
       }
 
-      // 3. Obtener nombre del cajero
       const { data: cajero, error: cajeroError } = await supabase
         .from('usuarios')
         .select('nombre')
@@ -140,17 +159,20 @@ function RealtimeSales() {
     return (
       <div className="realtime-sales">
         <h3>🔄 Ventas en Tiempo Real</h3>
-        <div className="loading-state">Cargando ventas recientes...</div>
+        <div className="loading-state">Cargando ventas del día...</div>
       </div>
     );
   }
+
+  // Si hay más de 20 ventas, mostramos un contador
+  const totalVentas = recentSales.length;
 
   return (
     <div className="realtime-sales">
       <div className="realtime-header">
         <h3>🔄 Ventas en Tiempo Real</h3>
         <div className={`connection-status ${connectionStatus}`}>
-          {connectionStatus === 'conectado' && '🟢 En vivo'}
+          {connectionStatus === 'conectado' && `🟢 En vivo (${totalVentas} ventas)`}
           {connectionStatus === 'conectando...' && '🟡 Conectando...'}
           {connectionStatus === 'sin_datos' && '⚪ Sin ventas'}
           {connectionStatus === 'error' && '🔴 Error'}
@@ -166,35 +188,40 @@ function RealtimeSales() {
 
       {recentSales.length === 0 ? (
         <div className="sin-ventas-realtime">
-          <p>No hay ventas registradas aún</p>
+          <p>No hay ventas registradas hoy</p>
           <p className="mensaje-espera">Las nuevas ventas aparecerán aquí automáticamente</p>
         </div>
       ) : (
-        <ul className="sales-list">
-          {recentSales.map((sale, idx) => (
-            <li
-              key={idx}
-              className="sale-item clickeable"
-              onClick={() => verDetalleVenta(sale)}
-            >
-              <div className="sale-info">
-                <span className="sale-id">Venta #{sale.id_venta}</span>
-                <span className="sale-time">
-                  {formatHoraColombia(sale.fecha)}
-                </span>
-              </div>
-              <div className="sale-amount">
-                {formatPrice(sale.total_venta)}
-                <span className="sale-click-icon">🔍</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="sales-list">
+            {recentSales.map((sale, idx) => (
+              <li
+                key={idx}
+                className="sale-item clickeable"
+                onClick={() => verDetalleVenta(sale)}
+              >
+                <div className="sale-info">
+                  <span className="sale-id">Venta #{sale.id_venta}</span>
+                  <span className="sale-time">
+                    {formatHoraColombia(sale.fecha)}
+                  </span>
+                </div>
+                <div className="sale-amount">
+                  {formatPrice(sale.total_venta)}
+                  <span className="sale-click-icon">🔍</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {totalVentas > 20 && (
+            <div className="total-ventas-dia">
+              Mostrando todas las {totalVentas} ventas del día
+            </div>
+          )}
+        </>
       )}
 
-      {/* ============================================================
-          MODAL DE DETALLE DE VENTA
-          ============================================================ */}
+      {/* Modal de detalle de venta (sin cambios) */}
       {mostrarDetalle && detalleVenta && (
         <div className="modal-overlay" onClick={cerrarDetalle}>
           <div className="modal-content detalle-venta-modal" onClick={(e) => e.stopPropagation()}>
