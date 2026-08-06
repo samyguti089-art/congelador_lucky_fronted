@@ -836,17 +836,20 @@
 }
 
 /* ============================================================
-   MODO OSCURO
+   MODO OSCURO - NEGRO AZABACHE (AZULADO)
    ============================================================ */
+
 body.dark-mode {
-  --bg: #121212;
-  --card-bg: #1E1E1E;
-  --text-primary: #E0E0E0;
-  --text-secondary: #B0B0B0;
-  --border-color: #2C2C2C;
-  --input-bg: #2A2A2A;
-  --hover-bg: #2C2C2C;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --bg: #0A0E17;               /* Negro azabache profundo */
+  --card-bg: #131A2A;          /* Azul muy oscuro para paneles */
+  --text-primary: #E6EDF3;     /* Blanco ligeramente azulado */
+  --text-secondary: #8B949E;   /* Gris azulado */
+  --border-color: #1F2937;     /* Azul grisáceo oscuro */
+  --input-bg: #1E2740;         /* Fondo de inputs azul oscuro */
+  --hover-bg: #1A2340;         /* Hover con tono azul */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  
+  /* Colores de acción (se mantienen igual) */
   --purple: #7B61FF;
   --yellow: #FFC107;
   --orange: #FF7043;
@@ -860,26 +863,34 @@ body.dark-mode {
   background: var(--bg);
   color: var(--text-primary);
 }
+
 .dark-mode .pos-header {
   border-bottom-color: var(--border-color);
 }
+
 .dark-mode .logo-area h1 {
   color: var(--text-primary);
 }
+
 .dark-mode .pos-badge {
   background: var(--border-color);
   color: var(--text-secondary);
 }
+
 .dark-mode .user-area {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
 }
+
 .dark-mode .user-name {
   color: var(--text-primary);
 }
+
 .dark-mode .user-role {
   color: var(--text-secondary);
 }
+
+/* Botones de acción */
 .dark-mode .cuadre-btn {
   background: var(--purple);
   color: white;
@@ -887,6 +898,7 @@ body.dark-mode {
 .dark-mode .cuadre-btn:hover {
   background: #6a52e6;
 }
+
 .dark-mode .logout-btn {
   background: var(--yellow);
   color: #1a1a1a;
@@ -894,6 +906,7 @@ body.dark-mode {
 .dark-mode .logout-btn:hover {
   background: #e6b000;
 }
+
 .dark-mode .despachos-btn {
   background: var(--orange);
   color: white;
@@ -901,26 +914,31 @@ body.dark-mode {
 .dark-mode .despachos-btn:hover {
   background: #e65a2e;
 }
+
 .dark-mode .theme-toggle-btn {
-  border-color: #444;
-  color: #E0E0E0;
-  background: #2a2a2a;
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  background: var(--input-bg);
 }
 .dark-mode .theme-toggle-btn:hover {
-  background: #3a3a3a;
+  background: var(--hover-bg);
 }
+
+/* Categorías */
 .dark-mode .categoria-card {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .dark-mode .categoria-card .categoria-overlay {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
 }
 .dark-mode .categoria-card:hover .categoria-overlay {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
 }
 .dark-mode .categoria-nombre {
   color: white;
 }
+
+/* Modales */
 .dark-mode .modal-overlay {
   background: rgba(0, 0, 0, 0.85);
 }
@@ -941,6 +959,8 @@ body.dark-mode {
 .dark-mode .close-btn:hover {
   color: white;
 }
+
+/* Productos */
 .dark-mode .producto-card {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -958,7 +978,10 @@ body.dark-mode {
   color: var(--text-secondary);
 }
 .dark-mode .producto-imagen {
-  background: #1a1a1a;
+  background: var(--input-bg);
+}
+.dark-mode .producto-imagen img {
+  background: var(--card-bg);
 }
 .dark-mode .agregar-btn {
   background: var(--purple);
@@ -971,6 +994,8 @@ body.dark-mode {
   background: var(--border-color);
   color: var(--text-secondary);
 }
+
+/* Combos */
 .dark-mode .combo-card {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -994,6 +1019,8 @@ body.dark-mode {
 .dark-mode .agregar-combo-btn:hover {
   background: #6a52e6;
 }
+
+/* Carrito */
 .dark-mode .carrito-container {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -1013,7 +1040,7 @@ body.dark-mode {
   color: var(--text-secondary);
 }
 .dark-mode .carrito-eliminar:hover {
-  background: #3a1a1a;
+  background: rgba(255, 255, 255, 0.05);
 }
 .dark-mode .carrito-total {
   color: var(--text-primary);
@@ -1026,6 +1053,8 @@ body.dark-mode {
 .dark-mode .registrar-btn:hover {
   background: #9bd600;
 }
+
+/* Modal de pago y confirmación */
 .dark-mode .modal-pago-content {
   background: var(--card-bg);
 }
@@ -1074,8 +1103,10 @@ body.dark-mode {
   color: var(--text-secondary);
 }
 .dark-mode .btn-cancelar-pago:hover {
-  background: #3a3a3a;
+  background: var(--hover-bg);
 }
+
+/* Modal de venta exitosa */
 .dark-mode .exito-header {
   background: var(--lime);
   color: #1a1a1a;
@@ -1120,6 +1151,8 @@ body.dark-mode {
 .dark-mode .btn-cerrar-exito:hover {
   background: #9bd600;
 }
+
+/* Cierre de sesión */
 .dark-mode .cierre-modal .modal-body {
   background: var(--card-bg);
 }
@@ -1131,7 +1164,7 @@ body.dark-mode {
   color: var(--text-secondary);
 }
 .dark-mode .btn-cancelar:hover {
-  background: #3a3a3a;
+  background: var(--hover-bg);
 }
 .dark-mode .btn-confirmar {
   background: var(--yellow);
@@ -1140,6 +1173,8 @@ body.dark-mode {
 .dark-mode .btn-confirmar:hover {
   background: #e6b000;
 }
+
+/* Scrollbar */
 .dark-mode ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1152,7 +1187,27 @@ body.dark-mode {
   border-radius: 4px;
 }
 .dark-mode ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: #2d3a52;
+}
+
+/* Inputs y selects adicionales */
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea {
+  background: var(--input-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--text-secondary) !important;
+}
+.dark-mode input:focus,
+.dark-mode select:focus,
+.dark-mode textarea:focus {
+  border-color: var(--purple) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.2);
 }
 
 /* ============================================================
