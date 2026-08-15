@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
+import { formatPrice } from '../utils/formatPrice.js';
 import './OwnerDashboard.css';
 
 function InventoryPanel() {
   const [inventory, setInventory] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
-  const [newProduct, setNewProduct] = useState({ nombre: '', subcategoria: '', precio: '', cantidad: '' });
+  const [editForm, setEditForm] = useState({ 
+    nombre: '', 
+    subcategoria: '', 
+    precio: '', 
+    cantidad: '',
+    stock_fabrica: '' 
+  });
+  const [newProduct, setNewProduct] = useState({ 
+    nombre: '', 
+    subcategoria: '', 
+    precio: '', 
+    cantidad: '',
+    stock_fabrica: '',
+    categoria: '' 
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +51,8 @@ function InventoryPanel() {
       nombre: producto.nombre || '',
       subcategoria: producto.subcategoria || '',
       precio: producto.precio,
-      cantidad: producto.cantidad
+      cantidad: producto.cantidad,
+      stock_fabrica: producto.stock_fabrica || 0
     });
   };
 
@@ -48,7 +63,8 @@ function InventoryPanel() {
         nombre: editForm.nombre,
         subcategoria: editForm.subcategoria,
         precio: editForm.precio,
-        cantidad: editForm.cantidad
+        cantidad: editForm.cantidad,
+        stock_fabrica: editForm.stock_fabrica || 0
       })
       .eq('id', id);
     if (error) {
@@ -81,14 +97,22 @@ function InventoryPanel() {
       nombre: newProduct.nombre,
       subcategoria: newProduct.subcategoria,
       precio: newProduct.precio,
-      cantidad: newProduct.cantidad,
-      categoria: newProduct.categoria || 'Otros' // Asignar categoría por defecto
+      cantidad: newProduct.cantidad || 0,
+      stock_fabrica: newProduct.stock_fabrica || 0,
+      categoria: newProduct.categoria || 'Otros'
     }]);
     if (error) {
       console.error(error);
       alert('Error al agregar: ' + error.message);
     } else {
-      setNewProduct({ nombre: '', subcategoria: '', precio: '', cantidad: '', categoria: '' });
+      setNewProduct({ 
+        nombre: '', 
+        subcategoria: '', 
+        precio: '', 
+        cantidad: '',
+        stock_fabrica: '',
+        categoria: '' 
+      });
       fetchInventory();
     }
   };
@@ -139,9 +163,15 @@ function InventoryPanel() {
         />
         <input
           type="number"
-          placeholder="Cantidad"
+          placeholder="Unidades Tienda"
           value={newProduct.cantidad}
           onChange={(e) => setNewProduct({ ...newProduct, cantidad: e.target.value })}
+        />
+        <input
+          type="number"
+          placeholder="Unidades Fábrica"
+          value={newProduct.stock_fabrica}
+          onChange={(e) => setNewProduct({ ...newProduct, stock_fabrica: e.target.value })}
         />
         <button onClick={handleAdd}>Agregar Producto</button>
       </div>
@@ -160,64 +190,83 @@ function InventoryPanel() {
                     <th>Nombre</th>
                     <th>Subcategoría</th>
                     <th>Precio</th>
-                    <th>Cantidad</th>
+                    <th>Unidades Tienda</th>
+                    <th>Unidades Fábrica</th>
+                    <th>Total Unidades</th>
+                    <th>Valor Total</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {groupedInventory[categoria].map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        {editingId === item.id ? (
-                          <input
-                            value={editForm.nombre}
-                            onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
-                          />
-                        ) : item.nombre}
-                      </td>
-                      <td>
-                        {editingId === item.id ? (
-                          <input
-                            value={editForm.subcategoria}
-                            onChange={(e) => setEditForm({ ...editForm, subcategoria: e.target.value })}
-                          />
-                        ) : item.subcategoria}
-                      </td>
-                      <td>
-                        {editingId === item.id ? (
-                          <input
-                            type="number"
-                            value={editForm.precio}
-                            onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })}
-                          />
-                        ) : (
-                          `$${Number(item.precio).toLocaleString('es-CO')}`
-                        )}
-                      </td>
-                      <td>
-                        {editingId === item.id ? (
-                          <input
-                            type="number"
-                            value={editForm.cantidad}
-                            onChange={(e) => setEditForm({ ...editForm, cantidad: e.target.value })}
-                          />
-                        ) : item.cantidad}
-                      </td>
-                      <td>
-                        {editingId === item.id ? (
-                          <>
-                            <button onClick={() => handleUpdate(item.id)}>Guardar</button>
-                            <button onClick={() => setEditingId(null)}>Cancelar</button>
-                          </>
-                        ) : (
-                          <>
-                            <button onClick={() => handleEdit(item)}>✏️</button>
-                            <button onClick={() => handleDelete(item.id)}>🗑️</button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {groupedInventory[categoria].map((item) => {
+                    const totalUnidades = (item.cantidad || 0) + (item.stock_fabrica || 0);
+                    const valorTotal = totalUnidades * (item.precio || 0);
+                    
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          {editingId === item.id ? (
+                            <input
+                              value={editForm.nombre}
+                              onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                            />
+                          ) : item.nombre}
+                        </td>
+                        <td>
+                          {editingId === item.id ? (
+                            <input
+                              value={editForm.subcategoria}
+                              onChange={(e) => setEditForm({ ...editForm, subcategoria: e.target.value })}
+                            />
+                          ) : item.subcategoria}
+                        </td>
+                        <td>
+                          {editingId === item.id ? (
+                            <input
+                              type="number"
+                              value={editForm.precio}
+                              onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })}
+                            />
+                          ) : (
+                            formatPrice(item.precio)
+                          )}
+                        </td>
+                        <td>
+                          {editingId === item.id ? (
+                            <input
+                              type="number"
+                              value={editForm.cantidad}
+                              onChange={(e) => setEditForm({ ...editForm, cantidad: e.target.value })}
+                            />
+                          ) : item.cantidad}
+                        </td>
+                        <td>
+                          {editingId === item.id ? (
+                            <input
+                              type="number"
+                              value={editForm.stock_fabrica}
+                              onChange={(e) => setEditForm({ ...editForm, stock_fabrica: e.target.value })}
+                            />
+                          ) : (item.stock_fabrica || 0)}
+                        </td>
+                        <td>{totalUnidades}</td>
+                        <td>{formatPrice(valorTotal)}</td>
+                        <td>
+                          {editingId === item.id ? (
+                            <>
+                              <button onClick={() => handleUpdate(item.id)}>Guardar</button>
+                              <button onClick={() => setEditingId(null)}>Cancelar</button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => handleEdit(item)}>✏️</button>
+                              <button onClick={() => handleDelete(item.id)}>🗑️</button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
