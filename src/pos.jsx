@@ -8,18 +8,12 @@ import ModalPago from './components/ModalPago';
 import DespachosModal from './components/DespachosModal';
 import { formatPrice } from './utils/formatPrice.js';
 
-// Importar imágenes de categorías
 import deditosImg from "./components/images/portada 2 deditos.jpg";
 import empanadasImg from "./components/images/empanadas portada.jpg";
 import otrosImg from "./components/images/portada de otros.jpg";
 import combosImg from "./components/images/imagen de portada de combos.jpg";
-
-// Importar logo
 import logoImg from "./components/images/logo.jpeg";
 
-// ============================================================
-//  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
-// ============================================================
 const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const imageMap = {};
 Object.keys(imageModules).forEach((path) => {
@@ -50,7 +44,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [seleccionesEmpanadas, setSeleccionesEmpanadas] = useState([]);
   const [mostrarModalPersonalizar, setMostrarModalPersonalizar] = useState(false);
 
-  // ===== IDs DE EMPANADAS =====
   const EMPANADA_IDS = [11, 12, 13, 33];
 
   // ===== MODO OSCURO =====
@@ -77,12 +70,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ===== FUNCIÓN PARA OBTENER IMAGEN DEL PRODUCTO =====
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
-    if (imageMap[nombreArchivo]) {
-      return imageMap[nombreArchivo];
-    }
+    if (imageMap[nombreArchivo]) return imageMap[nombreArchivo];
     console.warn(`⚠️ Imagen no encontrada: ${nombreArchivo}`);
     return null;
   };
@@ -101,32 +91,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // ===== CATEGORÍAS =====
   const categorias = [
-    {
-      id: "deditos",
-      nombre: "Deditos",
-      imagen: deditosImg,
-      color: "#d97706"
-    },
-    {
-      id: "empanadas",
-      nombre: "Empanadas",
-      imagen: empanadasImg,
-      color: "#b45309"
-    },
-    {
-      id: "otros",
-      nombre: "Otros",
-      imagen: otrosImg,
-      color: "#4b5563"
-    },
-    {
-      id: "combos",
-      nombre: "Combos",
-      imagen: combosImg,
-      color: "#6b21a5"
-    }
+    { id: "deditos", nombre: "Deditos", imagen: deditosImg, color: "#d97706" },
+    { id: "empanadas", nombre: "Empanadas", imagen: empanadasImg, color: "#b45309" },
+    { id: "otros", nombre: "Otros", imagen: otrosImg, color: "#4b5563" },
+    { id: "combos", nombre: "Combos", imagen: combosImg, color: "#6b21a5" }
   ];
 
   const abrirCategoria = (categoriaId) => {
@@ -175,15 +144,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
 
       if (tieneEmpanadas) {
-        const inicialSelecciones = detalles
-          .filter(d => EMPANADA_IDS.includes(d.producto_id))
-          .map(d => ({
-            producto_id: d.producto_id,
-            cantidad: 0
-          }));
+        const empanadas = detalles.filter(d => EMPANADA_IDS.includes(d.producto_id));
+        const inicialSelecciones = empanadas.map(d => ({
+          producto_id: d.producto_id,
+          cantidad: 0
+        }));
         setSeleccionesEmpanadas(inicialSelecciones);
         setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
         setMostrarModalPersonalizar(true);
+        console.log("✅ Modal de personalización abierto");
       } else {
         const item = {
           id: combo.id,
@@ -358,7 +327,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   return (
     <div className="pos-container">
-      {/* HEADER CON LOGO */}
+      {/* HEADER */}
       <div className="pos-header">
         <div className="logo-area">
           <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
@@ -372,15 +341,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <span className="user-role">Cajero</span>
             </div>
           </div>
-          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-            💰 Cuadre
-          </button>
-          <button onClick={handleCerrarSesion} className="logout-btn">
-            <FiLogOut className="logout-icon" /> Salir
-          </button>
-          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
-            📥 Despachos
-          </button>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
+          <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
           <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -389,7 +352,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* GRID DE CATEGORÍAS CON IMÁGENES */}
+      {/* GRID DE CATEGORÍAS */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -426,10 +389,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={producto.id} className="producto-card">
                     <div className="producto-imagen">
                       {producto.imagen_url ? (
-                        <img
-                          src={getImagenProducto(producto.imagen_url)}
-                          alt={producto.subcategoria || producto.nombre}
-                        />
+                        <img src={getImagenProducto(producto.imagen_url)} alt={producto.subcategoria || producto.nombre} />
                       ) : (
                         <div className="producto-sin-imagen">📷</div>
                       )}
@@ -470,10 +430,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={combo.id} className="combo-card">
                     <div className="combo-imagen">
                       {combo.imagen_url ? (
-                        <img
-                          src={getImagenProducto(combo.imagen_url)}
-                          alt={combo.nombre}
-                        />
+                        <img src={getImagenProducto(combo.imagen_url)} alt={combo.nombre} />
                       ) : (
                         <div className="combo-sin-imagen">🍱</div>
                       )}
@@ -497,7 +454,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO - CORREGIDO */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -513,12 +470,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
               {/* Resumen de cantidades */}
               {(() => {
-                const totalEmpanadas = comboPersonalizando.productosActuales
-                  .filter(p => EMPANADA_IDS.includes(p.producto_id))
-                  .reduce((sum, p) => sum + p.cantidad, 0);
+                const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
+                const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
                 const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
                 const restante = totalEmpanadas - totalAsignado;
-
                 return (
                   <div className="resumen-cantidades">
                     <span>Total empanadas: <strong>{totalEmpanadas}</strong></span>
@@ -528,7 +483,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 );
               })()}
 
-              {/* Productos fijos (no empanadas) */}
+              {/* Productos fijos */}
               <div className="sabores-grid">
                 {comboPersonalizando.productosActuales.map((prod, idx) => {
                   if (!EMPANADA_IDS.includes(prod.producto_id)) {
@@ -548,84 +503,80 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               {/* Empanadas personalizables */}
               <div className="sabores-grid empanadas-grid">
                 <h4>Selecciona sabores y cantidades</h4>
-                {seleccionesEmpanadas.map((seleccion, idx) => {
-                  const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
-                  const prod = comboPersonalizando.productosActuales.find(
-                    (p, i) => EMPANADA_IDS.includes(p.producto_id) && i === idx
-                  );
-                  if (!prod) return null;
-
-                  return (
-                    <div key={idx} className="sabor-item editable">
-                      <span className="sabor-label">Empanada #{idx+1}</span>
-                      <select
-                        value={seleccion.producto_id}
-                        onChange={(e) => handleSaborChange(idx, 'producto_id', e.target.value)}
-                        className="sabor-select"
-                      >
-                        {saboresDisponibles.map(sabor => (
-                          <option key={sabor.id} value={sabor.id}>
-                            {sabor.subcategoria} - ${sabor.precio}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="cantidad-control">
-                        <button
-                          className="cantidad-btn"
-                          onClick={() => {
-                            if (seleccion.cantidad > 0) {
-                              handleSaborChange(idx, 'cantidad', seleccion.cantidad - 1);
-                            }
-                          }}
-                          disabled={seleccion.cantidad <= 0}
+                {(() => {
+                  const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
+                  return empanadas.map((prod, idx) => {
+                    const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
+                    const seleccion = seleccionesEmpanadas[idx] || { producto_id: prod.producto_id, cantidad: 0 };
+                    return (
+                      <div key={idx} className="sabor-item editable">
+                        <span className="sabor-label">Empanada #{idx+1}</span>
+                        <select
+                          value={seleccion.producto_id}
+                          onChange={(e) => handleSaborChange(idx, 'producto_id', e.target.value)}
+                          className="sabor-select"
                         >
-                          −
-                        </button>
-                        <span className="cantidad-valor">{seleccion.cantidad}</span>
-                        <button
-                          className="cantidad-btn"
-                          onClick={() => {
-                            const totalEmpanadas = comboPersonalizando.productosActuales
-                              .filter(p => EMPANADA_IDS.includes(p.producto_id))
-                              .reduce((sum, p) => sum + p.cantidad, 0);
-                            const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                            if (totalAsignado < totalEmpanadas) {
-                              handleSaborChange(idx, 'cantidad', seleccion.cantidad + 1);
-                            }
-                          }}
-                          disabled={
-                            (() => {
-                              const totalEmpanadas = comboPersonalizando.productosActuales
-                                .filter(p => EMPANADA_IDS.includes(p.producto_id))
-                                .reduce((sum, p) => sum + p.cantidad, 0);
+                          {saboresDisponibles.map(sabor => (
+                            <option key={sabor.id} value={sabor.id}>
+                              {sabor.subcategoria} - ${sabor.precio}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="cantidad-control">
+                          <button
+                            className="cantidad-btn"
+                            onClick={() => {
+                              if (seleccion.cantidad > 0) {
+                                handleSaborChange(idx, 'cantidad', seleccion.cantidad - 1);
+                              }
+                            }}
+                            disabled={seleccion.cantidad <= 0}
+                          >
+                            −
+                          </button>
+                          <span className="cantidad-valor">{seleccion.cantidad}</span>
+                          <button
+                            className="cantidad-btn"
+                            onClick={() => {
+                              const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
                               const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                              return totalAsignado >= totalEmpanadas;
-                            })()
-                          }
-                        >
-                          +
-                        </button>
+                              if (totalAsignado < totalEmpanadas) {
+                                handleSaborChange(idx, 'cantidad', seleccion.cantidad + 1);
+                              }
+                            }}
+                            disabled={
+                              (() => {
+                                const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
+                                const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
+                                return totalAsignado >= totalEmpanadas;
+                              })()
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="sabor-max">/ {prod.cantidad}</span>
                       </div>
-                      <span className="sabor-max">/ {prod.cantidad}</span>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
 
               <button 
                 className="btn-aplicar-personalizacion"
                 onClick={() => {
-                  const totalEmpanadas = comboPersonalizando.productosActuales
-                    .filter(p => EMPANADA_IDS.includes(p.producto_id))
-                    .reduce((sum, p) => sum + p.cantidad, 0);
+                  const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
+                  const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
                   const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
                   if (totalAsignado !== totalEmpanadas) {
                     alert(`Faltan ${totalEmpanadas - totalAsignado} empanadas por asignar.`);
                     return;
                   }
-                  const productosFinales = comboPersonalizando.productosActuales.map((prod, idx) => {
+                  const productosFinales = comboPersonalizando.productosActuales.map((prod) => {
                     if (EMPANADA_IDS.includes(prod.producto_id)) {
-                      const sel = seleccionesEmpanadas.find((s, i) => i === idx) || { producto_id: prod.producto_id, cantidad: 0 };
+                      // Buscar la selección correspondiente al producto original
+                      const idx = empanadas.findIndex(e => e.producto_id === prod.producto_id && e.cantidad === prod.cantidad);
+                      const sel = (idx !== -1) ? seleccionesEmpanadas[idx] : { producto_id: prod.producto_id, cantidad: 0 };
                       return { ...prod, producto_id: sel.producto_id, cantidad: sel.cantidad };
                     }
                     return prod;
@@ -640,7 +591,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* CARRITO DE COMPRAS CON CONTROLES DE CANTIDAD */}
+      {/* CARRITO DE COMPRAS */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -650,27 +601,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             <div className="carrito-items">
               {carrito.map((item, idx) => (
                 <div key={idx} className="carrito-item">
-                  <span className="carrito-nombre">
-                    {item.esCombo && "🍱 "}{item.nombre}
-                  </span>
-
+                  <span className="carrito-nombre">{item.esCombo && "🍱 "}{item.nombre}</span>
                   <div className="carrito-cantidad-control">
-                    <button
-                      className="cantidad-btn"
-                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
-                      disabled={item.cantidad <= 1}
-                    >
-                      −
-                    </button>
+                    <button className="cantidad-btn" onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)} disabled={item.cantidad <= 1}>−</button>
                     <span className="carrito-cantidad">{item.cantidad}</span>
-                    <button
-                      className="cantidad-btn"
-                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
-                    >
-                      +
-                    </button>
+                    <button className="cantidad-btn" onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}>+</button>
                   </div>
-
                   <span className="carrito-precio">{formatPrice(item.precio)}</span>
                   <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
                   <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
@@ -679,9 +615,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             </div>
             <div className="carrito-total">
               <strong>Total: {formatPrice(totalCarrito)}</strong>
-              <button className="registrar-btn" onClick={registrarVentaFinal}>
-                Registrar Venta
-              </button>
+              <button className="registrar-btn" onClick={registrarVentaFinal}>Registrar Venta</button>
             </div>
           </>
         )}
@@ -701,28 +635,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
                 <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
                 <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
-                <p><strong>💳 Método de pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
-                {ventaExitosa.cambio > 0 && (
-                  <p><strong>🔄 Cambio:</strong> {formatPrice(ventaExitosa.cambio)}</p>
-                )}
+                <p><strong>💳 Método:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {ventaExitosa.cambio > 0 && <p><strong>🔄 Cambio:</strong> {formatPrice(ventaExitosa.cambio)}</p>}
               </div>
               <div className="detalle-venta">
                 <h3>Detalle de la compra</h3>
                 <table className="detalle-tabla">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Cantidad</th>
-                      <th>Precio Unit.</th>
-                      <th>Subtotal</th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
                   <tbody>
                     {ventaExitosa.productos.map((item, idx) => (
                       <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
-                        <td className={item.esCombo ? "combo-producto" : ""}>
-                          {item.nombre}
-                        </td>
+                        <td className={item.esCombo ? "combo-producto" : ""}>{item.nombre}</td>
                         <td>{item.cantidad}</td>
                         <td>{formatPrice(item.precio)}</td>
                         <td className="subtotal-cell">{formatPrice(item.subtotal)}</td>
@@ -739,11 +662,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               </div>
               <div className="mensaje-agradecimiento">
                 <p>🎉 ¡Gracias por tu compra!</p>
-                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
+                <p className="mensaje-pequeno">Venta registrada correctamente</p>
               </div>
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-                Aceptar
-              </button>
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>Aceptar</button>
             </div>
           </div>
         </div>
@@ -759,7 +680,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         />
       )}
 
-      {/* MODAL DE CONFIRMACIÓN DE PAGO */}
+      {/* CONFIRMACIÓN DE PAGO */}
       {mostrarConfirmacion && datosPagoConfirmacion && (
         <div className="modal-overlay" onClick={() => {
           setMostrarConfirmacion(false);
@@ -776,60 +697,39 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               }}>✕</button>
             </div>
             <div className="modal-body">
-              <p className="confirmacion-mensaje">
-                ¿Estás seguro de confirmar el pago de los productos seleccionados?
-              </p>
+              <p className="confirmacion-mensaje">¿Estás seguro de confirmar el pago?</p>
               <div className="confirmacion-resumen">
                 <p><strong>Total:</strong> {formatPrice(totalCarrito)}</p>
-                <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
-                {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
-                  <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
-                )}
+                <p><strong>Método:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {datosPagoConfirmacion.metodo_pago === 'efectivo' && <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>}
               </div>
               <div className="confirmacion-buttons">
-                <button
-                  className="btn-cancelar-confirmacion"
-                  onClick={() => {
-                    setMostrarConfirmacion(false);
-                    setDatosPagoConfirmacion(null);
-                    setMostrarModalPago(true);
-                  }}
-                >
-                  No
-                </button>
-                <button
-                  className="btn-aceptar-confirmacion"
-                  onClick={ejecutarPago}
-                >
-                  Sí, confirmar pago
-                </button>
+                <button className="btn-cancelar-confirmacion" onClick={() => {
+                  setMostrarConfirmacion(false);
+                  setDatosPagoConfirmacion(null);
+                  setMostrarModalPago(true);
+                }}>No</button>
+                <button className="btn-aceptar-confirmacion" onClick={ejecutarPago}>Sí, confirmar pago</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DE CUADRE DE CAJA */}
+      {/* CUADRE DE CAJA */}
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CashRegister
-              usuario={usuario}
-              inventario={inventario}
-              onClose={() => setMostrarCuadre(false)}
-            />
+            <CashRegister usuario={usuario} inventario={inventario} onClose={() => setMostrarCuadre(false)} />
           </div>
         </div>
       )}
 
       {mostrarDespachos && (
-        <DespachosModal
-          onClose={() => setMostrarDespachos(false)}
-          inventario={inventario}
-        />
+        <DespachosModal onClose={() => setMostrarDespachos(false)} inventario={inventario} />
       )}
 
-      {/* MODAL DE CIERRE DE SESIÓN */}
+      {/* CIERRE DE SESIÓN */}
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
           <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
