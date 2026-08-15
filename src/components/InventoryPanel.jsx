@@ -117,6 +117,16 @@ function InventoryPanel() {
     }
   };
 
+  // ===== CÁLCULO DE TOTALES =====
+  const totalUnidades = inventory.reduce((sum, item) => {
+    return sum + (item.cantidad || 0) + (item.stock_fabrica || 0);
+  }, 0);
+
+  const totalInventario = inventory.reduce((sum, item) => {
+    const totalUnidadesItem = (item.cantidad || 0) + (item.stock_fabrica || 0);
+    return sum + (totalUnidadesItem * (item.precio || 0));
+  }, 0);
+
   // ===== AGRUPAR PRODUCTOS POR CATEGORÍA =====
   const groupedInventory = inventory.reduce((acc, producto) => {
     const cat = producto.categoria || 'Sin categoría';
@@ -199,8 +209,8 @@ function InventoryPanel() {
                 </thead>
                 <tbody>
                   {groupedInventory[categoria].map((item) => {
-                    const totalUnidades = (item.cantidad || 0) + (item.stock_fabrica || 0);
-                    const valorTotal = totalUnidades * (item.precio || 0);
+                    const totalUnidadesItem = (item.cantidad || 0) + (item.stock_fabrica || 0);
+                    const valorTotalItem = totalUnidadesItem * (item.precio || 0);
                     
                     return (
                       <tr key={item.id}>
@@ -249,8 +259,8 @@ function InventoryPanel() {
                             />
                           ) : (item.stock_fabrica || 0)}
                         </td>
-                        <td>{totalUnidades}</td>
-                        <td>{formatPrice(valorTotal)}</td>
+                        <td>{totalUnidadesItem}</td>
+                        <td>{formatPrice(valorTotalItem)}</td>
                         <td>
                           {editingId === item.id ? (
                             <>
@@ -268,6 +278,14 @@ function InventoryPanel() {
                     );
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="total-footer-inventory">
+                    <td colSpan="5"><strong>TOTALES</strong></td>
+                    <td><strong>{totalUnidades}</strong></td>
+                    <td><strong>{formatPrice(totalInventario)}</strong></td>
+                    <td></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
