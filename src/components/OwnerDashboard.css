@@ -2418,3 +2418,34 @@
   font-size: 0.75rem;
   color: var(--marron-claro);
 }
+/* ===== FOOTER DE INVENTARIO ===== */
+.total-footer-inventory {
+  background: var(--crema-oscuro);
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.total-footer-inventory td {
+  padding: 12px 8px;
+  border-top: 2px solid var(--rojo-marron);
+}
+
+.total-footer-inventory strong {
+  color: var(--marron);
+}
+
+.total-footer-inventory td:nth-child(6),
+.total-footer-inventory td:nth-child(7) {
+  color: var(--rojo-marron);
+  font-size: 1.1rem;
+}
+
+/* Modo oscuro */
+.dark-mode .total-footer-inventory {
+  background: var(--border-color);
+}
+
+.dark-mode .total-footer-inventory td:nth-child(6),
+.dark-mode .total-footer-inventory td:nth-child(7) {
+  color: var(--lime);
+}
