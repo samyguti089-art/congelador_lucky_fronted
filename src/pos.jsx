@@ -145,7 +145,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== FUNCIONES DEL CARRITO =====
 
-  // 🆕 Agregar combo personalizado (productos individuales)
+  // 🔧 Corregido: agregar combo personalizado (productos individuales)
   const agregarComboPersonalizado = (productosFinales) => {
     const carritoItems = productosFinales.map(p => {
       const producto = inventario.find(i => i.id === p.producto_id);
@@ -155,7 +155,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         precio: producto?.precio || 0,
         cantidad: p.cantidad,
         subtotal: p.cantidad * (producto?.precio || 0),
-        esCombo: false, // Son productos individuales
+        esCombo: false,
       };
     });
     setCarrito(prev => [...prev, ...carritoItems]);
@@ -165,40 +165,49 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalCombos(false);
   };
 
-  // 🆕 Agregar combo (con verificación de empanadas)
+  // 🔧 Corregido: agregar combo con verificación de empanadas
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
-    // Obtener los detalles del combo
-    const { data: detalles, error } = await supabase
-      .from('combo_detalle')
-      .select('producto_id, cantidad')
-      .eq('combo_id', combo.id);
-    if (error) {
-      console.error('Error obteniendo detalles del combo:', error);
-      return;
-    }
+    try {
+      const { data: detalles, error } = await supabase
+        .from('combo_detalle')
+        .select('producto_id, cantidad')
+        .eq('combo_id', combo.id);
+      if (error) throw error;
 
-    // Verificar si el combo contiene empanadas
-    const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
+      const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
 
-    if (tieneEmpanadas) {
-      // Guardar para personalización
-      setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
-      setMostrarModalPersonalizar(true);
-    } else {
-      // Si no tiene empanadas, agregar directamente
-      const item = {
-        id: combo.id,
-        nombre: combo.nombre,
-        precio: combo.precio,
-        cantidad: cantidad,
-        subtotal: cantidad * combo.precio,
-        esCombo: true,
-      };
-      setCarrito(prev => [...prev, item]);
-      setMostrarModalCombos(false);
+      if (tieneEmpanadas) {
+        // Guardar para personalización y resetear selecciones
+        setSeleccionesEmpanadas({});
+        setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
+        setMostrarModalPersonalizar(true);
+      } else {
+        const item = {
+          id: combo.id,
+          nombre: combo.nombre,
+          precio: combo.precio,
+          cantidad: cantidad,
+          subtotal: cantidad * combo.precio,
+          esCombo: true,
+        };
+        setCarrito(prev => [...prev, item]);
+        setMostrarModalCombos(false);
+      }
+    } catch (err) {
+      console.error('Error al agregar combo:', err);
+      alert('Ocurrió un error al cargar el combo.');
     }
   };
 
+  // 🔧 Manejar cambio de sabor en el modal
+  const handleSaborChange = (index, value) => {
+    setSeleccionesEmpanadas(prev => ({
+      ...prev,
+      [index]: parseInt(value)
+    }));
+  };
+
+  // ===== RESTO DE FUNCIONES (agregarAlCarrito, eliminar, etc.) =====
   const agregarAlCarrito = (producto, cantidad = 1) => {
     const item = {
       id: producto.id,
@@ -342,6 +351,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
+  // ============================================================
+  // RENDER PRINCIPAL
+  // ============================================================
   return (
     <div className="pos-container">
       {/* HEADER CON LOGO */}
@@ -398,6 +410,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {/* MODAL DE PRODUCTOS */}
       {mostrarModalProductos && (
+        // ... (el contenido del modal de productos es extenso, pero ya lo tienes)
+        // Por brevedad, aquí omito el detalle, pero asegúrate de que el código esté completo.
+        // Puedes copiarlo del archivo original.
         <div className="modal-overlay" onClick={() => setMostrarModalProductos(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -483,7 +498,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (CORREGIDO) */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -517,18 +532,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 {comboPersonalizando.productosActuales.map((prod, idx) => {
                   if (!EMPANADA_IDS.includes(prod.producto_id)) return null;
                   const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
-                  // Estado local para cada select
-                  const [selectedId, setSelectedId] = useState(prod.producto_id);
-                  // Guardar la selección en el objeto global
-                  useEffect(() => {
-                    setSeleccionesEmpanadas(prev => ({ ...prev, [idx]: selectedId }));
-                  }, [selectedId]);
+                  const valorSeleccionado = seleccionesEmpanadas[idx] || prod.producto_id;
                   return (
                     <div key={idx} className="sabor-item editable">
                       <span className="sabor-label">Empanada #{idx+1}</span>
                       <select
-                        value={selectedId}
-                        onChange={(e) => setSelectedId(Number(e.target.value))}
+                        value={valorSeleccionado}
+                        onChange={(e) => handleSaborChange(idx, e.target.value)}
                         className="sabor-select"
                       >
                         {saboresDisponibles.map(sabor => (
@@ -545,10 +555,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <button 
                 className="btn-aplicar-personalizacion"
                 onClick={() => {
-                  // Construir la lista final de productos
+                  // Construir la lista final de productos usando selecciones
                   const productosFinales = comboPersonalizando.productosActuales.map((prod, idx) => {
                     if (EMPANADA_IDS.includes(prod.producto_id)) {
-                      // Reemplazar con el ID seleccionado
                       const nuevoId = seleccionesEmpanadas[idx] || prod.producto_id;
                       return { ...prod, producto_id: nuevoId };
                     }
@@ -564,7 +573,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* CARRITO DE COMPRAS CON CONTROLES DE CANTIDAD */}
+      {/* CARRITO DE COMPRAS */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -577,7 +586,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <span className="carrito-nombre">
                     {item.esCombo && "🍱 "}{item.nombre}
                   </span>
-
                   <div className="carrito-cantidad-control">
                     <button
                       className="cantidad-btn"
@@ -594,7 +602,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       +
                     </button>
                   </div>
-
                   <span className="carrito-precio">{formatPrice(item.precio)}</span>
                   <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
                   <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
@@ -611,8 +618,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* MODAL DE VENTA EXITOSA */}
+      {/* MODAL DE VENTA EXITOSA (mantén tu código existente) */}
       {mostrarModalExito && ventaExitosa && (
+        // ... (copia tu modal de éxito)
         <div className="modal-overlay" onClick={() => {}}>
           <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header exito-header">
@@ -621,7 +629,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <button className="close-btn" onClick={cerrarModalExito}>✕</button>
             </div>
             <div className="modal-body">
-              {/* ... contenido existente ... */}
               <div className="venta-info">
                 <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
                 <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
@@ -666,9 +673,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 <p>🎉 ¡Gracias por tu compra!</p>
                 <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
               </div>
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-                Aceptar
-              </button>
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>Aceptar</button>
             </div>
           </div>
         </div>
