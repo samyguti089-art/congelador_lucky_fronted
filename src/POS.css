@@ -1361,3 +1361,115 @@ body.dark-mode {
     font-size: 0.7rem;
   }
 }
+/* ===== PERSONALIZAR COMBO ===== */
+.personalizar-modal {
+  max-width: 600px;
+  width: 95%;
+}
+
+.personalizar-body {
+  padding: 20px;
+}
+
+.personalizar-info {
+  color: var(--marron);
+  margin-bottom: 20px;
+}
+
+.sabores-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sabor-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--crema);
+  border-radius: 10px;
+  border: 1px solid var(--crema-oscuro);
+}
+
+.sabor-item.fijo {
+  background: #f0ece6;
+  justify-content: space-between;
+}
+
+.sabor-item.editable {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.sabor-nombre {
+  font-weight: 500;
+  color: var(--marron);
+}
+
+.sabor-cantidad {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.sabor-fijo-badge {
+  font-size: 0.7rem;
+  color: var(--marron-claro);
+  background: var(--crema-oscuro);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.sabor-label {
+  font-weight: 600;
+  color: var(--marron);
+  min-width: 120px;
+}
+
+.sabor-select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  background: white;
+  color: var(--marron);
+  font-size: 0.9rem;
+}
+
+.btn-aplicar-personalizacion {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-aplicar-personalizacion:hover {
+  background: linear-gradient(135deg, #7c1e1e, #6b1a1a);
+}
+
+.dark-mode .sabor-item {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .sabor-nombre {
+  color: var(--text-primary);
+}
+
+.dark-mode .sabor-fijo-badge {
+  background: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .sabor-select {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
