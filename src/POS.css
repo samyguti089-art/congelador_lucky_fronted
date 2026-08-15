@@ -1473,3 +1473,201 @@ body.dark-mode {
   border-color: var(--border-color);
   color: var(--text-primary);
 }
+/* ===== PERSONALIZAR COMBO ===== */
+.personalizar-modal {
+  max-width: 700px;
+  width: 95%;
+}
+
+.personalizar-body {
+  padding: 20px;
+}
+
+.personalizar-info {
+  color: var(--marron);
+  margin-bottom: 16px;
+}
+
+.resumen-cantidades {
+  display: flex;
+  justify-content: space-between;
+  background: var(--crema-oscuro);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resumen-cantidades strong {
+  color: var(--rojo-marron);
+}
+
+.sabores-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sabor-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--crema);
+  border-radius: 10px;
+  border: 1px solid var(--crema-oscuro);
+  flex-wrap: wrap;
+}
+
+.sabor-item.fijo {
+  background: #f0ece6;
+  justify-content: space-between;
+}
+
+.sabor-item.editable {
+  justify-content: space-between;
+}
+
+.sabor-nombre {
+  font-weight: 500;
+  color: var(--marron);
+}
+
+.sabor-cantidad {
+  font-weight: bold;
+  color: var(--rojo-marron);
+}
+
+.sabor-fijo-badge {
+  font-size: 0.7rem;
+  color: var(--marron-claro);
+  background: var(--crema-oscuro);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.sabor-label {
+  font-weight: 600;
+  color: var(--marron);
+  min-width: 100px;
+}
+
+.sabor-select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  background: white;
+  color: var(--marron);
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.cantidad-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cantidad-control .cantidad-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 50%;
+  background: white;
+  color: var(--marron);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cantidad-control .cantidad-btn:hover:not(:disabled) {
+  background: var(--rojo-marron);
+  color: white;
+  border-color: var(--rojo-marron);
+}
+
+.cantidad-control .cantidad-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cantidad-control .cantidad-valor {
+  min-width: 24px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.sabor-max {
+  font-size: 0.8rem;
+  color: var(--marron-claro);
+}
+
+.btn-aplicar-personalizacion {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #9b2c2c, #7c1e1e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 8px;
+}
+
+.btn-aplicar-personalizacion:hover {
+  background: linear-gradient(135deg, #7c1e1e, #6b1a1a);
+}
+
+/* ===== MODO OSCURO - PERSONALIZACIÓN ===== */
+.dark-mode .personalizar-info {
+  color: var(--text-primary);
+}
+
+.dark-mode .resumen-cantidades {
+  background: var(--border-color);
+}
+
+.dark-mode .resumen-cantidades strong {
+  color: var(--lime);
+}
+
+.dark-mode .sabor-item {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .sabor-nombre {
+  color: var(--text-primary);
+}
+
+.dark-mode .sabor-fijo-badge {
+  background: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .sabor-select {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .cantidad-control .cantidad-btn {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .sabor-max {
+  color: var(--text-secondary);
+}
