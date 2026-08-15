@@ -205,15 +205,19 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // Manejar cambio de sabor o cantidad en el modal
+  // 🔧 Manejar cambio de sabor o cantidad (CORREGIDO)
   const handleSaborChange = (index, field, value) => {
-    setSeleccionesEmpanadas(prev => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        [field]: field === 'producto_id' ? parseInt(value) : parseInt(value)
-      }
-    }));
+    setSeleccionesEmpanadas(prev => {
+      const current = prev[index] || { producto_id: 0, cantidad: 0 };
+      const newValue = field === 'producto_id' ? parseInt(value, 10) : Number(value);
+      return {
+        ...prev,
+        [index]: {
+          ...current,
+          [field]: newValue
+        }
+      };
+    });
   };
 
   const agregarAlCarrito = (producto, cantidad = 1) => {
@@ -503,7 +507,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (AVANZADO) */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (CORREGIDO) */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -558,11 +562,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   if (!EMPANADA_IDS.includes(prod.producto_id)) return null;
                   const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
                   const seleccion = seleccionesEmpanadas[idx] || { producto_id: prod.producto_id, cantidad: 0 };
-                  
+
                   return (
                     <div key={idx} className="sabor-item editable">
                       <span className="sabor-label">Empanada #{idx+1}</span>
                       <select
+                        key={`select-${idx}-${seleccion.producto_id}`}
                         value={seleccion.producto_id}
                         onChange={(e) => handleSaborChange(idx, 'producto_id', e.target.value)}
                         className="sabor-select"
