@@ -17,6 +17,9 @@ import combosImg from "./components/images/imagen de portada de combos.jpg";
 // Importar logo
 import logoImg from "./components/images/logo.jpeg";
 
+// ============================================================
+//  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
+// ============================================================
 const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const imageMap = {};
 Object.keys(imageModules).forEach((path) => {
@@ -44,11 +47,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== ESTADOS PARA PERSONALIZACIÓN DE COMBOS =====
   const [comboPersonalizando, setComboPersonalizando] = useState(null);
-  const [seleccionesEmpanadas, setSeleccionesEmpanadas] = useState({});
+  const [asignaciones, setAsignaciones] = useState({});
   const [mostrarModalPersonalizar, setMostrarModalPersonalizar] = useState(false);
 
+  // ===== IDs DE EMPANADAS =====
   const EMPANADA_IDS = [11, 12, 13, 33];
 
+  // ===== MODO OSCURO =====
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -72,6 +77,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // ===== FUNCIÓN PARA OBTENER IMAGEN DEL PRODUCTO =====
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
     if (imageMap[nombreArchivo]) return imageMap[nombreArchivo];
@@ -93,6 +99,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
+  // ===== CATEGORÍAS =====
   const categorias = [
     { id: "deditos", nombre: "Deditos", imagen: deditosImg, color: "#d97706" },
     { id: "empanadas", nombre: "Empanadas", imagen: empanadasImg, color: "#b45309" },
@@ -114,9 +121,133 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
-  // ===== FUNCIONES DEL CARRITO =====
+  // ============================================================
+  // NUEVA LÓGICA DE PERSONALIZACIÓN DE COMBOS
+  // ============================================================
 
-  const agregarComboPersonalizado = (productosFinales) => {
+  // Inicializar asignaciones con los paquetes disponibles en inventario
+  const inicializarAsignaciones = (detalles) => {
+    const asignacionesIniciales = {};
+    detalles.forEach(d => {
+      const productoId = d.producto_id;
+      // Obtener paquetes disponibles en inventario para este producto (con stock > 0)
+      const paquetesDisponibles = inventario
+        .filter(i => i.id === productoId && i.cantidad > 0)
+        .map(i => ({ paquete_id: i.id, unidades: 0, max: i.cantidad }));
+
+      // Si no hay paquetes disponibles, mostrar un paquete con max=0
+      if (paquetesDisponibles.length === 0) {
+        paquetesDisponibles.push({ paquete_id: productoId, unidades: 0, max: 0 });
+      }
+
+      asignacionesIniciales[productoId] = {
+        requerido: d.cantidad,
+        asignaciones: paquetesDisponibles
+      };
+    });
+    setAsignaciones(asignacionesIniciales);
+  };
+
+  // Manejar cambio de unidades asignadas a un paquete
+  const handleAsignacionChange = (productoId, paqueteId, delta) => {
+    setAsignaciones(prev => {
+      const producto = prev[productoId];
+      if (!producto) return prev;
+
+      const nuevasAsignaciones = producto.asignaciones.map(a => {
+        if (a.paquete_id === paqueteId) {
+          const nuevasUnidades = Math.max(0, a.unidades + delta);
+          const maxUnidades = a.max;
+          return { ...a, unidades: Math.min(nuevasUnidades, maxUnidades) };
+        }
+        return a;
+      });
+
+      // Calcular total asignado para este producto
+      const totalAsignado = nuevasAsignaciones.reduce((sum, a) => sum + a.unidades, 0);
+      // Si el total asignado supera lo requerido, no permitir más aumentos
+      if (totalAsignado > producto.requerido) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [productoId]: {
+          ...producto,
+          asignaciones: nuevasAsignaciones
+        }
+      };
+    });
+  };
+
+  // Calcular total asignado para un producto
+  const getTotalAsignado = (productoId) => {
+    const data = asignaciones[productoId];
+    if (!data) return 0;
+    return data.asignaciones.reduce((sum, a) => sum + a.unidades, 0);
+  };
+
+  // Obtener el nombre del producto
+  const getProductoNombre = (productoId) => {
+    const p = inventario.find(i => i.id === productoId);
+    return p?.subcategoria || p?.nombre || `Producto #${productoId}`;
+  };
+
+  // Obtener unidades por paquete (para mostrar)
+  const getUnidadesPorPaquete = (productoId) => {
+    // Extraer de la subcategoria o devolver 1 por defecto
+    const p = inventario.find(i => i.id === productoId);
+    if (p) {
+      const match = p.subcategoria?.match(/x(\d+)/);
+      if (match) return parseInt(match[1], 10);
+    }
+    return 1;
+  };
+
+  // Obtener empanadas disponibles para personalización de sabores
+  const getEmpanadasDisponibles = () => {
+    return inventario.filter(i => EMPANADA_IDS.includes(i.id));
+  };
+
+  // ============================================================
+  // FUNCIONES DEL CARRITO
+  // ============================================================
+
+  const agregarComboPersonalizado = () => {
+    // Validar que todas las asignaciones estén completas
+    let todasCompletas = true;
+    const detalles = comboPersonalizando.productosActuales;
+    const productosFinales = [];
+
+    for (const prod of detalles) {
+      const productoId = prod.producto_id;
+      const totalAsignado = getTotalAsignado(productoId);
+      const requerido = asignaciones[productoId]?.requerido || 0;
+
+      if (totalAsignado !== requerido) {
+        todasCompletas = false;
+        alert(`Faltan ${requerido - totalAsignado} unidades de ${getProductoNombre(productoId)}`);
+        return;
+      }
+
+      // Construir el producto final con las asignaciones
+      const asignacionesProducto = asignaciones[productoId]?.asignaciones || [];
+      // Por ahora, tomamos el primer paquete asignado (si hay múltiples, el backend recibirá la lista)
+      // Para simplificar, sumamos todas las asignaciones en un solo producto
+      const totalAsignadoFinal = asignacionesProducto.reduce((sum, a) => sum + a.unidades, 0);
+      if (totalAsignadoFinal > 0) {
+        // Buscar el producto en inventario para obtener el precio
+        const productoInfo = inventario.find(i => i.id === productoId);
+        productosFinales.push({
+          producto_id: productoId,
+          cantidad: totalAsignadoFinal,
+          precio: productoInfo?.precio || 0
+        });
+      }
+    }
+
+    if (!todasCompletas) return;
+
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
 
@@ -130,31 +261,29 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       esCombo: true,
     };
 
-    // 2. Empanadas personalizadas (precio 0) - MANTENER CADA UNA SEPARADA
-    const empanadaItems = productosFinales
-      .filter(p => EMPANADA_IDS.includes(p.producto_id))
-      .map(p => {
-        const producto = inventario.find(i => i.id === p.producto_id);
-        return {
-          id: p.producto_id,
-          nombre: producto?.subcategoria || `Empanada #${p.producto_id}`,
-          precio: 0,
-          cantidad: p.cantidad,
-          subtotal: 0,
-          esCombo: false,
-          // 🔥 Clave única para evitar fusión en el carrito
-          key: `empanada_${p.producto_id}_${Date.now()}_${Math.random()}`
-        };
-      });
+    // 2. Productos personalizados (con precio 0 si están incluidos en el combo)
+    const itemsPersonalizados = productosFinales.map(p => {
+      const productoInfo = inventario.find(i => i.id === p.producto_id);
+      return {
+        id: p.producto_id,
+        nombre: productoInfo?.subcategoria || productoInfo?.nombre || `Producto #${p.producto_id}`,
+        precio: 0, // El precio del combo ya cubre estos productos
+        cantidad: p.cantidad,
+        subtotal: 0,
+        esCombo: false,
+        incluido: true,
+      };
+    });
 
     // 3. Agregar al carrito
-    setCarrito(prev => [...prev, comboItem, ...empanadaItems]);
+    setCarrito(prev => [...prev, comboItem, ...itemsPersonalizados]);
     setMostrarModalPersonalizar(false);
     setComboPersonalizando(null);
-    setSeleccionesEmpanadas({});
+    setAsignaciones({});
     setMostrarModalCombos(false);
   };
 
+  // Agregar combo al carrito (con verificación de personalización)
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
     try {
       const { data: detalles, error } = await supabase
@@ -163,52 +292,18 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         .eq('combo_id', combo.id);
       if (error) throw error;
 
+      // Inicializar asignaciones para todos los productos del combo
       const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
 
-      if (tieneEmpanadas) {
-        // Inicializar selecciones usando índice
-        const inicialSelecciones = {};
-        detalles.forEach((d, idx) => {
-          if (EMPANADA_IDS.includes(d.producto_id)) {
-            inicialSelecciones[idx] = {
-              producto_id: d.producto_id,
-              cantidad: 0,
-              originalProductoId: d.producto_id
-            };
-          }
-        });
-        setSeleccionesEmpanadas(inicialSelecciones);
-        setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
-        setMostrarModalPersonalizar(true);
-      } else {
-        const item = {
-          id: combo.id,
-          nombre: combo.nombre,
-          precio: combo.precio,
-          cantidad: cantidad,
-          subtotal: cantidad * combo.precio,
-          esCombo: true,
-        };
-        setCarrito(prev => [...prev, item]);
-        setMostrarModalCombos(false);
-      }
+      // Guardar el combo y abrir el modal de personalización
+      setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
+      inicializarAsignaciones(detalles);
+      setMostrarModalPersonalizar(true);
+
     } catch (err) {
       console.error('Error al agregar combo:', err);
       alert('Ocurrió un error al cargar el combo.');
     }
-  };
-
-  const handleSaborChange = (index, field, value) => {
-    setSeleccionesEmpanadas(prev => {
-      const current = prev[index] || { producto_id: 0, cantidad: 0, originalProductoId: 0 };
-      return {
-        ...prev,
-        [index]: {
-          ...current,
-          [field]: field === 'producto_id' ? parseInt(value, 10) : Number(value)
-        }
-      };
-    });
   };
 
   const agregarAlCarrito = (producto, cantidad = 1) => {
@@ -370,9 +465,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <span className="user-role">Cajero</span>
             </div>
           </div>
-          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
-          <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
-          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+            💰 Cuadre
+          </button>
+          <button onClick={handleCerrarSesion} className="logout-btn">
+            <FiLogOut className="logout-icon" /> Salir
+          </button>
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
+            📥 Despachos
+          </button>
           <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -381,7 +482,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* GRID DE CATEGORÍAS */}
+      {/* GRID DE CATEGORÍAS CON IMÁGENES */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -418,7 +519,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={producto.id} className="producto-card">
                     <div className="producto-imagen">
                       {producto.imagen_url ? (
-                        <img src={getImagenProducto(producto.imagen_url)} alt={producto.subcategoria || producto.nombre} />
+                        <img
+                          src={getImagenProducto(producto.imagen_url)}
+                          alt={producto.subcategoria || producto.nombre}
+                        />
                       ) : (
                         <div className="producto-sin-imagen">📷</div>
                       )}
@@ -459,7 +563,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={combo.id} className="combo-card">
                     <div className="combo-imagen">
                       {combo.imagen_url ? (
-                        <img src={getImagenProducto(combo.imagen_url)} alt={combo.nombre} />
+                        <img
+                          src={getImagenProducto(combo.imagen_url)}
+                          alt={combo.nombre}
+                        />
                       ) : (
                         <div className="combo-sin-imagen">🍱</div>
                       )}
@@ -483,7 +590,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (NUEVA LÓGICA) */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -493,128 +600,77 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             </div>
             <div className="modal-body personalizar-body">
               <p className="personalizar-info">
-                El combo <strong>{comboPersonalizando.combo.nombre}</strong> incluye empanadas. 
-                Puedes elegir los sabores y las cantidades de cada uno.
+                El combo <strong>{comboPersonalizando.combo.nombre}</strong> requiere las siguientes unidades.
+                Puedes elegir cómo distribuir las unidades entre los paquetes disponibles.
                 <br />
                 <span className="nota-precio">El precio del combo se mantiene fijo.</span>
               </p>
 
-              {/* Resumen de cantidades */}
-              {(() => {
-                const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
-                const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                const restante = totalEmpanadas - totalAsignado;
+              {/* Productos del combo */}
+              {comboPersonalizando.productosActuales.map((prod, idx) => {
+                const productoId = prod.producto_id;
+                const data = asignaciones[productoId];
+                if (!data) return null;
+                const totalAsignado = getTotalAsignado(productoId);
+                const requerido = data.requerido;
+                const esEmpanada = EMPANADA_IDS.includes(productoId);
+                const productoInfo = inventario.find(i => i.id === productoId);
+                const nombreProducto = productoInfo?.subcategoria || productoInfo?.nombre || `Producto #${productoId}`;
+
                 return (
-                  <div className="resumen-cantidades">
-                    <span>Total empanadas: <strong>{totalEmpanadas}</strong></span>
-                    <span>Asignadas: <strong>{totalAsignado}</strong></span>
-                    <span>Restantes: <strong>{restante}</strong></span>
+                  <div key={idx} className="producto-asignacion">
+                    <h4 className="producto-asignacion-titulo">
+                      {nombreProducto}
+                      {esEmpanada && <span className="sabor-badge">🍳 Sabor variable</span>}
+                    </h4>
+                    <div className="producto-asignacion-resumen">
+                      <span>Requerido: <strong>{requerido}</strong> unidades</span>
+                      <span>Asignado: <strong>{totalAsignado}</strong> unidades</span>
+                      {totalAsignado === requerido && <span className="completado-badge">✅ Completado</span>}
+                      {totalAsignado < requerido && <span className="pendiente-badge">⚠️ Faltan {requerido - totalAsignado}</span>}
+                    </div>
+
+                    <div className="asignacion-paquetes">
+                      {data.asignaciones.map((asignacion) => {
+                        const paqueteInfo = inventario.find(i => i.id === asignacion.paquete_id);
+                        const nombrePaquete = paqueteInfo?.subcategoria || paqueteInfo?.nombre || `Paquete #${asignacion.paquete_id}`;
+                        const unidadesPorPaquete = getUnidadesPorPaquete(asignacion.paquete_id);
+                        const stockDisponible = asignacion.max;
+
+                        return (
+                          <div key={asignacion.paquete_id} className="asignacion-item">
+                            <span className="paquete-nombre">
+                              {nombrePaquete} (Stock: {stockDisponible})
+                            </span>
+                            <div className="asignacion-controles">
+                              <button
+                                className="cantidad-btn"
+                                onClick={() => handleAsignacionChange(productoId, asignacion.paquete_id, -1)}
+                                disabled={asignacion.unidades <= 0}
+                              >
+                                −
+                              </button>
+                              <span className="asignacion-valor">{asignacion.unidades}</span>
+                              <button
+                                className="cantidad-btn"
+                                onClick={() => handleAsignacionChange(productoId, asignacion.paquete_id, 1)}
+                                disabled={totalAsignado >= requerido || asignacion.unidades >= stockDisponible}
+                              >
+                                +
+                              </button>
+                              <span className="unidades-por-paquete">({unidadesPorPaquete} uds/paq)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
-              })()}
-
-              {/* Productos fijos */}
-              <div className="sabores-grid">
-                {comboPersonalizando.productosActuales.map((prod, idx) => {
-                  if (!EMPANADA_IDS.includes(prod.producto_id)) {
-                    const productoInfo = inventario.find(i => i.id === prod.producto_id);
-                    return (
-                      <div key={idx} className="sabor-item fijo">
-                        <span className="sabor-nombre">{productoInfo?.subcategoria || 'Producto'}</span>
-                        <span className="sabor-cantidad">x{prod.cantidad}</span>
-                        <span className="sabor-fijo-badge">Fijo</span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-
-              {/* Empanadas personalizables */}
-              <div className="sabores-grid empanadas-grid">
-                <h4>Selecciona sabores y cantidades</h4>
-                {(() => {
-                  const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
-                  return empanadas.map((prod, idx) => {
-                    const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
-                    const seleccion = seleccionesEmpanadas[idx] || { 
-                      producto_id: prod.producto_id, 
-                      cantidad: 0,
-                      originalProductoId: prod.producto_id 
-                    };
-                    const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                    const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                    const restante = totalEmpanadas - totalAsignado;
-
-                    return (
-                      <div key={idx} className="sabor-item editable">
-                        <span className="sabor-label">Empanada #{idx+1}</span>
-                        <select
-                          value={seleccion.producto_id}
-                          onChange={(e) => handleSaborChange(idx, 'producto_id', e.target.value)}
-                          className="sabor-select"
-                        >
-                          {saboresDisponibles.map(sabor => (
-                            <option key={sabor.id} value={sabor.id}>
-                              {sabor.subcategoria} - ${sabor.precio}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="cantidad-control">
-                          <button
-                            className="cantidad-btn"
-                            onClick={() => {
-                              if (seleccion.cantidad > 0) {
-                                handleSaborChange(idx, 'cantidad', seleccion.cantidad - 1);
-                              }
-                            }}
-                            disabled={seleccion.cantidad <= 0}
-                          >
-                            −
-                          </button>
-                          <span className="cantidad-valor">{seleccion.cantidad}</span>
-                          <button
-                            className="cantidad-btn"
-                            onClick={() => {
-                              if (restante > 0) {
-                                handleSaborChange(idx, 'cantidad', seleccion.cantidad + 1);
-                              }
-                            }}
-                            disabled={restante <= 0}
-                          >
-                            +
-                          </button>
-                        </div>
-                        <span className="sabor-max">/ {prod.cantidad}</span>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
+              })}
 
               <button 
                 className="btn-aplicar-personalizacion"
-                onClick={() => {
-                  const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
-                  const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                  const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                  if (totalAsignado !== totalEmpanadas) {
-                    alert(`Faltan ${totalEmpanadas - totalAsignado} empanadas por asignar.`);
-                    return;
-                  }
-                  const productosFinales = comboPersonalizando.productosActuales.map((prod) => {
-                    if (EMPANADA_IDS.includes(prod.producto_id)) {
-                      const idx = empanadas.findIndex(e => e.producto_id === prod.producto_id && e.cantidad === prod.cantidad);
-                      const sel = (idx !== -1 && seleccionesEmpanadas[idx]) 
-                        ? seleccionesEmpanadas[idx] 
-                        : { producto_id: prod.producto_id, cantidad: 0 };
-                      return { ...prod, producto_id: sel.producto_id, cantidad: sel.cantidad };
-                    }
-                    return prod;
-                  });
-                  agregarComboPersonalizado(productosFinales);
-                }}
+                onClick={agregarComboPersonalizado}
               >
                 ✅ Aplicar cambios y agregar al carrito
               </button>
@@ -623,7 +679,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* CARRITO */}
+      {/* CARRITO DE COMPRAS */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -636,13 +692,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <span className="carrito-nombre">
                     {item.esCombo && "🍱 "}{item.nombre}
                     {item.esCombo && <span className="combo-badge">Combo</span>}
-                    {item.precio === 0 && <span className="incluido-badge">(Incluido)</span>}
+                    {item.incluido && <span className="incluido-badge">(Incluido)</span>}
                   </span>
                   <div className="carrito-cantidad-control">
                     <button
                       className="cantidad-btn"
                       onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
-                      disabled={item.cantidad <= 1 || item.precio === 0}
+                      disabled={item.cantidad <= 1 || item.incluido}
                     >
                       −
                     </button>
@@ -650,7 +706,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     <button
                       className="cantidad-btn"
                       onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
-                      disabled={item.precio === 0}
+                      disabled={item.incluido}
                     >
                       +
                     </button>
@@ -706,7 +762,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
                         <td className={item.esCombo ? "combo-producto" : ""}>
                           {item.esCombo && "🍱 "}{item.nombre}
-                          {item.precio === 0 && " (incluido)"}
+                          {item.incluido && " (incluido)"}
                         </td>
                         <td>{item.cantidad}</td>
                         <td>{formatPrice(item.precio)}</td>
@@ -726,7 +782,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 <p>🎉 ¡Gracias por tu compra!</p>
                 <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
               </div>
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>Aceptar</button>
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
+                Aceptar
+              </button>
             </div>
           </div>
         </div>
@@ -742,7 +800,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         />
       )}
 
-      {/* CONFIRMACIÓN DE PAGO */}
+      {/* MODAL DE CONFIRMACIÓN DE PAGO */}
       {mostrarConfirmacion && datosPagoConfirmacion && (
         <div className="modal-overlay" onClick={() => {
           setMostrarConfirmacion(false);
@@ -759,39 +817,60 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               }}>✕</button>
             </div>
             <div className="modal-body">
-              <p className="confirmacion-mensaje">¿Estás seguro de confirmar el pago?</p>
+              <p className="confirmacion-mensaje">
+                ¿Estás seguro de confirmar el pago de los productos seleccionados?
+              </p>
               <div className="confirmacion-resumen">
                 <p><strong>Total:</strong> {formatPrice(totalCarrito)}</p>
-                <p><strong>Método:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
-                {datosPagoConfirmacion.metodo_pago === 'efectivo' && <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>}
+                <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
+                  <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
+                )}
               </div>
               <div className="confirmacion-buttons">
-                <button className="btn-cancelar-confirmacion" onClick={() => {
-                  setMostrarConfirmacion(false);
-                  setDatosPagoConfirmacion(null);
-                  setMostrarModalPago(true);
-                }}>No</button>
-                <button className="btn-aceptar-confirmacion" onClick={ejecutarPago}>Sí, confirmar pago</button>
+                <button
+                  className="btn-cancelar-confirmacion"
+                  onClick={() => {
+                    setMostrarConfirmacion(false);
+                    setDatosPagoConfirmacion(null);
+                    setMostrarModalPago(true);
+                  }}
+                >
+                  No
+                </button>
+                <button
+                  className="btn-aceptar-confirmacion"
+                  onClick={ejecutarPago}
+                >
+                  Sí, confirmar pago
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* CUADRE DE CAJA */}
+      {/* MODAL DE CUADRE DE CAJA */}
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CashRegister usuario={usuario} inventario={inventario} onClose={() => setMostrarCuadre(false)} />
+            <CashRegister
+              usuario={usuario}
+              inventario={inventario}
+              onClose={() => setMostrarCuadre(false)}
+            />
           </div>
         </div>
       )}
 
       {mostrarDespachos && (
-        <DespachosModal onClose={() => setMostrarDespachos(false)} inventario={inventario} />
+        <DespachosModal
+          onClose={() => setMostrarDespachos(false)}
+          inventario={inventario}
+        />
       )}
 
-      {/* CIERRE DE SESIÓN */}
+      {/* MODAL DE CIERRE DE SESIÓN */}
       {mostrarModalCierre && (
         <div className="modal-overlay" onClick={cancelarCierre}>
           <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
