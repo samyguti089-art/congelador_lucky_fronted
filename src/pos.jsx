@@ -45,13 +45,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
   const [mostrarDespachos, setMostrarDespachos] = useState(false);
 
-  // ===== ESTADOS PARA PERSONALIZACIÓN DE COMBOS =====
-  const [comboPersonalizando, setComboPersonalizando] = useState(null);
-  const [asignaciones, setAsignaciones] = useState({});
-  const [mostrarModalPersonalizar, setMostrarModalPersonalizar] = useState(false);
-
-  // ===== IDs DE EMPANADAS =====
-  const EMPANADA_IDS = [11, 12, 13, 33];
+  // ===== ESTADOS PARA COMBOS SIMPLIFICADOS =====
+  const [comboEmpanadas, setComboEmpanadas] = useState(null);
+  const [mostrarModalEmpanadas, setMostrarModalEmpanadas] = useState(false);
+  const [seleccionEmpanadas, setSeleccionEmpanadas] = useState({});
 
   // ===== MODO OSCURO =====
   const [darkMode, setDarkMode] = useState(() => {
@@ -121,222 +118,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
-  // ============================================================
-  // FUNCIONES DE PERSONALIZACIÓN (CORREGIDAS)
-  // ============================================================
-
-  // Obtener unidades por paquete (movida antes de agruparPorCategoria)
+  // ===== FUNCIONES AUXILIARES =====
   const getUnidadesPorPaquete = (productoId) => {
     const p = inventario.find(i => i.id === productoId);
     if (p) {
       const match = p.subcategoria?.match(/x(\d+)/);
       if (match) return parseInt(match[1], 10);
     }
-    // Si no se encuentra el producto o no tiene patrón, asumimos 1
-    console.warn(`⚠️ Producto ID ${productoId} no encontrado o sin patrón xN en subcategoria`);
     return 1;
   };
 
-  // Normalizar nombre de categoría para evitar duplicados por mayúsculas/minúsculas
-  const normalizarCategoria = (categoria) => {
-    const cat = (categoria || '').toLowerCase();
-    const mapa = {
-      'deditos': 'deditos',
-      'empanadas': 'empanadas',
-      'otros': 'otros',
-      'otro': 'otros' // por si acaso
-    };
-    return mapa[cat] || cat || 'sin_categoria';
-  };
-
-  // Agrupar productos del combo por categoría
-  const agruparPorCategoria = (detalles) => {
-    const grupos = {};
-    detalles.forEach(d => {
-      const producto = inventario.find(i => i.id === d.producto_id);
-      if (!producto) {
-        console.warn(`⚠️ Producto ID ${d.producto_id} no existe en inventario. Se omite en el combo.`);
-        return;
-      }
-      const categoria = normalizarCategoria(producto.categoria);
-      if (!grupos[categoria]) {
-        grupos[categoria] = {
-          requerido: 0,
-          productosOriginales: []
-        };
-      }
-      const unidadesPorPaquete = getUnidadesPorPaquete(d.producto_id);
-      grupos[categoria].requerido += d.cantidad * unidadesPorPaquete;
-      grupos[categoria].productosOriginales.push(d);
-    });
-    return grupos;
-  };
-
-  // Inicializar asignaciones con todos los paquetes disponibles de cada categoría
-  const inicializarAsignaciones = (grupos) => {
-    const asignacionesIniciales = {};
-    Object.keys(grupos).forEach(categoria => {
-      const data = grupos[categoria];
-      // Obtener todos los productos de esa categoría con stock > 0
-      // Usamos la categoría normalizada
-      const paquetesDisponibles = inventario
-        .filter(i => normalizarCategoria(i.categoria) === categoria && i.cantidad > 0)
-        .map(i => ({ paquete_id: i.id, unidades: 0, max: i.cantidad }));
-
-      if (paquetesDisponibles.length === 0) {
-        paquetesDisponibles.push({ paquete_id: 0, unidades: 0, max: 0 });
-      }
-
-      asignacionesIniciales[categoria] = {
-        requerido: data.requerido,
-        productosOriginales: data.productosOriginales,
-        asignaciones: paquetesDisponibles
-      };
-    });
-    setAsignaciones(asignacionesIniciales);
-  };
-
-  // Calcular total asignado en UNIDADES reales
-  const getTotalAsignado = (categoria) => {
-    const data = asignaciones[categoria];
-    if (!data) return 0;
-    let total = 0;
-    data.asignaciones.forEach(a => {
-      if (a.paquete_id === 0) return;
-      const producto = inventario.find(i => i.id === a.paquete_id);
-      const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
-      total += a.unidades * unidadesPorPaquete;
-    });
-    return total;
-  };
-
-  // Manejar cambio de unidades asignadas a un paquete
-  const handleAsignacionChange = (categoria, paqueteId, delta) => {
-    setAsignaciones(prev => {
-      const grupo = prev[categoria];
-      if (!grupo) return prev;
-
-      const nuevasAsignaciones = grupo.asignaciones.map(a => {
-        if (a.paquete_id === paqueteId) {
-          const nuevasUnidades = Math.max(0, a.unidades + delta);
-          const maxUnidades = a.max;
-          return { ...a, unidades: Math.min(nuevasUnidades, maxUnidades) };
-        }
-        return a;
-      });
-
-      // Calcular total asignado en UNIDADES reales
-      let totalAsignado = 0;
-      nuevasAsignaciones.forEach(a => {
-        if (a.paquete_id === 0) return;
-        const producto = inventario.find(i => i.id === a.paquete_id);
-        const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
-        totalAsignado += a.unidades * unidadesPorPaquete;
-      });
-
-      if (totalAsignado > grupo.requerido) return prev;
-
-      return {
-        ...prev,
-        [categoria]: {
-          ...grupo,
-          asignaciones: nuevasAsignaciones
-        }
-      };
-    });
-  };
-
-  // Obtener nombre de categoría
-  const getCategoriaNombre = (categoria) => {
-    const nombres = {
-      'deditos': 'Deditos',
-      'empanadas': 'Empanadas',
-      'otros': 'Otros',
-      'sin_categoria': 'Sin categoría'
-    };
-    return nombres[categoria] || categoria;
-  };
-
-  // Obtener el nombre del producto
-  const getProductoNombre = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    return p?.subcategoria || p?.nombre || `Producto #${productoId}`;
-  };
-
-  // ============================================================
-  // FUNCIONES DEL CARRITO
-  // ============================================================
-
-  const agregarComboPersonalizado = () => {
-    const categoriasKeys = Object.keys(asignaciones);
-    const productosFinales = [];
-
-    for (const categoria of categoriasKeys) {
-      const data = asignaciones[categoria];
-      let totalAsignado = 0;
-      data.asignaciones.forEach(a => {
-        if (a.paquete_id === 0) return;
-        const producto = inventario.find(i => i.id === a.paquete_id);
-        const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
-        totalAsignado += a.unidades * unidadesPorPaquete;
-      });
-      const requerido = data.requerido;
-
-      if (totalAsignado !== requerido) {
-        alert(`Faltan ${requerido - totalAsignado} unidades de ${getCategoriaNombre(categoria)}`);
-        return;
-      }
-
-      data.asignaciones.forEach(asignacion => {
-        if (asignacion.unidades > 0 && asignacion.paquete_id !== 0) {
-          productosFinales.push({
-            producto_id: asignacion.paquete_id,
-            cantidad: asignacion.unidades,
-            precio: 0
-          });
-        }
-      });
-    }
-
-    if (productosFinales.length === 0) {
-      alert('Debes asignar al menos un producto al combo.');
-      return;
-    }
-
-    const combo = comboPersonalizando.combo;
-    const cantidad = comboPersonalizando.cantidad;
-
-    // Ítem que representa el precio del combo (no afecta inventario)
-    const comboPrecioItem = {
-      id: `precio-combo-${combo.id}`,
-      nombre: combo.nombre,
-      precio: combo.precio,
-      cantidad: cantidad,
-      subtotal: cantidad * combo.precio,
-      esCombo: true,
-      esPrecioCombo: true, // ⚠️ bandera para el backend
-    };
-
-    const itemsPersonalizados = productosFinales.map(p => {
-      const productoInfo = inventario.find(i => i.id === p.producto_id);
-      return {
-        id: p.producto_id,
-        nombre: productoInfo?.subcategoria || productoInfo?.nombre || `Producto #${p.producto_id}`,
-        precio: 0,
-        cantidad: p.cantidad,
-        subtotal: 0,
-        esCombo: false,
-        incluido: true,
-      };
-    });
-
-    setCarrito(prev => [...prev, comboPrecioItem, ...itemsPersonalizados]);
-    setMostrarModalPersonalizar(false);
-    setComboPersonalizando(null);
-    setAsignaciones({});
-    setMostrarModalCombos(false);
-  };
-
+  // ===== FUNCIONES DE COMBOS =====
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
     try {
       const { data: detalles, error } = await supabase
@@ -345,17 +137,115 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         .eq('combo_id', combo.id);
       if (error) throw error;
 
-      const grupos = agruparPorCategoria(detalles);
-      setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
-      inicializarAsignaciones(grupos);
-      setMostrarModalPersonalizar(true);
+      const empanadas = [];
+      const fijos = [];
 
+      for (const d of detalles) {
+        const prod = inventario.find(i => i.id === d.producto_id);
+        if (!prod) continue;
+        if (prod.categoria?.toLowerCase() === 'empanadas') {
+          empanadas.push({ ...d, unidades_por_paquete: getUnidadesPorPaquete(d.producto_id) });
+        } else {
+          fijos.push(d);
+        }
+      }
+
+      // Agregar componentes fijos al carrito
+      const itemsFijos = fijos.map(d => {
+        const prod = inventario.find(i => i.id === d.producto_id);
+        return {
+          id: d.producto_id,
+          nombre: prod?.subcategoria || prod?.nombre || `Producto #${d.producto_id}`,
+          precio: 0,
+          cantidad: d.cantidad,
+          subtotal: 0,
+          esCombo: false,
+          incluido: true,
+        };
+      });
+
+      if (empanadas.length > 0) {
+        const requerido = empanadas.reduce((sum, e) => sum + e.cantidad * e.unidades_por_paquete, 0);
+        const productosEmpanadas = inventario.filter(
+          i => i.categoria?.toLowerCase() === 'empanadas' && i.cantidad > 0
+        );
+        setComboEmpanadas({ combo, cantidad, requerido, productosEmpanadas, itemsFijos });
+        setSeleccionEmpanadas({});
+        setMostrarModalEmpanadas(true);
+      } else {
+        const comboItem = {
+          id: `precio-combo-${combo.id}`,
+          nombre: combo.nombre,
+          precio: combo.precio,
+          cantidad,
+          subtotal: cantidad * combo.precio,
+          esCombo: true,
+          esPrecioCombo: true,
+        };
+        setCarrito(prev => [...prev, comboItem, ...itemsFijos]);
+      }
     } catch (err) {
       console.error('Error al agregar combo:', err);
       alert('Ocurrió un error al cargar el combo.');
     }
   };
 
+  const handleEmpanadaChange = (productoId, delta) => {
+    setSeleccionEmpanadas(prev => {
+      const actual = prev[productoId] || 0;
+      const nuevo = Math.max(0, actual + delta);
+      const prod = inventario.find(i => i.id === productoId);
+      const maxPaquetes = prod ? Math.floor(prod.cantidad) : 0;
+      const limitado = Math.min(nuevo, maxPaquetes);
+      const totalAsignado = Object.entries({ ...prev, [productoId]: limitado }).reduce((sum, [id, cant]) => {
+        return sum + cant * getUnidadesPorPaquete(parseInt(id));
+      }, 0);
+      if (totalAsignado > comboEmpanadas.requerido) return prev;
+      return { ...prev, [productoId]: limitado };
+    });
+  };
+
+  const confirmarSeleccionEmpanadas = () => {
+    const { combo, cantidad, requerido, productosEmpanadas, itemsFijos } = comboEmpanadas;
+    let totalAsignado = 0;
+    const itemsEmpanadas = [];
+    for (const prod of productosEmpanadas) {
+      const cant = seleccionEmpanadas[prod.id] || 0;
+      if (cant > 0) {
+        totalAsignado += cant * getUnidadesPorPaquete(prod.id);
+        itemsEmpanadas.push({
+          id: prod.id,
+          nombre: prod.subcategoria || prod.nombre,
+          precio: 0,
+          cantidad: cant,
+          subtotal: 0,
+          esCombo: false,
+          incluido: true,
+        });
+      }
+    }
+    if (totalAsignado !== requerido) {
+      alert(`Debes seleccionar exactamente ${requerido} unidades de empanadas (faltan ${requerido - totalAsignado}).`);
+      return;
+    }
+
+    const comboItem = {
+      id: `precio-combo-${combo.id}`,
+      nombre: combo.nombre,
+      precio: combo.precio,
+      cantidad,
+      subtotal: cantidad * combo.precio,
+      esCombo: true,
+      esPrecioCombo: true,
+    };
+
+    setCarrito(prev => [...prev, comboItem, ...itemsFijos, ...itemsEmpanadas]);
+    setMostrarModalEmpanadas(false);
+    setComboEmpanadas(null);
+    setSeleccionEmpanadas({});
+  };
+
+  // ===== FUNCIONES DEL CARRITO =====
   const agregarAlCarrito = (producto, cantidad = 1) => {
     const item = {
       id: producto.id,
@@ -404,19 +294,16 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
     setMostrarConfirmacion(false);
 
-    // Construir lista para el backend con manejo de combos personalizados
     const productosParaBackend = carrito.map(item => {
       if (item.esPrecioCombo) {
-        // Solo el precio del combo personalizado (no afecta inventario)
         return {
           producto_id: null,
           combo_id: null,
           cantidad: item.cantidad,
           total: item.subtotal,
-          descripcion: item.nombre // para mostrar en el ticket
+          descripcion: item.nombre
         };
       } else if (item.esCombo) {
-        // Combo normal (el backend descuenta automáticamente sus componentes)
         return {
           producto_id: null,
           combo_id: item.id,
@@ -424,7 +311,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           total: item.subtotal
         };
       } else {
-        // Producto individual (puede ser incluido en combo personalizado o venta normal)
         return {
           producto_id: item.id,
           combo_id: null,
@@ -455,7 +341,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         precio: item.precio,
         subtotal: item.subtotal,
         esCombo: item.esCombo,
-        esPrecioCombo: item.esPrecioCombo,
         incluido: item.incluido
       }));
 
@@ -471,21 +356,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         monto_transferencia: datosPago.monto_transferencia || 0
       });
       setMostrarModalExito(true);
-
       setCarrito([]);
 
       if (response.data.inventario && actualizarInventario) {
         actualizarInventario(false);
       }
-
       if (setRefreshTrigger) {
         setTimeout(() => {
           setRefreshTrigger(prev => prev + 1);
         }, 100);
       }
-
       setDatosPagoConfirmacion(null);
-
     } catch (error) {
       console.error("Error al registrar venta del carrito:", error);
       if (error.response) {
@@ -524,6 +405,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div className="pos-container">
       {/* HEADER CON LOGO */}
@@ -540,15 +424,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <span className="user-role">Cajero</span>
             </div>
           </div>
-          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-            💰 Cuadre
-          </button>
-          <button onClick={handleCerrarSesion} className="logout-btn">
-            <FiLogOut className="logout-icon" /> Salir
-          </button>
-          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
-            📥 Despachos
-          </button>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
+          <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
           <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -557,7 +435,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* GRID DE CATEGORÍAS CON IMÁGENES */}
+      {/* GRID DE CATEGORÍAS */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -594,10 +472,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={producto.id} className="producto-card">
                     <div className="producto-imagen">
                       {producto.imagen_url ? (
-                        <img
-                          src={getImagenProducto(producto.imagen_url)}
-                          alt={producto.subcategoria || producto.nombre}
-                        />
+                        <img src={getImagenProducto(producto.imagen_url)} alt={producto.subcategoria || producto.nombre} />
                       ) : (
                         <div className="producto-sin-imagen">📷</div>
                       )}
@@ -638,10 +513,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={combo.id} className="combo-card">
                     <div className="combo-imagen">
                       {combo.imagen_url ? (
-                        <img
-                          src={getImagenProducto(combo.imagen_url)}
-                          alt={combo.nombre}
-                        />
+                        <img src={getImagenProducto(combo.imagen_url)} alt={combo.nombre} />
                       ) : (
                         <div className="combo-sin-imagen">🍱</div>
                       )}
@@ -665,82 +537,53 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (CORREGIDO) */}
-      {mostrarModalPersonalizar && comboPersonalizando && (
-        <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
+      {/* MODAL DE SELECCIÓN DE EMPANADAS */}
+      {mostrarModalEmpanadas && comboEmpanadas && (
+        <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>🍱 Personalizar Combo</h2>
-              <button className="close-btn" onClick={() => setMostrarModalPersonalizar(false)}>✕</button>
+              <h2>🍱 Seleccionar Empanadas</h2>
+              <button className="close-btn" onClick={() => setMostrarModalEmpanadas(false)}>✕</button>
             </div>
             <div className="modal-body personalizar-body">
-              <p className="personalizar-info">
-                El combo <strong>{comboPersonalizando.combo.nombre}</strong> requiere las siguientes unidades.
-                Puedes elegir cómo distribuir las unidades entre los paquetes disponibles de cada categoría.
-                <br />
-                <span className="nota-precio">El precio del combo se mantiene fijo.</span>
+              <p>
+                Combo <strong>{comboEmpanadas.combo.nombre}</strong> requiere{' '}
+                <strong>{comboEmpanadas.requerido}</strong> unidades de empanadas.
+                Elige los sabores y cantidades (paquetes).
               </p>
-
-              {/* Categorías del combo */}
-              {Object.keys(asignaciones).map((categoria) => {
-                const data = asignaciones[categoria];
-                const totalAsignado = getTotalAsignado(categoria);
-                const requerido = data.requerido;
-                const nombreCategoria = getCategoriaNombre(categoria);
-
+              {comboEmpanadas.productosEmpanadas.map(prod => {
+                const up = getUnidadesPorPaquete(prod.id);
+                const seleccion = seleccionEmpanadas[prod.id] || 0;
+                const totalActual = Object.entries(seleccionEmpanadas).reduce(
+                  (sum, [id, cant]) => sum + cant * getUnidadesPorPaquete(parseInt(id)), 0
+                );
                 return (
-                  <div key={categoria} className="categoria-asignacion">
-                    <h3 className="categoria-titulo">{nombreCategoria}</h3>
-                    <div className="categoria-resumen">
-                      <span>Requerido: <strong>{requerido}</strong> unidades</span>
-                      <span>Asignado: <strong>{totalAsignado}</strong></span>
-                      {totalAsignado === requerido && <span className="completado-badge">✅ Completado</span>}
-                      {totalAsignado < requerido && <span className="pendiente-badge">⚠️ Faltan {requerido - totalAsignado}</span>}
-                    </div>
-
-                    <div className="asignacion-paquetes">
-                      {data.asignaciones.map((asignacion) => {
-                        const paqueteInfo = inventario.find(i => i.id === asignacion.paquete_id);
-                        const nombrePaquete = paqueteInfo?.subcategoria || paqueteInfo?.nombre || 'Sin stock';
-                        const stockDisponible = asignacion.max;
-                        const unidadesPorPaquete = getUnidadesPorPaquete(asignacion.paquete_id);
-
-                        return (
-                          <div key={asignacion.paquete_id} className="asignacion-item">
-                            <span className="paquete-nombre">
-                              {nombrePaquete} (Stock: {stockDisponible})
-                            </span>
-                            <div className="asignacion-controles">
-                              <button
-                                className="cantidad-btn"
-                                onClick={() => handleAsignacionChange(categoria, asignacion.paquete_id, -1)}
-                                disabled={asignacion.unidades <= 0 || asignacion.paquete_id === 0}
-                              >
-                                −
-                              </button>
-                              <span className="asignacion-valor">{asignacion.unidades}</span>
-                              <button
-                                className="cantidad-btn"
-                                onClick={() => handleAsignacionChange(categoria, asignacion.paquete_id, 1)}
-                                disabled={totalAsignado >= requerido || asignacion.unidades >= stockDisponible || asignacion.paquete_id === 0}
-                              >
-                                +
-                              </button>
-                              <span className="unidades-por-paquete">({unidadesPorPaquete} uds/paq)</span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div key={prod.id} className="asignacion-item">
+                    <span className="paquete-nombre">
+                      {prod.subcategoria || prod.nombre} (Stock: {prod.cantidad} paq, {up} uds/paq)
+                    </span>
+                    <div className="asignacion-controles">
+                      <button
+                        className="cantidad-btn"
+                        onClick={() => handleEmpanadaChange(prod.id, -1)}
+                        disabled={seleccion <= 0}
+                      >
+                        −
+                      </button>
+                      <span className="asignacion-valor">{seleccion}</span>
+                      <button
+                        className="cantidad-btn"
+                        onClick={() => handleEmpanadaChange(prod.id, 1)}
+                        disabled={totalActual >= comboEmpanadas.requerido || seleccion >= prod.cantidad}
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 );
               })}
-
-              <button 
-                className="btn-aplicar-personalizacion"
-                onClick={agregarComboPersonalizado}
-              >
-                ✅ Aplicar cambios y agregar al carrito
+              <button className="btn-aplicar-personalizacion" onClick={confirmarSeleccionEmpanadas}>
+                ✅ Agregar combo
               </button>
             </div>
           </div>
@@ -896,20 +739,14 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 )}
               </div>
               <div className="confirmacion-buttons">
-                <button
-                  className="btn-cancelar-confirmacion"
-                  onClick={() => {
-                    setMostrarConfirmacion(false);
-                    setDatosPagoConfirmacion(null);
-                    setMostrarModalPago(true);
-                  }}
-                >
+                <button className="btn-cancelar-confirmacion" onClick={() => {
+                  setMostrarConfirmacion(false);
+                  setDatosPagoConfirmacion(null);
+                  setMostrarModalPago(true);
+                }}>
                   No
                 </button>
-                <button
-                  className="btn-aceptar-confirmacion"
-                  onClick={ejecutarPago}
-                >
+                <button className="btn-aceptar-confirmacion" onClick={ejecutarPago}>
                   Sí, confirmar pago
                 </button>
               </div>
