@@ -47,7 +47,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== ESTADOS PARA PERSONALIZACIÓN DE COMBOS =====
   const [comboPersonalizando, setComboPersonalizando] = useState(null);
-  const [seleccionesEmpanadas, setSeleccionesEmpanadas] = useState([]);
+  const [seleccionesEmpanadas, setSeleccionesEmpanadas] = useState({}); // 🔥 Ahora es un objeto
   const [mostrarModalPersonalizar, setMostrarModalPersonalizar] = useState(false);
 
   // ===== IDs DE EMPANADAS =====
@@ -145,7 +145,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== FUNCIONES DEL CARRITO =====
 
-  // 🔥 Agregar combo personalizado (con precio fijo)
+  // 🔥 Agregar combo personalizado (con precio fijo y selecciones correctas)
   const agregarComboPersonalizado = (productosFinales) => {
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
@@ -179,7 +179,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setCarrito(prev => [...prev, comboItem, ...empanadaItems]);
     setMostrarModalPersonalizar(false);
     setComboPersonalizando(null);
-    setSeleccionesEmpanadas([]);
+    setSeleccionesEmpanadas({});
     setMostrarModalCombos(false);
   };
 
@@ -195,12 +195,16 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
 
       if (tieneEmpanadas) {
-        // Inicializar selecciones para personalización
-        const empanadas = detalles.filter(d => EMPANADA_IDS.includes(d.producto_id));
-        const inicialSelecciones = empanadas.map(d => ({
-          producto_id: d.producto_id,
-          cantidad: 0
-        }));
+        // Inicializar selecciones: objeto con clave = producto_id
+        const inicialSelecciones = {};
+        detalles.forEach(d => {
+          if (EMPANADA_IDS.includes(d.producto_id)) {
+            inicialSelecciones[d.producto_id] = {
+              producto_id: d.producto_id,
+              cantidad: 0
+            };
+          }
+        });
         setSeleccionesEmpanadas(inicialSelecciones);
         setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
         setMostrarModalPersonalizar(true);
@@ -223,14 +227,18 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  const handleSaborChange = (index, field, value) => {
+  // 🔥 Manejar cambio de sabor o cantidad (usando producto_id como clave)
+  const handleSaborChange = (productoId, field, value) => {
     setSeleccionesEmpanadas(prev => {
-      const newArray = [...prev];
-      newArray[index] = {
-        ...newArray[index],
-        [field]: field === 'producto_id' ? parseInt(value, 10) : Number(value)
+      const current = prev[productoId] || { producto_id: productoId, cantidad: 0 };
+      const newValue = field === 'producto_id' ? parseInt(value, 10) : Number(value);
+      return {
+        ...prev,
+        [productoId]: {
+          ...current,
+          [field]: newValue
+        }
       };
-      return newArray;
     });
   };
 
@@ -518,7 +526,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (CORREGIDO) */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -538,7 +546,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               {(() => {
                 const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
                 const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
+                const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
                 const restante = totalEmpanadas - totalAsignado;
                 return (
                   <div className="resumen-cantidades">
@@ -569,63 +577,57 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               {/* Empanadas personalizables */}
               <div className="sabores-grid empanadas-grid">
                 <h4>Selecciona sabores y cantidades</h4>
-                {(() => {
-                  const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
-                  return empanadas.map((prod, idx) => {
-                    const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
-                    const seleccion = seleccionesEmpanadas[idx] || { producto_id: prod.producto_id, cantidad: 0 };
-                    return (
-                      <div key={idx} className="sabor-item editable">
-                        <span className="sabor-label">Empanada #{idx+1}</span>
-                        <select
-                          value={seleccion.producto_id}
-                          onChange={(e) => handleSaborChange(idx, 'producto_id', e.target.value)}
-                          className="sabor-select"
-                        >
-                          {saboresDisponibles.map(sabor => (
-                            <option key={sabor.id} value={sabor.id}>
-                              {sabor.subcategoria} - ${sabor.precio}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="cantidad-control">
-                          <button
-                            className="cantidad-btn"
-                            onClick={() => {
-                              if (seleccion.cantidad > 0) {
-                                handleSaborChange(idx, 'cantidad', seleccion.cantidad - 1);
-                              }
-                            }}
-                            disabled={seleccion.cantidad <= 0}
-                          >
-                            −
-                          </button>
-                          <span className="cantidad-valor">{seleccion.cantidad}</span>
-                          <button
-                            className="cantidad-btn"
-                            onClick={() => {
-                              const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                              const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                              if (totalAsignado < totalEmpanadas) {
-                                handleSaborChange(idx, 'cantidad', seleccion.cantidad + 1);
-                              }
-                            }}
-                            disabled={
-                              (() => {
-                                const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                                const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
-                                return totalAsignado >= totalEmpanadas;
-                              })()
+                {comboPersonalizando.productosActuales.map((prod, idx) => {
+                  if (!EMPANADA_IDS.includes(prod.producto_id)) return null;
+                  const saboresDisponibles = inventario.filter(i => EMPANADA_IDS.includes(i.id));
+                  const seleccion = seleccionesEmpanadas[prod.producto_id] || { producto_id: prod.producto_id, cantidad: 0 };
+                  const totalEmpanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id)).reduce((sum, p) => sum + p.cantidad, 0);
+                  const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
+                  const restante = totalEmpanadas - totalAsignado;
+
+                  return (
+                    <div key={idx} className="sabor-item editable">
+                      <span className="sabor-label">Empanada #{idx+1}</span>
+                      <select
+                        value={seleccion.producto_id}
+                        onChange={(e) => handleSaborChange(prod.producto_id, 'producto_id', e.target.value)}
+                        className="sabor-select"
+                      >
+                        {saboresDisponibles.map(sabor => (
+                          <option key={sabor.id} value={sabor.id}>
+                            {sabor.subcategoria} - ${sabor.precio}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="cantidad-control">
+                        <button
+                          className="cantidad-btn"
+                          onClick={() => {
+                            if (seleccion.cantidad > 0) {
+                              handleSaborChange(prod.producto_id, 'cantidad', seleccion.cantidad - 1);
                             }
-                          >
-                            +
-                          </button>
-                        </div>
-                        <span className="sabor-max">/ {prod.cantidad}</span>
+                          }}
+                          disabled={seleccion.cantidad <= 0}
+                        >
+                          −
+                        </button>
+                        <span className="cantidad-valor">{seleccion.cantidad}</span>
+                        <button
+                          className="cantidad-btn"
+                          onClick={() => {
+                            if (restante > 0) {
+                              handleSaborChange(prod.producto_id, 'cantidad', seleccion.cantidad + 1);
+                            }
+                          }}
+                          disabled={restante <= 0}
+                        >
+                          +
+                        </button>
                       </div>
-                    );
-                  });
-                })()}
+                      <span className="sabor-max">/ {prod.cantidad}</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <button 
@@ -633,15 +635,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 onClick={() => {
                   const empanadas = comboPersonalizando.productosActuales.filter(d => EMPANADA_IDS.includes(d.producto_id));
                   const totalEmpanadas = empanadas.reduce((sum, p) => sum + p.cantidad, 0);
-                  const totalAsignado = seleccionesEmpanadas.reduce((sum, s) => sum + (s.cantidad || 0), 0);
+                  const totalAsignado = Object.values(seleccionesEmpanadas).reduce((sum, s) => sum + (s.cantidad || 0), 0);
                   if (totalAsignado !== totalEmpanadas) {
                     alert(`Faltan ${totalEmpanadas - totalAsignado} empanadas por asignar.`);
                     return;
                   }
+                  // Construir productos finales usando las selecciones
                   const productosFinales = comboPersonalizando.productosActuales.map((prod) => {
                     if (EMPANADA_IDS.includes(prod.producto_id)) {
-                      const idx = empanadas.findIndex(e => e.producto_id === prod.producto_id && e.cantidad === prod.cantidad);
-                      const sel = (idx !== -1) ? seleccionesEmpanadas[idx] : { producto_id: prod.producto_id, cantidad: 0 };
+                      const sel = seleccionesEmpanadas[prod.producto_id] || { producto_id: prod.producto_id, cantidad: 0 };
                       return { ...prod, producto_id: sel.producto_id, cantidad: sel.cantidad };
                     }
                     return prod;
