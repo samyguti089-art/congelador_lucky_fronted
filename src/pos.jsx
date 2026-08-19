@@ -17,9 +17,6 @@ import combosImg from "./components/images/imagen de portada de combos.jpg";
 // Importar logo
 import logoImg from "./components/images/logo.jpeg";
 
-// ============================================================
-//  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
-// ============================================================
 const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const imageMap = {};
 Object.keys(imageModules).forEach((path) => {
@@ -50,10 +47,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [seleccionesEmpanadas, setSeleccionesEmpanadas] = useState({});
   const [mostrarModalPersonalizar, setMostrarModalPersonalizar] = useState(false);
 
-  // ===== IDs DE EMPANADAS =====
   const EMPANADA_IDS = [11, 12, 13, 33];
 
-  // ===== MODO OSCURO =====
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -125,6 +120,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
 
+    // 1. Ítem del combo (precio fijo)
     const comboItem = {
       id: combo.id,
       nombre: combo.nombre,
@@ -134,6 +130,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       esCombo: true,
     };
 
+    // 2. Empanadas personalizadas (precio 0) - MANTENER CADA UNA SEPARADA
     const empanadaItems = productosFinales
       .filter(p => EMPANADA_IDS.includes(p.producto_id))
       .map(p => {
@@ -145,9 +142,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           cantidad: p.cantidad,
           subtotal: 0,
           esCombo: false,
+          // 🔥 Clave única para evitar fusión en el carrito
+          key: `empanada_${p.producto_id}_${Date.now()}_${Math.random()}`
         };
       });
 
+    // 3. Agregar al carrito
     setCarrito(prev => [...prev, comboItem, ...empanadaItems]);
     setMostrarModalPersonalizar(false);
     setComboPersonalizando(null);
@@ -155,7 +155,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalCombos(false);
   };
 
-  // 🔥 CORREGIDO: Usar índice único para cada empanada
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
     try {
       const { data: detalles, error } = await supabase
@@ -167,16 +166,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
 
       if (tieneEmpanadas) {
+        // Inicializar selecciones usando índice
         const inicialSelecciones = {};
-        let empanadaIndex = 0;
-        detalles.forEach((d) => {
+        detalles.forEach((d, idx) => {
           if (EMPANADA_IDS.includes(d.producto_id)) {
-            inicialSelecciones[empanadaIndex] = {
+            inicialSelecciones[idx] = {
               producto_id: d.producto_id,
               cantidad: 0,
               originalProductoId: d.producto_id
             };
-            empanadaIndex++;
           }
         });
         setSeleccionesEmpanadas(inicialSelecciones);
@@ -200,7 +198,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // 🔥 CORREGIDO: Usar índice para actualizar
   const handleSaborChange = (index, field, value) => {
     setSeleccionesEmpanadas(prev => {
       const current = prev[index] || { producto_id: 0, cantidad: 0, originalProductoId: 0 };
@@ -373,15 +370,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <span className="user-role">Cajero</span>
             </div>
           </div>
-          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
-            💰 Cuadre
-          </button>
-          <button onClick={handleCerrarSesion} className="logout-btn">
-            <FiLogOut className="logout-icon" /> Salir
-          </button>
-          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
-            📥 Despachos
-          </button>
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
+          <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
           <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -427,10 +418,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={producto.id} className="producto-card">
                     <div className="producto-imagen">
                       {producto.imagen_url ? (
-                        <img
-                          src={getImagenProducto(producto.imagen_url)}
-                          alt={producto.subcategoria || producto.nombre}
-                        />
+                        <img src={getImagenProducto(producto.imagen_url)} alt={producto.subcategoria || producto.nombre} />
                       ) : (
                         <div className="producto-sin-imagen">📷</div>
                       )}
@@ -471,10 +459,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   <div key={combo.id} className="combo-card">
                     <div className="combo-imagen">
                       {combo.imagen_url ? (
-                        <img
-                          src={getImagenProducto(combo.imagen_url)}
-                          alt={combo.nombre}
-                        />
+                        <img src={getImagenProducto(combo.imagen_url)} alt={combo.nombre} />
                       ) : (
                         <div className="combo-sin-imagen">🍱</div>
                       )}
@@ -498,7 +483,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN (CORREGIDO) */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -741,9 +726,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 <p>🎉 ¡Gracias por tu compra!</p>
                 <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
               </div>
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-                Aceptar
-              </button>
+              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>Aceptar</button>
             </div>
           </div>
         </div>
@@ -776,33 +759,19 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               }}>✕</button>
             </div>
             <div className="modal-body">
-              <p className="confirmacion-mensaje">
-                ¿Estás seguro de confirmar el pago de los productos seleccionados?
-              </p>
+              <p className="confirmacion-mensaje">¿Estás seguro de confirmar el pago?</p>
               <div className="confirmacion-resumen">
                 <p><strong>Total:</strong> {formatPrice(totalCarrito)}</p>
-                <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
-                {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
-                  <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
-                )}
+                <p><strong>Método:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                {datosPagoConfirmacion.metodo_pago === 'efectivo' && <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>}
               </div>
               <div className="confirmacion-buttons">
-                <button
-                  className="btn-cancelar-confirmacion"
-                  onClick={() => {
-                    setMostrarConfirmacion(false);
-                    setDatosPagoConfirmacion(null);
-                    setMostrarModalPago(true);
-                  }}
-                >
-                  No
-                </button>
-                <button
-                  className="btn-aceptar-confirmacion"
-                  onClick={ejecutarPago}
-                >
-                  Sí, confirmar pago
-                </button>
+                <button className="btn-cancelar-confirmacion" onClick={() => {
+                  setMostrarConfirmacion(false);
+                  setDatosPagoConfirmacion(null);
+                  setMostrarModalPago(true);
+                }}>No</button>
+                <button className="btn-aceptar-confirmacion" onClick={ejecutarPago}>Sí, confirmar pago</button>
               </div>
             </div>
           </div>
@@ -813,20 +782,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CashRegister
-              usuario={usuario}
-              inventario={inventario}
-              onClose={() => setMostrarCuadre(false)}
-            />
+            <CashRegister usuario={usuario} inventario={inventario} onClose={() => setMostrarCuadre(false)} />
           </div>
         </div>
       )}
 
       {mostrarDespachos && (
-        <DespachosModal
-          onClose={() => setMostrarDespachos(false)}
-          inventario={inventario}
-        />
+        <DespachosModal onClose={() => setMostrarDespachos(false)} inventario={inventario} />
       )}
 
       {/* CIERRE DE SESIÓN */}
