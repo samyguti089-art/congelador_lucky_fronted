@@ -1785,3 +1785,118 @@ body.dark-mode {
 .dark-mode .unidades-por-paquete {
   color: var(--text-secondary);
 }
+/* ===== PERSONALIZACIÓN DE COMBOS ===== */
+.producto-asignacion {
+  background: var(--crema);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--crema-oscuro);
+}
+
+.producto-asignacion-titulo {
+  margin: 0 0 8px 0;
+  color: var(--marron);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.producto-asignacion-resumen {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--marron-claro);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.completado-badge {
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.pendiente-badge {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.asignacion-paquetes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asignacion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--crema-oscuro);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.paquete-nombre {
+  font-size: 0.85rem;
+  color: var(--marron);
+  flex: 1;
+  min-width: 120px;
+}
+
+.asignacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asignacion-valor {
+  min-width: 30px;
+  text-align: center;
+  font-weight: bold;
+  color: var(--marron);
+}
+
+.unidades-por-paquete {
+  font-size: 0.7rem;
+  color: var(--marron-claro);
+}
+
+.sabor-badge {
+  font-size: 0.65rem;
+  background: #6b21a5;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Modo oscuro */
+.dark-mode .producto-asignacion {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .producto-asignacion-titulo {
+  color: var(--text-primary);
+}
+
+.dark-mode .asignacion-item {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .paquete-nombre {
+  color: var(--text-primary);
+}
+
+.dark-mode .asignacion-valor {
+  color: var(--text-primary);
+}
+
+.dark-mode .unidades-por-paquete {
+  color: var(--text-secondary);
+}
