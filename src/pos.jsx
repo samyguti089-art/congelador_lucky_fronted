@@ -130,12 +130,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const asignacionesIniciales = {};
     detalles.forEach(d => {
       const productoId = d.producto_id;
-      // Obtener paquetes disponibles en inventario para este producto (con stock > 0)
+      // Buscar paquetes disponibles en inventario (stock > 0)
       const paquetesDisponibles = inventario
         .filter(i => i.id === productoId && i.cantidad > 0)
         .map(i => ({ paquete_id: i.id, unidades: 0, max: i.cantidad }));
 
-      // Si no hay paquetes disponibles, mostrar un paquete con max=0
+      // Si no hay paquetes disponibles, agregar uno con max 0 para mostrar el mensaje
       if (paquetesDisponibles.length === 0) {
         paquetesDisponibles.push({ paquete_id: productoId, unidades: 0, max: 0 });
       }
@@ -154,21 +154,25 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const producto = prev[productoId];
       if (!producto) return prev;
 
-      const nuevasAsignaciones = producto.asignaciones.map(a => {
-        if (a.paquete_id === paqueteId) {
-          const nuevasUnidades = Math.max(0, a.unidades + delta);
-          const maxUnidades = a.max;
-          return { ...a, unidades: Math.min(nuevasUnidades, maxUnidades) };
-        }
-        return a;
-      });
+      // Validar que el paquete exista en las asignaciones
+      const paqueteIndex = producto.asignaciones.findIndex(a => a.paquete_id === paqueteId);
+      if (paqueteIndex === -1) return prev;
 
-      // Calcular total asignado para este producto
+      const nuevasAsignaciones = [...producto.asignaciones];
+      const paquete = nuevasAsignaciones[paqueteIndex];
+      const nuevasUnidades = Math.max(0, paquete.unidades + delta);
+      const maxUnidades = paquete.max;
+
+      // No permitir superar el stock disponible
+      if (nuevasUnidades > maxUnidades) return prev;
+
+      nuevasAsignaciones[paqueteIndex] = {
+        ...paquete,
+        unidades: nuevasUnidades
+      };
+
       const totalAsignado = nuevasAsignaciones.reduce((sum, a) => sum + a.unidades, 0);
-      // Si el total asignado supera lo requerido, no permitir más aumentos
-      if (totalAsignado > producto.requerido) {
-        return prev;
-      }
+      if (totalAsignado > producto.requerido) return prev;
 
       return {
         ...prev,
@@ -195,7 +199,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // Obtener unidades por paquete (para mostrar)
   const getUnidadesPorPaquete = (productoId) => {
-    // Extraer de la subcategoria o devolver 1 por defecto
     const p = inventario.find(i => i.id === productoId);
     if (p) {
       const match = p.subcategoria?.match(/x(\d+)/);
@@ -215,7 +218,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const agregarComboPersonalizado = () => {
     // Validar que todas las asignaciones estén completas
-    let todasCompletas = true;
     const detalles = comboPersonalizando.productosActuales;
     const productosFinales = [];
 
@@ -225,28 +227,26 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const requerido = asignaciones[productoId]?.requerido || 0;
 
       if (totalAsignado !== requerido) {
-        todasCompletas = false;
         alert(`Faltan ${requerido - totalAsignado} unidades de ${getProductoNombre(productoId)}`);
         return;
       }
 
       // Construir el producto final con las asignaciones
       const asignacionesProducto = asignaciones[productoId]?.asignaciones || [];
-      // Por ahora, tomamos el primer paquete asignado (si hay múltiples, el backend recibirá la lista)
-      // Para simplificar, sumamos todas las asignaciones en un solo producto
       const totalAsignadoFinal = asignacionesProducto.reduce((sum, a) => sum + a.unidades, 0);
       if (totalAsignadoFinal > 0) {
-        // Buscar el producto en inventario para obtener el precio
-        const productoInfo = inventario.find(i => i.id === productoId);
         productosFinales.push({
           producto_id: productoId,
           cantidad: totalAsignadoFinal,
-          precio: productoInfo?.precio || 0
+          precio: 0 // El precio del combo ya cubre estos productos
         });
       }
     }
 
-    if (!todasCompletas) return;
+    if (productosFinales.length === 0) {
+      alert('Debes asignar al menos un producto al combo.');
+      return;
+    }
 
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
@@ -267,7 +267,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       return {
         id: p.producto_id,
         nombre: productoInfo?.subcategoria || productoInfo?.nombre || `Producto #${p.producto_id}`,
-        precio: 0, // El precio del combo ya cubre estos productos
+        precio: 0,
         cantidad: p.cantidad,
         subtotal: 0,
         esCombo: false,
@@ -293,9 +293,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       if (error) throw error;
 
       // Inicializar asignaciones para todos los productos del combo
-      const tieneEmpanadas = detalles.some(d => EMPANADA_IDS.includes(d.producto_id));
-
-      // Guardar el combo y abrir el modal de personalización
       setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
       inicializarAsignaciones(detalles);
       setMostrarModalPersonalizar(true);
@@ -590,7 +587,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (NUEVA LÓGICA) */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
