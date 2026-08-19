@@ -125,6 +125,16 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   // FUNCIONES DE PERSONALIZACIÓN (CORREGIDAS)
   // ============================================================
 
+  // Obtener unidades por paquete (movida antes de agruparPorCategoria)
+  const getUnidadesPorPaquete = (productoId) => {
+    const p = inventario.find(i => i.id === productoId);
+    if (p) {
+      const match = p.subcategoria?.match(/x(\d+)/);
+      if (match) return parseInt(match[1], 10);
+    }
+    return 1;
+  };
+
   // Agrupar productos del combo por categoría
   const agruparPorCategoria = (detalles) => {
     const grupos = {};
@@ -138,7 +148,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           productosOriginales: []
         };
       }
-      grupos[categoria].requerido += d.cantidad;
+      // ✅ CORRECCIÓN: multiplicar por unidades por paquete
+      const unidadesPorPaquete = getUnidadesPorPaquete(d.producto_id);
+      grupos[categoria].requerido += d.cantidad * unidadesPorPaquete;
       grupos[categoria].productosOriginales.push(d);
     });
     return grupos;
@@ -225,16 +237,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       'Otros': 'Otros'
     };
     return nombres[categoria] || categoria;
-  };
-
-  // Obtener unidades por paquete
-  const getUnidadesPorPaquete = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    if (p) {
-      const match = p.subcategoria?.match(/x(\d+)/);
-      if (match) return parseInt(match[1], 10);
-    }
-    return 1;
   };
 
   // Obtener el nombre del producto
