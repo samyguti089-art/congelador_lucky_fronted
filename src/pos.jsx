@@ -132,7 +132,21 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const match = p.subcategoria?.match(/x(\d+)/);
       if (match) return parseInt(match[1], 10);
     }
+    // Si no se encuentra el producto o no tiene patrón, asumimos 1
+    console.warn(`⚠️ Producto ID ${productoId} no encontrado o sin patrón xN en subcategoria`);
     return 1;
+  };
+
+  // Normalizar nombre de categoría para evitar duplicados por mayúsculas/minúsculas
+  const normalizarCategoria = (categoria) => {
+    const cat = (categoria || '').toLowerCase();
+    const mapa = {
+      'deditos': 'deditos',
+      'empanadas': 'empanadas',
+      'otros': 'otros',
+      'otro': 'otros' // por si acaso
+    };
+    return mapa[cat] || cat || 'sin_categoria';
   };
 
   // Agrupar productos del combo por categoría
@@ -140,15 +154,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const grupos = {};
     detalles.forEach(d => {
       const producto = inventario.find(i => i.id === d.producto_id);
-      if (!producto) return;
-      const categoria = producto.categoria || 'Sin categoría';
+      if (!producto) {
+        console.warn(`⚠️ Producto ID ${d.producto_id} no existe en inventario. Se omite en el combo.`);
+        return;
+      }
+      const categoria = normalizarCategoria(producto.categoria);
       if (!grupos[categoria]) {
         grupos[categoria] = {
           requerido: 0,
           productosOriginales: []
         };
       }
-      // ✅ CORRECCIÓN: multiplicar por unidades por paquete
       const unidadesPorPaquete = getUnidadesPorPaquete(d.producto_id);
       grupos[categoria].requerido += d.cantidad * unidadesPorPaquete;
       grupos[categoria].productosOriginales.push(d);
@@ -162,8 +178,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     Object.keys(grupos).forEach(categoria => {
       const data = grupos[categoria];
       // Obtener todos los productos de esa categoría con stock > 0
+      // Usamos la categoría normalizada
       const paquetesDisponibles = inventario
-        .filter(i => i.categoria === categoria && i.cantidad > 0)
+        .filter(i => normalizarCategoria(i.categoria) === categoria && i.cantidad > 0)
         .map(i => ({ paquete_id: i.id, unidades: 0, max: i.cantidad }));
 
       if (paquetesDisponibles.length === 0) {
@@ -234,7 +251,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const nombres = {
       'deditos': 'Deditos',
       'empanadas': 'Empanadas',
-      'Otros': 'Otros'
+      'otros': 'Otros',
+      'sin_categoria': 'Sin categoría'
     };
     return nombres[categoria] || categoria;
   };
@@ -288,13 +306,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
 
-    const comboItem = {
-      id: combo.id,
+    // Ítem que representa el precio del combo (no afecta inventario)
+    const comboPrecioItem = {
+      id: `precio-combo-${combo.id}`,
       nombre: combo.nombre,
       precio: combo.precio,
       cantidad: cantidad,
       subtotal: cantidad * combo.precio,
       esCombo: true,
+      esPrecioCombo: true, // ⚠️ bandera para el backend
     };
 
     const itemsPersonalizados = productosFinales.map(p => {
@@ -310,7 +330,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       };
     });
 
-    setCarrito(prev => [...prev, comboItem, ...itemsPersonalizados]);
+    setCarrito(prev => [...prev, comboPrecioItem, ...itemsPersonalizados]);
     setMostrarModalPersonalizar(false);
     setComboPersonalizando(null);
     setAsignaciones({});
@@ -384,12 +404,35 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
     setMostrarConfirmacion(false);
 
-    const productosParaBackend = carrito.map(item => ({
-      producto_id: item.esCombo ? null : item.id,
-      combo_id: item.esCombo ? item.id : null,
-      cantidad: item.cantidad,
-      total: item.subtotal
-    }));
+    // Construir lista para el backend con manejo de combos personalizados
+    const productosParaBackend = carrito.map(item => {
+      if (item.esPrecioCombo) {
+        // Solo el precio del combo personalizado (no afecta inventario)
+        return {
+          producto_id: null,
+          combo_id: null,
+          cantidad: item.cantidad,
+          total: item.subtotal,
+          descripcion: item.nombre // para mostrar en el ticket
+        };
+      } else if (item.esCombo) {
+        // Combo normal (el backend descuenta automáticamente sus componentes)
+        return {
+          producto_id: null,
+          combo_id: item.id,
+          cantidad: item.cantidad,
+          total: item.subtotal
+        };
+      } else {
+        // Producto individual (puede ser incluido en combo personalizado o venta normal)
+        return {
+          producto_id: item.id,
+          combo_id: null,
+          cantidad: item.cantidad,
+          total: item.subtotal
+        };
+      }
+    });
 
     const carritoCopy = [...carrito];
     const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
@@ -411,7 +454,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         cantidad: item.cantidad,
         precio: item.precio,
         subtotal: item.subtotal,
-        esCombo: item.esCombo
+        esCombo: item.esCombo,
+        esPrecioCombo: item.esPrecioCombo,
+        incluido: item.incluido
       }));
 
       setVentaExitosa({
