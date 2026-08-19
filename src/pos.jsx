@@ -122,35 +122,23 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   // ============================================================
-  // NUEVA LÓGICA DE PERSONALIZACIÓN POR CATEGORÍA (CORREGIDA)
+  // FUNCIONES DE PERSONALIZACIÓN (CORREGIDAS)
   // ============================================================
 
-  // Obtener unidades por paquete desde la subcategoria
-  const getUnidadesPorPaquete = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    if (p) {
-      const match = p.subcategoria?.match(/x(\d+)/);
-      if (match) return parseInt(match[1], 10);
-    }
-    return 1;
-  };
-
-  // Agrupar productos del combo por categoría y calcular unidades requeridas
+  // Agrupar productos del combo por categoría
   const agruparPorCategoria = (detalles) => {
     const grupos = {};
     detalles.forEach(d => {
       const producto = inventario.find(i => i.id === d.producto_id);
       if (!producto) return;
       const categoria = producto.categoria || 'Sin categoría';
-      const unidadesPorPaquete = getUnidadesPorPaquete(d.producto_id);
-      const unidadesRequeridas = d.cantidad * unidadesPorPaquete;
       if (!grupos[categoria]) {
         grupos[categoria] = {
           requerido: 0,
           productosOriginales: []
         };
       }
-      grupos[categoria].requerido += unidadesRequeridas;
+      grupos[categoria].requerido += d.cantidad;
       grupos[categoria].productosOriginales.push(d);
     });
     return grupos;
@@ -179,6 +167,20 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setAsignaciones(asignacionesIniciales);
   };
 
+  // Calcular total asignado en UNIDADES reales
+  const getTotalAsignado = (categoria) => {
+    const data = asignaciones[categoria];
+    if (!data) return 0;
+    let total = 0;
+    data.asignaciones.forEach(a => {
+      if (a.paquete_id === 0) return;
+      const producto = inventario.find(i => i.id === a.paquete_id);
+      const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
+      total += a.unidades * unidadesPorPaquete;
+    });
+    return total;
+  };
+
   // Manejar cambio de unidades asignadas a un paquete
   const handleAsignacionChange = (categoria, paqueteId, delta) => {
     setAsignaciones(prev => {
@@ -194,7 +196,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         return a;
       });
 
-      const totalAsignado = nuevasAsignaciones.reduce((sum, a) => sum + a.unidades, 0);
+      // Calcular total asignado en UNIDADES reales
+      let totalAsignado = 0;
+      nuevasAsignaciones.forEach(a => {
+        if (a.paquete_id === 0) return;
+        const producto = inventario.find(i => i.id === a.paquete_id);
+        const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
+        totalAsignado += a.unidades * unidadesPorPaquete;
+      });
+
       if (totalAsignado > grupo.requerido) return prev;
 
       return {
@@ -207,19 +217,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     });
   };
 
-  // Calcular total asignado para una categoría
-  const getTotalAsignado = (categoria) => {
-    const data = asignaciones[categoria];
-    if (!data) return 0;
-    return data.asignaciones.reduce((sum, a) => sum + a.unidades, 0);
-  };
-
-  // Obtener el nombre del producto
-  const getProductoNombre = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    return p?.subcategoria || p?.nombre || `Producto #${productoId}`;
-  };
-
   // Obtener nombre de categoría
   const getCategoriaNombre = (categoria) => {
     const nombres = {
@@ -230,22 +227,42 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     return nombres[categoria] || categoria;
   };
 
+  // Obtener unidades por paquete
+  const getUnidadesPorPaquete = (productoId) => {
+    const p = inventario.find(i => i.id === productoId);
+    if (p) {
+      const match = p.subcategoria?.match(/x(\d+)/);
+      if (match) return parseInt(match[1], 10);
+    }
+    return 1;
+  };
+
+  // Obtener el nombre del producto
+  const getProductoNombre = (productoId) => {
+    const p = inventario.find(i => i.id === productoId);
+    return p?.subcategoria || p?.nombre || `Producto #${productoId}`;
+  };
+
   // ============================================================
   // FUNCIONES DEL CARRITO
   // ============================================================
 
   const agregarComboPersonalizado = () => {
     const categoriasKeys = Object.keys(asignaciones);
-    let todasCompletas = true;
     const productosFinales = [];
 
     for (const categoria of categoriasKeys) {
       const data = asignaciones[categoria];
-      const totalAsignado = getTotalAsignado(categoria);
+      let totalAsignado = 0;
+      data.asignaciones.forEach(a => {
+        if (a.paquete_id === 0) return;
+        const producto = inventario.find(i => i.id === a.paquete_id);
+        const unidadesPorPaquete = producto ? getUnidadesPorPaquete(a.paquete_id) : 1;
+        totalAsignado += a.unidades * unidadesPorPaquete;
+      });
       const requerido = data.requerido;
 
       if (totalAsignado !== requerido) {
-        todasCompletas = false;
         alert(`Faltan ${requerido - totalAsignado} unidades de ${getCategoriaNombre(categoria)}`);
         return;
       }
@@ -584,7 +601,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     </div>
                     <div className="combo-info">
                       <h4>{combo.nombre}</h4>
-                      <p className="combo-descripcion">{combo.descripcion || "Combo special"}</p>
+                      <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
                       <p className="combo-precio">{formatPrice(combo.precio)}</p>
                     </div>
                     <button
@@ -601,7 +618,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (CORREGIDO) */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
