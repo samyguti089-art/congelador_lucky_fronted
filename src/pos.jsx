@@ -122,23 +122,35 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   // ============================================================
-  // NUEVA LÓGICA DE PERSONALIZACIÓN POR CATEGORÍA
+  // NUEVA LÓGICA DE PERSONALIZACIÓN POR CATEGORÍA (CORREGIDA)
   // ============================================================
 
-  // Agrupar productos del combo por categoría
+  // Obtener unidades por paquete desde la subcategoria
+  const getUnidadesPorPaquete = (productoId) => {
+    const p = inventario.find(i => i.id === productoId);
+    if (p) {
+      const match = p.subcategoria?.match(/x(\d+)/);
+      if (match) return parseInt(match[1], 10);
+    }
+    return 1;
+  };
+
+  // Agrupar productos del combo por categoría y calcular unidades requeridas
   const agruparPorCategoria = (detalles) => {
     const grupos = {};
     detalles.forEach(d => {
       const producto = inventario.find(i => i.id === d.producto_id);
       if (!producto) return;
       const categoria = producto.categoria || 'Sin categoría';
+      const unidadesPorPaquete = getUnidadesPorPaquete(d.producto_id);
+      const unidadesRequeridas = d.cantidad * unidadesPorPaquete;
       if (!grupos[categoria]) {
         grupos[categoria] = {
           requerido: 0,
           productosOriginales: []
         };
       }
-      grupos[categoria].requerido += d.cantidad;
+      grupos[categoria].requerido += unidadesRequeridas;
       grupos[categoria].productosOriginales.push(d);
     });
     return grupos;
@@ -154,7 +166,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         .filter(i => i.categoria === categoria && i.cantidad > 0)
         .map(i => ({ paquete_id: i.id, unidades: 0, max: i.cantidad }));
 
-      // Si no hay paquetes disponibles, agregar uno con max 0
       if (paquetesDisponibles.length === 0) {
         paquetesDisponibles.push({ paquete_id: 0, unidades: 0, max: 0 });
       }
@@ -219,22 +230,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     return nombres[categoria] || categoria;
   };
 
-  // Obtener unidades por paquete (para mostrar)
-  const getUnidadesPorPaquete = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    if (p) {
-      const match = p.subcategoria?.match(/x(\d+)/);
-      if (match) return parseInt(match[1], 10);
-    }
-    return 1;
-  };
-
   // ============================================================
   // FUNCIONES DEL CARRITO
   // ============================================================
 
   const agregarComboPersonalizado = () => {
-    // Validar que todas las categorías estén completas
     const categoriasKeys = Object.keys(asignaciones);
     let todasCompletas = true;
     const productosFinales = [];
@@ -250,13 +250,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         return;
       }
 
-      // Construir productos finales
       data.asignaciones.forEach(asignacion => {
         if (asignacion.unidades > 0 && asignacion.paquete_id !== 0) {
           productosFinales.push({
             producto_id: asignacion.paquete_id,
             cantidad: asignacion.unidades,
-            precio: 0 // El precio del combo ya cubre estos productos
+            precio: 0
           });
         }
       });
@@ -270,7 +269,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     const combo = comboPersonalizando.combo;
     const cantidad = comboPersonalizando.cantidad;
 
-    // 1. Ítem del combo (precio fijo)
     const comboItem = {
       id: combo.id,
       nombre: combo.nombre,
@@ -280,7 +278,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       esCombo: true,
     };
 
-    // 2. Productos personalizados
     const itemsPersonalizados = productosFinales.map(p => {
       const productoInfo = inventario.find(i => i.id === p.producto_id);
       return {
@@ -294,7 +291,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       };
     });
 
-    // 3. Agregar al carrito
     setCarrito(prev => [...prev, comboItem, ...itemsPersonalizados]);
     setMostrarModalPersonalizar(false);
     setComboPersonalizando(null);
@@ -302,7 +298,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalCombos(false);
   };
 
-  // Agregar combo al carrito
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
     try {
       const { data: detalles, error } = await supabase
@@ -311,7 +306,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         .eq('combo_id', combo.id);
       if (error) throw error;
 
-      // Agrupar por categoría
       const grupos = agruparPorCategoria(detalles);
       setComboPersonalizando({ combo, cantidad, productosActuales: detalles });
       inicializarAsignaciones(grupos);
@@ -590,7 +584,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     </div>
                     <div className="combo-info">
                       <h4>{combo.nombre}</h4>
-                      <p className="combo-descripcion">{combo.descripcion || "Combo especial"}</p>
+                      <p className="combo-descripcion">{combo.descripcion || "Combo special"}</p>
                       <p className="combo-precio">{formatPrice(combo.precio)}</p>
                     </div>
                     <button
@@ -607,7 +601,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO (NUEVA LÓGICA POR CATEGORÍA) */}
+      {/* 🆕 MODAL DE PERSONALIZACIÓN DE COMBO */}
       {mostrarModalPersonalizar && comboPersonalizando && (
         <div className="modal-overlay" onClick={() => setMostrarModalPersonalizar(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
