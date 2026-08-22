@@ -35,10 +35,8 @@ function RealtimeSales() {
     const unsubscribe = subscribeToSales((newSale) => {
       console.log('Nueva venta recibida en tiempo real:', newSale);
       setRecentSales((prev) => {
-        // Verificar si la venta pertenece al día actual (usando rango UTC)
         const rango = getRangoDiaActual();
         if (newSale.fecha >= rango.inicio && newSale.fecha <= rango.fin) {
-          // Evitar duplicados
           const exists = prev.some(s => s.id_venta === newSale.id_venta);
           if (!exists) {
             return [newSale, ...prev];
@@ -81,7 +79,7 @@ function RealtimeSales() {
     }
   };
 
-  // ===== FUNCIÓN PARA VER DETALLE DE VENTA =====
+  // ===== FUNCIÓN PARA VER DETALLE DE VENTA (CORREGIDA) =====
   const verDetalleVenta = async (venta) => {
     setVentaSeleccionada(venta);
     setMostrarDetalle(true);
@@ -95,10 +93,13 @@ function RealtimeSales() {
 
       if (error) throw error;
 
-      // Obtener nombres de productos
-      let productosConNombre = [];
-      if (detalles && detalles.length > 0) {
-        const productoIds = detalles.map(d => d.producto_id);
+      // Obtener nombres de productos SOLO para los que tienen producto_id no nulo
+      const productoIds = detalles
+        .filter(d => d.producto_id !== null)
+        .map(d => d.producto_id);
+
+      let inventarioMap = {};
+      if (productoIds.length > 0) {
         const { data: inventario, error: invError } = await supabase
           .from('inventario')
           .select('id, nombre, subcategoria')
@@ -106,24 +107,32 @@ function RealtimeSales() {
 
         if (invError) {
           console.warn('Error obteniendo nombres de productos:', invError);
-          productosConNombre = detalles.map(d => ({
-            ...d,
-            inventario: { nombre: `Producto #${d.producto_id}`, subcategoria: '' }
-          }));
         } else {
-          const inventarioMap = {};
           inventario.forEach(p => {
             inventarioMap[p.id] = p;
           });
-          productosConNombre = detalles.map(d => ({
-            ...d,
-            inventario: inventarioMap[d.producto_id] || { 
-              nombre: `Producto #${d.producto_id}`, 
-              subcategoria: '' 
-            }
-          }));
         }
       }
+
+      // Construir detalles con nombre mostrado
+      const detallesMostrar = detalles.map(d => {
+        if (d.producto_id === null) {
+          // Es un ítem de precio de combo personalizado: usar descripcion
+          return {
+            ...d,
+            nombre_mostrado: d.descripcion || 'Combo',
+            esPrecioCombo: true
+          };
+        } else {
+          const producto = inventarioMap[d.producto_id];
+          const nombreProducto = producto?.subcategoria || producto?.nombre || `Producto #${d.producto_id}`;
+          return {
+            ...d,
+            nombre_mostrado: nombreProducto,
+            esPrecioCombo: false
+          };
+        }
+      });
 
       const { data: cajero, error: cajeroError } = await supabase
         .from('usuarios')
@@ -137,7 +146,7 @@ function RealtimeSales() {
 
       setDetalleVenta({
         ...venta,
-        detalles: productosConNombre,
+        detalles: detallesMostrar,
         cajero_nombre: cajero?.nombre || 'Cajero #' + venta.cajero_id
       });
 
@@ -164,7 +173,6 @@ function RealtimeSales() {
     );
   }
 
-  // Si hay más de 20 ventas, mostramos un contador
   const totalVentas = recentSales.length;
 
   return (
@@ -221,7 +229,7 @@ function RealtimeSales() {
         </>
       )}
 
-      {/* Modal de detalle de venta (sin cambios) */}
+      {/* Modal de detalle de venta (corregido para mostrar nombre de combo) */}
       {mostrarDetalle && detalleVenta && (
         <div className="modal-overlay" onClick={cerrarDetalle}>
           <div className="modal-content detalle-venta-modal" onClick={(e) => e.stopPropagation()}>
@@ -280,19 +288,17 @@ function RealtimeSales() {
                           </tr>
                         </thead>
                         <tbody>
-                          {detalleVenta.detalles.map((d, idx) => {
-                            const nombreProducto = d.inventario?.subcategoria || 
-                                                    d.inventario?.nombre || 
-                                                    `Producto #${d.producto_id}`;
-                            return (
-                              <tr key={idx}>
-                                <td>{nombreProducto}</td>
-                                <td>{d.cantidad}</td>
-                                <td>{formatPrice(d.precio_unitario)}</td>
-                                <td>{formatPrice(d.subtotal)}</td>
-                              </tr>
-                            );
-                          })}
+                          {detalleVenta.detalles.map((d, idx) => (
+                            <tr key={idx} className={d.esPrecioCombo ? 'combo-row-detalle' : ''}>
+                              <td>
+                                {d.esPrecioCombo && '🍱 '}
+                                {d.nombre_mostrado}
+                              </td>
+                              <td>{d.cantidad}</td>
+                              <td>{formatPrice(d.precio_unitario)}</td>
+                              <td>{formatPrice(d.subtotal)}</td>
+                            </tr>
+                          ))}
                         </tbody>
                         <tfoot>
                           <tr className="total-row-detalle">
