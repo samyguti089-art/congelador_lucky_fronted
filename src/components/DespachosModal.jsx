@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTimes, FaBox, FaClock } from 'react-icons/fa';
+import { FaTimes, FaBox, FaClock, FaCheckCircle } from 'react-icons/fa';
 import './DespachosModal.css';
 
 function DespachosModal({ onClose, inventario }) {
@@ -33,7 +33,6 @@ function DespachosModal({ onClose, inventario }) {
     }
   };
 
-  // ===== OBTENER NOMBRE DEL PRODUCTO DESDE INVENTARIO =====
   const getProductoNombre = (productoId) => {
     if (!inventario) return `Producto #${productoId}`;
     const producto = inventario.find(p => p.id === productoId);
@@ -41,17 +40,11 @@ function DespachosModal({ onClose, inventario }) {
   };
 
   const formatearHora = (fecha) => {
-    return new Date(fecha).toLocaleTimeString('es-ES', {
+    if (!fecha) return '-';
+    return new Date(fecha).toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
     });
   };
 
@@ -114,8 +107,13 @@ function DespachosModal({ onClose, inventario }) {
                       <span className="despacho-cantidad">+{d.cantidad} uds</span>
                       <span className="despacho-hora">
                         <FaClock className="hora-icono" />
-                        {formatearHora(d.created_at)}
+                        {formatearHora(d.fecha_cierre || d.fecha)}
                       </span>
+                      {d.estado === 'cerrado' && (
+                        <span className="despacho-estado cerrado">
+                          <FaCheckCircle /> Cerrado
+                        </span>
+                      )}
                     </div>
                     {d.observaciones && (
                       <div className="despacho-observacion">
