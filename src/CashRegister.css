@@ -369,3 +369,17 @@
 .btn-cerrar-cuadre:hover {
   background: #7c1e1e;
 }
+/* ===== SECCIÓN BASE DEL DÍA ===== */
+.base-section {
+  background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+  border-left: 4px solid #d97706;
+}
+
+.base-section h3 {
+  color: #92400e;
+}
+
+.base-section input {
+  border-color: #d97706 !important;
+  font-size: 1.3rem !important;
+}
