@@ -10,15 +10,13 @@ function InventoryPanel() {
     nombre: '', 
     subcategoria: '', 
     precio: '', 
-    cantidad: '',
-    stock_fabrica: '' 
+    cantidad: '' 
   });
   const [newProduct, setNewProduct] = useState({ 
     nombre: '', 
     subcategoria: '', 
     precio: '', 
     cantidad: '',
-    stock_fabrica: '',
     categoria: '' 
   });
   const [loading, setLoading] = useState(true);
@@ -51,8 +49,7 @@ function InventoryPanel() {
       nombre: producto.nombre || '',
       subcategoria: producto.subcategoria || '',
       precio: producto.precio,
-      cantidad: producto.cantidad,
-      stock_fabrica: producto.stock_fabrica || 0
+      cantidad: producto.cantidad
     });
   };
 
@@ -63,8 +60,7 @@ function InventoryPanel() {
         nombre: editForm.nombre,
         subcategoria: editForm.subcategoria,
         precio: editForm.precio,
-        cantidad: editForm.cantidad,
-        stock_fabrica: editForm.stock_fabrica || 0
+        cantidad: editForm.cantidad
       })
       .eq('id', id);
     if (error) {
@@ -98,7 +94,6 @@ function InventoryPanel() {
       subcategoria: newProduct.subcategoria,
       precio: newProduct.precio,
       cantidad: newProduct.cantidad || 0,
-      stock_fabrica: newProduct.stock_fabrica || 0,
       categoria: newProduct.categoria || 'Otros'
     }]);
     if (error) {
@@ -110,7 +105,6 @@ function InventoryPanel() {
         subcategoria: '', 
         precio: '', 
         cantidad: '',
-        stock_fabrica: '',
         categoria: '' 
       });
       fetchInventory();
@@ -118,13 +112,10 @@ function InventoryPanel() {
   };
 
   // ===== CÁLCULO DE TOTALES =====
-  const totalUnidades = inventory.reduce((sum, item) => {
-    return sum + (item.cantidad || 0) + (item.stock_fabrica || 0);
-  }, 0);
+  const totalUnidades = inventory.reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
   const totalInventario = inventory.reduce((sum, item) => {
-    const totalUnidadesItem = (item.cantidad || 0) + (item.stock_fabrica || 0);
-    return sum + (totalUnidadesItem * (item.precio || 0));
+    return sum + ((item.cantidad || 0) * (item.precio || 0));
   }, 0);
 
   // ===== AGRUPAR PRODUCTOS POR CATEGORÍA =====
@@ -173,15 +164,9 @@ function InventoryPanel() {
         />
         <input
           type="number"
-          placeholder="Unidades Tienda"
+          placeholder="Unidades"
           value={newProduct.cantidad}
           onChange={(e) => setNewProduct({ ...newProduct, cantidad: e.target.value })}
-        />
-        <input
-          type="number"
-          placeholder="Unidades Fábrica"
-          value={newProduct.stock_fabrica}
-          onChange={(e) => setNewProduct({ ...newProduct, stock_fabrica: e.target.value })}
         />
         <button onClick={handleAdd}>Agregar Producto</button>
       </div>
@@ -200,17 +185,14 @@ function InventoryPanel() {
                     <th>Nombre</th>
                     <th>Subcategoría</th>
                     <th>Precio</th>
-                    <th>Unidades Tienda</th>
-                    <th>Unidades Fábrica</th>
-                    <th>Total Unidades</th>
+                    <th>Unidades</th>
                     <th>Valor Total</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {groupedInventory[categoria].map((item) => {
-                    const totalUnidadesItem = (item.cantidad || 0) + (item.stock_fabrica || 0);
-                    const valorTotalItem = totalUnidadesItem * (item.precio || 0);
+                    const valorTotalItem = (item.cantidad || 0) * (item.precio || 0);
                     
                     return (
                       <tr key={item.id}>
@@ -250,16 +232,6 @@ function InventoryPanel() {
                             />
                           ) : item.cantidad}
                         </td>
-                        <td>
-                          {editingId === item.id ? (
-                            <input
-                              type="number"
-                              value={editForm.stock_fabrica}
-                              onChange={(e) => setEditForm({ ...editForm, stock_fabrica: e.target.value })}
-                            />
-                          ) : (item.stock_fabrica || 0)}
-                        </td>
-                        <td>{totalUnidadesItem}</td>
                         <td>{formatPrice(valorTotalItem)}</td>
                         <td>
                           {editingId === item.id ? (
@@ -280,7 +252,7 @@ function InventoryPanel() {
                 </tbody>
                 <tfoot>
                   <tr className="total-footer-inventory">
-                    <td colSpan="5"><strong>TOTALES</strong></td>
+                    <td colSpan="3"><strong>TOTALES</strong></td>
                     <td><strong>{totalUnidades}</strong></td>
                     <td><strong>{formatPrice(totalInventario)}</strong></td>
                     <td></td>
