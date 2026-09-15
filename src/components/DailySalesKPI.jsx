@@ -45,12 +45,14 @@ function DailySalesKPI() {
   const fetchVentasDelDia = async () => {
     setLoading(true);
     try {
-      // Consulta usando rango UTC para incluir todas las ventas del día colombiano
+      // ✅ Sin límite explícito; ordenado por fecha descendente
       const { data: ventas, error } = await supabase
         .from('ventas_cabecera')
         .select('*')
         .gte('fecha', rangoUTC.inicio)
-        .lte('fecha', rangoUTC.fin);
+        .lte('fecha', rangoUTC.fin)
+        .order('fecha', { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
 
@@ -73,7 +75,8 @@ function DailySalesKPI() {
             *,
             inventario:producto_id (nombre, subcategoria)
           `)
-          .in('id_venta', idsVentas);
+          .in('id_venta', idsVentas)
+          .limit(5000);
 
         if (!detError && detalles) {
           const ventasConDetalle = ventas.map(venta => ({
@@ -147,7 +150,7 @@ function DailySalesKPI() {
       
       {ventasDetalle.length > 0 && (
         <div className="detalle-ventas-dia">
-          <h4>Detalle de Ventas del Día</h4>
+          <h4>Detalle de Ventas del Día ({ventasDetalle.length})</h4>
           <div className="tabla-detalle-container">
             <table className="detalle-ventas-tabla">
               <thead>
@@ -161,15 +164,15 @@ function DailySalesKPI() {
               </thead>
               <tbody>
                 {ventasDetalle.map((venta, idx) => (
-                  <tr key={idx}>
+                  <tr key={venta.id_venta || idx}>
                     <td>{formatHoraColombia(venta.fecha)}</td>
                     <td>{venta.id_venta}</td>
                     <td>
                       <div className="productos-lista">
-                        {venta.detalles ? (
+                        {venta.detalles && venta.detalles.length > 0 ? (
                           venta.detalles.map((d, i) => (
                             <span key={i} className="producto-item">
-                              {d.inventario?.subcategoria || d.inventario?.nombre || 'Producto'} x{d.cantidad}
+                              {d.inventario?.subcategoria || d.inventario?.nombre || d.descripcion || 'Producto'} x{d.cantidad}
                             </span>
                           ))
                         ) : (
