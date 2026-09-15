@@ -2449,3 +2449,28 @@
 .dark-mode .total-footer-inventory td:nth-child(7) {
   color: var(--lime);
 }
+.despacho-estado.cerrado,
+.estado-badge.cerrado {
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.despacho-estado.abierto,
+.estado-badge.abierto {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
