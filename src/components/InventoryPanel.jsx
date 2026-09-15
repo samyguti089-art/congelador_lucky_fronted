@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient';
 import { formatPrice } from '../utils/formatPrice.js';
 import './OwnerDashboard.css';
 
-function InventoryPanel() {
+function InventoryPanel({ inventario, actualizarInventario }) {
   const [inventory, setInventory] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ 
@@ -43,6 +43,14 @@ function InventoryPanel() {
     }
   };
 
+  // ✅ Refresca tanto el listado local como el estado global
+  const refrescarTodo = async () => {
+    await fetchInventory();
+    if (actualizarInventario) {
+      actualizarInventario(false);
+    }
+  };
+
   const handleEdit = (producto) => {
     setEditingId(producto.id);
     setEditForm({
@@ -68,7 +76,7 @@ function InventoryPanel() {
       alert('Error al actualizar: ' + error.message);
     } else {
       setEditingId(null);
-      fetchInventory();
+      await refrescarTodo();
     }
   };
 
@@ -79,7 +87,7 @@ function InventoryPanel() {
         console.error(error);
         alert('Error al eliminar: ' + error.message);
       } else {
-        fetchInventory();
+        await refrescarTodo();
       }
     }
   };
@@ -107,7 +115,7 @@ function InventoryPanel() {
         cantidad: '',
         categoria: '' 
       });
-      fetchInventory();
+      await refrescarTodo();
     }
   };
 
