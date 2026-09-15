@@ -9,17 +9,14 @@ import DespachosModal from './components/DespachosModal';
 import BaseDelDia from './components/BaseDelDia';
 import { formatPrice } from './utils/formatPrice.js';
 
-// Importar imágenes de categorías
 import deditosImg from "./components/images/portada 2 deditos.jpg";
 import empanadasImg from "./components/images/empanadas portada.jpg";
 import otrosImg from "./components/images/portada de otros.jpg";
 import combosImg from "./components/images/imagen de portada de combos.jpg";
-
-// Importar logo
 import logoImg from "./components/images/logo.jpeg";
 
 // ============================================================
-//  MAPA DE IMÁGENES DE PRODUCTOS (src/components/images/)
+//  MAPA DE IMÁGENES
 // ============================================================
 const imageModules = import.meta.glob('./components/images/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const imageMap = {};
@@ -27,6 +24,12 @@ Object.keys(imageModules).forEach((path) => {
   const fileName = path.split('/').pop();
   imageMap[fileName] = imageModules[path].default;
 });
+
+// ============================================================
+//  MODO: 'pos' o 'fabrica'
+// ============================================================
+const MODO = import.meta.env.VITE_MODO || 'pos';
+const esFabrica = MODO === 'fabrica';
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   // ===== ESTADOS PRINCIPALES =====
@@ -46,7 +49,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
   const [mostrarDespachos, setMostrarDespachos] = useState(false);
 
-  // ===== ESTADOS PARA COMBOS SIMPLIFICADOS =====
+  // ===== COMBOS SIMPLIFICADOS =====
   const [comboEmpanadas, setComboEmpanadas] = useState(null);
   const [mostrarModalEmpanadas, setMostrarModalEmpanadas] = useState(false);
   const [seleccionEmpanadas, setSeleccionEmpanadas] = useState({});
@@ -75,7 +78,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ===== FUNCIÓN PARA OBTENER IMAGEN DEL PRODUCTO =====
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
     if (imageMap[nombreArchivo]) return imageMap[nombreArchivo];
@@ -119,7 +121,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setMostrarModalProductos(true);
   };
 
-  // ===== FUNCIONES AUXILIARES =====
+  // ===== AUXILIARES =====
   const getUnidadesPorPaquete = (productoId) => {
     const p = inventario.find(i => i.id === productoId);
     if (p) {
@@ -129,7 +131,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     return 1;
   };
 
-  // ===== FUNCIONES DE COMBOS =====
+  // ===== COMBOS =====
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
     try {
       const { data: detalles, error } = await supabase
@@ -151,7 +153,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         }
       }
 
-      // Agregar componentes fijos al carrito
       const itemsFijos = fijos.map(d => {
         const prod = inventario.find(i => i.id === d.producto_id);
         return {
@@ -167,8 +168,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       if (empanadas.length > 0) {
         const requerido = empanadas.reduce((sum, e) => sum + e.cantidad * e.unidades_por_paquete, 0);
+        // En fábrica no filtramos por stock
         const productosEmpanadas = inventario.filter(
-          i => i.categoria?.toLowerCase() === 'empanadas' && i.cantidad > 0
+          i => i.categoria?.toLowerCase() === 'empanadas' && (esFabrica || i.cantidad > 0)
         );
         setComboEmpanadas({ combo, cantidad, requerido, productosEmpanadas, itemsFijos });
         setSeleccionEmpanadas({});
@@ -196,7 +198,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const actual = prev[productoId] || 0;
       const nuevo = Math.max(0, actual + delta);
       const prod = inventario.find(i => i.id === productoId);
-      const maxPaquetes = prod ? Math.floor(prod.cantidad) : 0;
+      // En fábrica no limitamos por stock
+      const maxPaquetes = esFabrica ? 999 : (prod ? Math.floor(prod.cantidad) : 0);
       const limitado = Math.min(nuevo, maxPaquetes);
       const totalAsignado = Object.entries({ ...prev, [productoId]: limitado }).reduce((sum, [id, cant]) => {
         return sum + cant * getUnidadesPorPaquete(parseInt(id));
@@ -246,7 +249,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setSeleccionEmpanadas({});
   };
 
-  // ===== FUNCIONES DEL CARRITO =====
+  // ===== CARRITO =====
   const agregarAlCarrito = (producto, cantidad = 1) => {
     const item = {
       id: producto.id,
@@ -334,8 +337,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         monto_transferencia: datosPago.monto_transferencia || 0
       });
 
-      console.log("Respuesta exitosa:", response.data);
-
       const productosMostrados = carritoCopy.map(item => ({
         nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
         cantidad: item.cantidad,
@@ -359,7 +360,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       setMostrarModalExito(true);
       setCarrito([]);
 
-      if (response.data.inventario && actualizarInventario) {
+      if (!esFabrica && response.data.inventario && actualizarInventario) {
         actualizarInventario(false);
       }
       if (setRefreshTrigger) {
@@ -382,26 +383,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   // ===== CIERRE DE SESIÓN =====
-  const handleCerrarSesion = () => {
-    setMostrarModalCierre(true);
-  };
-
+  const handleCerrarSesion = () => setMostrarModalCierre(true);
   const confirmarCierre = () => {
     setCerrando(true);
-    setTimeout(() => {
-      cerrarSesion();
-    }, 1500);
+    setTimeout(() => cerrarSesion(), 1500);
   };
-
-  const cancelarCierre = () => {
-    setMostrarModalCierre(false);
-  };
-
+  const cancelarCierre = () => setMostrarModalCierre(false);
   const cerrarModalExito = () => {
     setMostrarModalExito(false);
-    setTimeout(() => {
-      setVentaExitosa(null);
-    }, 300);
+    setTimeout(() => setVentaExitosa(null), 300);
   };
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
@@ -411,27 +401,29 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   // ============================================================
   return (
     <div className="pos-container">
-      {/* HEADER CON LOGO */}
       <div className="pos-header">
         <div className="logo-area">
           <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
-          <span className="pos-badge">Punto de Venta</span>
+          <span className="pos-badge">{esFabrica ? 'Fábrica' : 'Punto de Venta'}</span>
         </div>
         <div className="user-area">
           <div className="user-details">
             <span className="user-icon">👤</span>
             <div className="user-text">
               <span className="user-name">{usuario.nombre}</span>
-              <span className="user-role">Cajero</span>
+              <span className="user-role">{esFabrica ? 'Fábrica' : 'Cajero'}</span>
             </div>
           </div>
 
-          {/* ✅ Base del día con opción de sumar menudo */}
-          <BaseDelDia usuario={usuario} />
+          {!esFabrica && <BaseDelDia usuario={usuario} />}
 
           <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
           <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
-          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
+
+          {!esFabrica && (
+            <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
+          )}
+
           <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -440,7 +432,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
-      {/* GRID DE CATEGORÍAS */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -485,12 +476,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                     <div className="producto-info">
                       <h4>{producto.subcategoria || producto.nombre}</h4>
                       <p className="producto-precio">{formatPrice(producto.precio)}</p>
-                      <p className="producto-stock">Stock: {producto.cantidad}</p>
+                      {!esFabrica && <p className="producto-stock">Stock: {producto.cantidad}</p>}
                     </div>
                     <button
                       className="agregar-btn"
                       onClick={() => agregarAlCarrito(producto)}
-                      disabled={producto.cantidad <= 0}
+                      disabled={!esFabrica && producto.cantidad <= 0}
                     >
                       ➕ Agregar
                     </button>
@@ -542,7 +533,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* MODAL DE SELECCIÓN DE EMPANADAS */}
+      {/* MODAL DE EMPANADAS */}
       {mostrarModalEmpanadas && comboEmpanadas && (
         <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
           <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
@@ -565,7 +556,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 return (
                   <div key={prod.id} className="asignacion-item">
                     <span className="paquete-nombre">
-                      {prod.subcategoria || prod.nombre} (Stock: {prod.cantidad} paq, {up} uds/paq)
+                      {prod.subcategoria || prod.nombre} {!esFabrica && `(Stock: ${prod.cantidad} paq, ${up} uds/paq)`}
                     </span>
                     <div className="asignacion-controles">
                       <button
@@ -579,7 +570,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       <button
                         className="cantidad-btn"
                         onClick={() => handleEmpanadaChange(prod.id, 1)}
-                        disabled={totalActual >= comboEmpanadas.requerido || seleccion >= prod.cantidad}
+                        disabled={totalActual >= comboEmpanadas.requerido || (!esFabrica && seleccion >= prod.cantidad)}
                       >
                         +
                       </button>
@@ -595,7 +586,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* CARRITO DE COMPRAS */}
+      {/* CARRITO */}
       <div className="carrito-container">
         <h2>🛒 Carrito de Compras</h2>
         {carrito.length === 0 ? (
@@ -716,7 +707,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         />
       )}
 
-      {/* MODAL DE CONFIRMACIÓN DE PAGO */}
+      {/* MODAL DE CONFIRMACIÓN */}
       {mostrarConfirmacion && datosPagoConfirmacion && (
         <div className="modal-overlay" onClick={() => {
           setMostrarConfirmacion(false);
@@ -760,7 +751,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* MODAL DE CUADRE DE CAJA */}
+      {/* MODAL DE CUADRE */}
       {mostrarCuadre && (
         <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -773,7 +764,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {mostrarDespachos && (
+      {/* MODAL DE DESPACHOS (solo POS) */}
+      {!esFabrica && mostrarDespachos && (
         <DespachosModal
           onClose={() => setMostrarDespachos(false)}
           inventario={inventario}
