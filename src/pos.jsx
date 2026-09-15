@@ -6,6 +6,7 @@ import "./POS.css";
 import CashRegister from './CashRegister';
 import ModalPago from './components/ModalPago';
 import DespachosModal from './components/DespachosModal';
+import BaseDelDia from './components/BaseDelDia';
 import { formatPrice } from './utils/formatPrice.js';
 
 // Importar imágenes de categorías
@@ -424,6 +425,10 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <span className="user-role">Cajero</span>
             </div>
           </div>
+
+          {/* ✅ Base del día con opción de sumar menudo */}
+          <BaseDelDia usuario={usuario} />
+
           <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
           <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
           <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
