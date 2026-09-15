@@ -10,29 +10,27 @@ import DespachosPanel from './DespachosPanel';
 import CuadresLista from './CuadresLista';
 import './OwnerDashboard.css';
 
+// ============================================================
+//  MODO: 'pos' o 'fabrica'
+// ============================================================
+const MODO = import.meta.env.VITE_MODO || 'pos';
+const esFabrica = MODO === 'fabrica';
+
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   const [tabActiva, setTabActiva] = useState('dashboard');
 
-  const tabs = [
+  const tabsBase = [
     { 
       id: 'dashboard', 
       label: '📊 Dashboard', 
       component: (
         <>
-          <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
+          {!esFabrica && (
+            <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
+          )}
           <DailySalesKPI />
         </>
       )
-    },
-    { 
-      id: 'inventario', 
-      label: '📦 Inventario', 
-      component: (
-        <InventoryPanel 
-          inventario={inventario}
-          actualizarInventario={actualizarInventario}
-        />
-      ) 
     },
     { 
       id: 'top', 
@@ -55,6 +53,25 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       component: <RealtimeSales /> 
     },
     { 
+      id: 'cuadres', 
+      label: '📋 Cuadres', 
+      component: <CuadresLista /> 
+    }
+  ];
+
+  // Pestañas exclusivas del POS (no se muestran en fábrica)
+  const tabsSoloPOS = [
+    { 
+      id: 'inventario', 
+      label: '📦 Inventario', 
+      component: (
+        <InventoryPanel 
+          inventario={inventario}
+          actualizarInventario={actualizarInventario}
+        />
+      ) 
+    },
+    { 
       id: 'despachos', 
       label: '📦 Despachos', 
       component: (
@@ -64,18 +81,26 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           actualizarInventario={actualizarInventario}
         />
       ) 
-    },
-    { 
-      id: 'cuadres', 
-      label: '📋 Cuadres', 
-      component: <CuadresLista /> 
     }
   ];
+
+  // Construir el array de tabs según el modo
+  const tabs = esFabrica
+    ? tabsBase
+    : [
+        tabsBase[0],       // dashboard
+        tabsSoloPOS[0],    // inventario
+        tabsBase[1],       // top
+        tabsBase[2],       // ventas
+        tabsBase[3],       // tiempo-real
+        tabsSoloPOS[1],    // despachos
+        tabsBase[4]        // cuadres
+      ];
 
   return (
     <div className="owner-dashboard">
       <header className="dashboard-header">
-        <h1>👑 Panel del Dueño</h1>
+        <h1>{esFabrica ? '👑 Panel de la Fábrica' : '👑 Panel del Dueño'}</h1>
         <div className="header-buttons">
           <button onClick={cerrarSesion} className="logout-btn">Cerrar Sesión</button>
         </div>
@@ -83,7 +108,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
-      {/* Pestañas */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -96,7 +120,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         ))}
       </div>
       
-      {/* Contenido de la pestaña activa */}
       <div className="tab-content">
         {tabs.find(t => t.id === tabActiva)?.component}
       </div>
