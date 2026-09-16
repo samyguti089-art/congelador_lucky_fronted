@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { supabase } from '../supabaseClient';
 import { FaSync, FaSave } from 'react-icons/fa';
 import './AnalisisInventario.css';
@@ -25,25 +25,21 @@ function AnalisisInventario({ usuario }) {
   const cargarInventarioYConteo = async () => {
     setLoading(true);
     try {
-      // 1. Obtener inventario del sistema
       const response = await axios.get(`${API_URL}/inventario`);
       const inventario = response.data || [];
 
-      // 2. Calcular lunes de la semana actual
       const hoy = new Date();
-      const dia = hoy.getDay(); // 0 = domingo, 1 = lunes...
+      const dia = hoy.getDay();
       const diff = hoy.getDate() - dia + (dia === 0 ? -6 : 1);
       const lunes = new Date(hoy.setDate(diff));
       const semanaStr = lunes.toISOString().split('T')[0];
       setSemanaActual(semanaStr);
 
-      // 3. Buscar si ya hay conteo registrado esta semana
       const { data: snapshots } = await supabase
         .from('inventario_snapshots')
         .select('*')
         .eq('semana', semanaStr);
 
-      // 4. Merge con inventario actual
       const productosConEstado = inventario.map(prod => {
         const snap = (snapshots || []).find(s => s.producto_id === prod.id);
         return {
@@ -55,7 +51,6 @@ function AnalisisInventario({ usuario }) {
 
       setProductos(productosConEstado);
 
-      // Precargar valores ya ingresados
       const conteoInicial = {};
       productosConEstado.forEach(p => {
         if (p.cantidad_fisica !== '' && p.cantidad_fisica !== null) {
@@ -72,9 +67,6 @@ function AnalisisInventario({ usuario }) {
     }
   };
 
-  // ============================================================
-  //  MANEJO DE CAMBIOS EN EL CONTEO
-  // ============================================================
   const handleConteoChange = (productoId, valor) => {
     setConteoFisico(prev => ({
       ...prev,
@@ -83,7 +75,7 @@ function AnalisisInventario({ usuario }) {
   };
 
   // ============================================================
-  //  GUARDAR CONTEO EN SUPABASE
+  //  GUARDAR CONTEO
   // ============================================================
   const handleGuardarConteo = async () => {
     const conConteo = Object.keys(conteoFisico).filter(
@@ -99,10 +91,8 @@ function AnalisisInventario({ usuario }) {
 
     setGuardando(true);
     try {
-      // 1. Asegurar que existe el snapshot de la semana
       await supabase.rpc('crear_snapshot_semanal');
 
-      // 2. Preparar updates
       const updates = productos
         .filter(p => conteoFisico[p.id] !== '' && conteoFisico[p.id] !== undefined)
         .map(p => {
@@ -139,7 +129,7 @@ function AnalisisInventario({ usuario }) {
   };
 
   // ============================================================
-  //  EXPORTAR A EXCEL
+  //  EXPORTAR A EXCEL CON COLORES
   // ============================================================
   const exportarExcel = () => {
     const productosConConteo = productos.filter(
@@ -151,7 +141,56 @@ function AnalisisInventario({ usuario }) {
       return;
     }
 
-    // Preparar datos
+    // ===== PALETA DE COLORES =====
+    const colorHeader = {
+      fill: { fgColor: { rgb: '5C3A21' } },       // Marrón
+      font: { color: { rgb: 'FFFFFF' }, bold: true, sz: 12 },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: {
+        top: { style: 'thin', color: { rgb: 'FFFFFF' } },
+        bottom: { style: 'thin', color: { rgb: 'FFFFFF' } },
+        left: { style: 'thin', color: { rgb: 'FFFFFF' } },
+        right: { style: 'thin', color: { rgb: 'FFFFFF' } }
+      }
+    };
+
+    const colorTitulo = {
+      font: { bold: true, sz: 14, color: { rgb: '5C3A21' } },
+      alignment: { horizontal: 'left', vertical: 'center' }
+    };
+
+    const colorOK = {
+      fill: { fgColor: { rgb: 'D4EDDA' } },       // Verde claro
+      font: { color: { rgb: '155724' } },
+      border: { top: { style: 'thin', color: { rgb: 'CCCCCC' } }, bottom: { style: 'thin', color: { rgb: 'CCCCCC' } }, left: { style: 'thin', color: { rgb: 'CCCCCC' } }, right: { style: 'thin', color: { rgb: 'CCCCCC' } } }
+    };
+
+    const colorSobrante = {
+      fill: { fgColor: { rgb: 'FFF3CD' } },       // Amarillo claro
+      font: { color: { rgb: '856404' } },
+      border: { top: { style: 'thin', color: { rgb: 'CCCCCC' } }, bottom: { style: 'thin', color: { rgb: 'CCCCCC' } }, left: { style: 'thin', color: { rgb: 'CCCCCC' } }, right: { style: 'thin', color: { rgb: 'CCCCCC' } } }
+    };
+
+    const colorFaltante = {
+      fill: { fgColor: { rgb: 'F8D7DA' } },       // Rojo claro
+      font: { color: { rgb: '721C24' } },
+      border: { top: { style: 'thin', color: { rgb: 'CCCCCC' } }, bottom: { style: 'thin', color: { rgb: 'CCCCCC' } }, left: { style: 'thin', color: { rgb: 'CCCCCC' } }, right: { style: 'thin', color: { rgb: 'CCCCCC' } } }
+    };
+
+    const colorNeutro = {
+      fill: { fgColor: { rgb: 'FFFFFF' } },
+      font: { color: { rgb: '333333' } },
+      border: { top: { style: 'thin', color: { rgb: 'CCCCCC' } }, bottom: { style: 'thin', color: { rgb: 'CCCCCC' } }, left: { style: 'thin', color: { rgb: 'CCCCCC' } }, right: { style: 'thin', color: { rgb: 'CCCCCC' } } }
+    };
+
+    const colorTotal = {
+      fill: { fgColor: { rgb: '5C3A21' } },
+      font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 12 },
+      alignment: { horizontal: 'right' },
+      border: { top: { style: 'medium', color: { rgb: '3B2A1F' } }, bottom: { style: 'medium', color: { rgb: '3B2A1F' } }, left: { style: 'thin', color: { rgb: '3B2A1F' } }, right: { style: 'thin', color: { rgb: '3B2A1F' } } }
+    };
+
+    // ===== DATOS =====
     const datos = productosConConteo.map(p => {
       const fisico = parseFloat(conteoFisico[p.id]) || 0;
       const diff = fisico - p.cantidad;
@@ -171,30 +210,72 @@ function AnalisisInventario({ usuario }) {
       };
     });
 
-    // Totales
     const totalSistema = datos.reduce((s, d) => s + d['Stock Sistema'], 0);
     const totalFisico = datos.reduce((s, d) => s + d['Conteo Físico'], 0);
     const totalDiferencia = datos.reduce((s, d) => s + d['Diferencia'], 0);
     const totalValor = datos.reduce((s, d) => s + d['Valor Diferencia'], 0);
 
-    // Fecha formateada para el archivo
-    const fechaArchivo = new Date().toLocaleDateString('es-CO', {
-      timeZone: 'America/Bogota',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).replace(/\//g, '-');
+    // ===== CONSTRUIR HOJA CON ESTILOS =====
+    const wb = XLSX.utils.book_new();
+    const ws = {};
 
-    // Crear hoja
-    const ws = XLSX.utils.json_to_sheet(datos);
+    // Encabezados
+    const encabezados = ['Categoría', 'Producto', 'Stock Sistema', 'Conteo Físico', 'Diferencia', 'Estado', 'Precio Unitario', 'Valor Diferencia'];
 
-    // Agregar fila de totales al final
-    const filaTotales = [
-      'TOTALES', '', totalSistema, totalFisico, totalDiferencia, '', '', totalValor
-    ];
-    XLSX.utils.sheet_add_aoa(ws, [filaTotales], { origin: -1 });
+    // Fila 1: Título
+    ws['A1'] = { v: `Análisis de Inventario - Semana del ${semanaActual}`, s: colorTitulo };
+    // Fila 2: Info
+    ws['A2'] = { v: `Generado: ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`, s: colorNeutro };
+    ws['A3'] = { v: `Usuario: ${usuario?.nombre || ''}`, s: colorNeutro };
+    ws['A4'] = { v: `Total productos contados: ${datos.length}`, s: colorNeutro };
 
-    // Anchos de columna
+    // Fila 6: Encabezados de tabla
+    encabezados.forEach((h, i) => {
+      const col = String.fromCharCode(65 + i); // A, B, C, D, E, F, G, H
+      ws[`${col}6`] = { v: h, s: colorHeader };
+    });
+
+    // Filas de datos a partir de la fila 7
+    datos.forEach((d, idx) => {
+      const fila = idx + 7;
+      const diff = d['Diferencia'];
+      let estiloFila = colorNeutro;
+      if (diff === 0) estiloFila = colorOK;
+      else if (diff > 0) estiloFila = colorSobrante;
+      else estiloFila = colorFaltante;
+
+      const valores = [
+        d['Categoría'],
+        d['Producto'],
+        d['Stock Sistema'],
+        d['Conteo Físico'],
+        d['Diferencia'],
+        d['Estado'],
+        d['Precio Unitario'],
+        d['Valor Diferencia']
+      ];
+
+      valores.forEach((v, i) => {
+        const col = String.fromCharCode(65 + i);
+        ws[`${col}${fila}`] = { v, s: estiloFila };
+      });
+    });
+
+    // Fila de totales
+    const filaTotal = datos.length + 7;
+    ws[`A${filaTotal}`] = { v: 'TOTALES', s: colorTotal };
+    ws[`B${filaTotal}`] = { v: '', s: colorTotal };
+    ws[`C${filaTotal}`] = { v: totalSistema, s: colorTotal };
+    ws[`D${filaTotal}`] = { v: totalFisico, s: colorTotal };
+    ws[`E${filaTotal}`] = { v: totalDiferencia, s: colorTotal };
+    ws[`F${filaTotal}`] = { v: '', s: colorTotal };
+    ws[`G${filaTotal}`] = { v: '', s: colorTotal };
+    ws[`H${filaTotal}`] = { v: totalValor, s: colorTotal };
+
+    // Rango de la hoja
+    ws['!ref'] = `A1:H${filaTotal}`;
+
+    // Anchos de columnas
     ws['!cols'] = [
       { wch: 14 },  // Categoría
       { wch: 32 },  // Producto
@@ -206,19 +287,19 @@ function AnalisisInventario({ usuario }) {
       { wch: 18 }   // Valor Diferencia
     ];
 
-    // Agregar metadatos al inicio
-    XLSX.utils.sheet_add_aoa(ws, [
-      [`Análisis de Inventario - Semana del ${semanaActual}`],
-      [`Generado: ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`],
-      [`Usuario: ${usuario?.nombre || ''}`],
-      [`Total productos contados: ${datos.length}`],
-      [],
-    ], { origin: 'A1' });
+    // Altura de filas (encabezado)
+    ws['!rows'] = [{ hpt: 20 }, { hpt: 18 }, { hpt: 18 }, { hpt: 18 }, { hpt: 8 }, { hpt: 22 }];
 
-    const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
 
-    // Guardar archivo
+    // Nombre del archivo
+    const fechaArchivo = new Date().toLocaleDateString('es-CO', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-');
+
     XLSX.writeFile(wb, `Analisis-Inventario-${fechaArchivo}.xlsx`);
   };
 
