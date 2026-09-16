@@ -2,6 +2,8 @@
    POS - PALETA GASTRONÓMICA
    ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
   --crema: #faf7f2;
   --crema-oscuro: #e6d5c3;
@@ -15,6 +17,14 @@
   --dorado: #b45309;
   --mostaza: #854d0e;
   --oliva: #a16207;
+
+  /* NUEVOS: sombras y transiciones modernas */
+  --shadow-sm: 0 2px 6px rgba(61, 36, 19, 0.06);
+  --shadow-md: 0 6px 16px rgba(61, 36, 19, 0.08);
+  --shadow-lg: 0 16px 32px rgba(61, 36, 19, 0.12);
+  --shadow-xl: 0 24px 48px rgba(61, 36, 19, 0.16);
+  --transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-smooth: all 0.25s ease-out;
 }
 
 /* ============================================================
@@ -24,7 +34,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--crema);
   min-height: 100vh;
 }
@@ -173,7 +183,7 @@
 }
 
 /* ============================================================
-   CATEGORÍAS (con imágenes de fondo)
+   CATEGORÍAS
    ============================================================ */
 .categorias-grid {
   display: grid;
@@ -411,7 +421,7 @@
 }
 
 /* ============================================================
-   COMBOS - BOTÓN SIEMPRE VISIBLE
+   COMBOS
    ============================================================ */
 .combos-modal {
   max-width: 900px;
@@ -534,7 +544,7 @@
 }
 
 /* ============================================================
-   MODAL DE SELECCIÓN DE EMPANADAS (SIMPLIFICADO)
+   MODAL DE SELECCIÓN DE EMPANADAS
    ============================================================ */
 .personalizar-modal {
   max-width: 600px;
@@ -979,7 +989,7 @@
 }
 
 /* ============================================================
-   MODO OSCURO - NEGRO AZABACHE (AZULADO)
+   MODO OSCURO
    ============================================================ */
 body.dark-mode {
   --bg: #0A0E17;
@@ -1000,7 +1010,6 @@ body.dark-mode {
   color: var(--text-primary);
 }
 
-/* Ajustes globales para dark mode */
 .dark-mode .pos-container { background: var(--bg); color: var(--text-primary); }
 .dark-mode .pos-header { border-bottom-color: var(--border-color); }
 .dark-mode .logo-area h1 { color: var(--text-primary); }
@@ -1049,7 +1058,6 @@ body.dark-mode {
 .dark-mode .combo-imagen { background: var(--input-bg); }
 .dark-mode .combo-imagen img { background: var(--card-bg); }
 
-/* Dark mode para modal de selección de empanadas */
 .dark-mode .personalizar-info { color: var(--text-primary); }
 .dark-mode .sabor-item { background: var(--card-bg); border-color: var(--border-color); }
 .dark-mode .sabor-nombre { color: var(--text-primary); }
@@ -1068,23 +1076,6 @@ body.dark-mode {
 .dark-mode .registrar-btn { background: var(--lime); color: #1a1a1a; }
 .dark-mode .registrar-btn:hover { background: #9bd600; }
 
-/* Dark mode para modal de pago */
-.dark-mode .modal-pago-content { background: var(--card-bg); }
-.dark-mode .modal-pago-content h2 { color: var(--text-primary); }
-.dark-mode .total-pago { color: var(--text-primary); }
-.dark-mode .total-pago strong { color: var(--lime); }
-.dark-mode .cajero-info { color: var(--text-secondary); }
-.dark-mode .metodo-btn { background: var(--card-bg); border-color: var(--border-color); color: var(--text-primary); }
-.dark-mode .metodo-btn.active { border-color: var(--purple); background: rgba(123,97,255,0.15); }
-.dark-mode .monto-recibido label { color: var(--text-primary); }
-.dark-mode .monto-recibido input { background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary); }
-.dark-mode .cambio-calculo { background: rgba(174,234,0,0.15); color: var(--lime); }
-.dark-mode .btn-confirmar-pago { background: var(--lime); color: #1a1a1a; }
-.dark-mode .btn-confirmar-pago:hover { background: #9bd600; }
-.dark-mode .btn-cancelar-pago { background: var(--border-color); color: var(--text-secondary); }
-.dark-mode .btn-cancelar-pago:hover { background: var(--hover-bg); }
-
-/* Dark mode para venta exitosa */
 .dark-mode .exito-header { background: var(--lime); color: #1a1a1a; }
 .dark-mode .exito-header h2 { color: #1a1a1a; }
 .dark-mode .venta-info { background: var(--card-bg); border: 1px solid var(--border-color); }
@@ -1099,7 +1090,6 @@ body.dark-mode {
 .dark-mode .btn-cerrar-exito { background: var(--lime); color: #1a1a1a; }
 .dark-mode .btn-cerrar-exito:hover { background: #9bd600; }
 
-/* Dark mode para cierre de sesión */
 .dark-mode .cierre-modal .modal-body { background: var(--card-bg); }
 .dark-mode .cierre-mensaje { color: var(--text-primary); }
 .dark-mode .btn-cancelar { background: var(--border-color); color: var(--text-secondary); }
@@ -1107,13 +1097,11 @@ body.dark-mode {
 .dark-mode .btn-confirmar { background: var(--yellow); color: #1a1a1a; }
 .dark-mode .btn-confirmar:hover { background: #e6b000; }
 
-/* Scrollbar en dark mode */
 .dark-mode ::-webkit-scrollbar { width: 8px; height: 8px; }
 .dark-mode ::-webkit-scrollbar-track { background: var(--bg); }
 .dark-mode ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 .dark-mode ::-webkit-scrollbar-thumb:hover { background: #2d3a52; }
 
-/* Inputs globales en dark mode */
 .dark-mode input,
 .dark-mode select,
 .dark-mode textarea {
@@ -1181,6 +1169,14 @@ body.dark-mode {
   .exito-modal .modal-body { padding: 12px 18px; }
   .detalle-tabla { font-size: 0.7rem; }
 }
+
+/* ============================================================
+   ✨ MEJORAS MODERNAS - FASE 1
+   Todo lo que sigue se puede eliminar para volver al diseño
+   original sin afectar la funcionalidad.
+   ============================================================ */
+
+/* ---------- HEADER GLASSMORPHISM ---------- */
 .pos-header {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
@@ -1190,18 +1186,447 @@ body.dark-mode {
   position: sticky;
   top: 0;
   z-index: 100;
+  padding: 15px 20px;
+  margin: -20px -20px 30px -20px;
+  border-radius: 0;
 }
 
+.dark-mode .pos-header {
+  background: rgba(19, 26, 42, 0.85);
+  border-bottom-color: rgba(31, 41, 55, 0.5);
+}
+
+/* ---------- CATEGORÍAS CON SOMBRAS Y PARALLAX ---------- */
 .categoria-card {
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(92, 58, 33, 0.08),
     0 1px 3px rgba(92, 58, 33, 0.06);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: var(--transition);
+  background-size: 100%;
 }
 
 .categoria-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(92, 58, 33, 0.15),
     0 8px 16px rgba(92, 58, 33, 0.1);
+  background-size: 110%;
+}
+
+.categoria-card:active {
+  transform: translateY(-4px) scale(0.99);
+}
+
+/* ---------- PRODUCTOS CON ANIMACIÓN STAGGER ---------- */
+.producto-card {
+  animation: fadeInUp 0.4s ease-out backwards;
+}
+
+.producto-card:nth-child(1) { animation-delay: 0.03s; }
+.producto-card:nth-child(2) { animation-delay: 0.06s; }
+.producto-card:nth-child(3) { animation-delay: 0.09s; }
+.producto-card:nth-child(4) { animation-delay: 0.12s; }
+.producto-card:nth-child(5) { animation-delay: 0.15s; }
+.producto-card:nth-child(6) { animation-delay: 0.18s; }
+.producto-card:nth-child(7) { animation-delay: 0.21s; }
+.producto-card:nth-child(8) { animation-delay: 0.24s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- BOTÓN AGREGAR CON EFECTO RIPPLE ---------- */
+.agregar-btn {
+  background: linear-gradient(135deg, var(--marron), var(--marron-claro));
+  box-shadow: 0 4px 12px rgba(92, 58, 33, 0.2);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.agregar-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(92, 58, 33, 0.3);
+}
+
+.agregar-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.agregar-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* ---------- CARRITO CON EFECTO GLASS ---------- */
+.carrito-container {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(250,247,242,0.95));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(230, 213, 195, 0.5);
+  box-shadow:
+    0 8px 32px rgba(92, 58, 33, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.dark-mode .carrito-container {
+  background: linear-gradient(135deg, rgba(19,26,42,0.98), rgba(30,39,64,0.95));
+  border-color: rgba(31, 41, 55, 0.5);
+}
+
+/* ---------- FEEDBACK VISUAL DEL CARRITO (pulse al agregar) ---------- */
+.carrito-container.pulse {
+  animation: pulseCart 0.6s ease-out;
+}
+
+@keyframes pulseCart {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 8px 32px rgba(92, 58, 33, 0.08), 0 0 0 0 rgba(155, 44, 44, 0.4);
+  }
+  50% {
+    transform: scale(1.005);
+    box-shadow: 0 8px 32px rgba(92, 58, 33, 0.08), 0 0 0 15px rgba(155, 44, 44, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 32px rgba(92, 58, 33, 0.08), 0 0 0 0 rgba(155, 44, 44, 0);
+  }
+}
+
+/* ---------- MODALES CON ANIMACIÓN SUAVE ---------- */
+.modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  animation: slideUpModal 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- BOTONES CON MEJOR HOVER ---------- */
+.cuadre-btn,
+.logout-btn,
+.despachos-btn,
+.registrar-btn,
+.btn-cerrar-exito,
+.btn-aplicar-personalizacion,
+.agregar-combo-btn {
+  transition: var(--transition);
+}
+
+.cuadre-btn:hover,
+.logout-btn:hover,
+.despachos-btn:hover,
+.registrar-btn:hover,
+.btn-cerrar-exito:hover,
+.btn-aplicar-personalizacion:hover,
+.agregar-combo-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.cuadre-btn:active,
+.logout-btn:active,
+.despachos-btn:active,
+.registrar-btn:active,
+.btn-cerrar-exito:active,
+.btn-aplicar-personalizacion:active,
+.agregar-combo-btn:active {
+  transform: translateY(0);
+}
+
+/* ---------- INDICADOR DE STOCK CON COLORES ---------- */
+.producto-stock.stock-bajo,
+.producto-stock.stock-critico {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+  align-self: center;
+}
+
+.producto-stock.stock-medio {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+  align-self: center;
+}
+
+.producto-stock.stock-alto {
+  background: #dcfce7;
+  color: #166534;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-block;
+  align-self: center;
+}
+
+.dark-mode .producto-stock.stock-bajo,
+.dark-mode .producto-stock.stock-critico { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.dark-mode .producto-stock.stock-medio { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+.dark-mode .producto-stock.stock-alto { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+/* ---------- AVATAR DEL USUARIO ---------- */
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rojo-marron), var(--terracota));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.15rem;
+  box-shadow: 0 4px 12px rgba(155, 44, 44, 0.3);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #22c55e;
+  border-radius: 50%;
+  margin-right: 5px;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
+}
+
+/* ---------- TOAST NOTIFICATIONS ---------- */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  animation: slideInRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 9999;
+  font-weight: 600;
+  font-size: 0.9rem;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ---------- LOADING SKELETON ---------- */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.dark-mode .skeleton {
+  background: linear-gradient(90deg, #1a2337 25%, #2a3450 50%, #1a2337 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ---------- MEJORAS EN BOTONES DEL CARRITO ---------- */
+.cantidad-btn {
+  transition: var(--transition-smooth);
+}
+
+.cantidad-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(155, 44, 44, 0.25);
+}
+
+.cantidad-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* ---------- SCROLLBAR PERSONALIZADA (modo claro) ---------- */
+.carrito-items::-webkit-scrollbar,
+.productos-grid::-webkit-scrollbar,
+.combos-grid::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.carrito-items::-webkit-scrollbar-track,
+.productos-grid::-webkit-scrollbar-track,
+.combos-grid::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.carrito-items::-webkit-scrollbar-thumb,
+.productos-grid::-webkit-scrollbar-thumb,
+.combos-grid::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(139, 94, 60, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.carrito-items::-webkit-scrollbar-thumb:hover,
+.productos-grid::-webkit-scrollbar-thumb:hover,
+.combos-grid::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 94, 60, 0.5);
+}
+
+/* ---------- EFECTO EN COMBOS ---------- */
+.combo-card {
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.combo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--rojo-marron), transparent);
+  transition: left 0.6s ease;
+  z-index: 5;
+}
+
+.combo-card:hover::before {
+  left: 100%;
+}
+
+.combo-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow:
+    0 20px 40px rgba(92, 58, 33, 0.15),
+    0 8px 16px rgba(92, 58, 33, 0.08);
+}
+
+/* ---------- EFECTO EN BADGES ---------- */
+.pos-badge {
+  transition: var(--transition-smooth);
+  box-shadow: 0 2px 6px rgba(92, 58, 33, 0.08);
+}
+
+.pos-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(92, 58, 33, 0.15);
+}
+
+/* ---------- EFECTO EN BOTÓN TEMA ---------- */
+.theme-toggle-btn {
+  transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(20deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(92, 58, 33, 0.15);
+}
+
+.theme-toggle-btn:active {
+  transform: rotate(20deg) scale(0.95);
+}
+
+/* ---------- RESPONSIVE PARA MEJORAS MODERNAS ---------- */
+@media (max-width: 768px) {
+  .pos-header {
+    padding: 12px 15px;
+    margin: -20px -20px 20px -20px;
+  }
+
+  .toast {
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    max-width: none;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
 }
