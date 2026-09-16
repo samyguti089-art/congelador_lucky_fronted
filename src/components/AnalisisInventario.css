@@ -1,0 +1,174 @@
+.analisis-inventario {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.analisis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.analisis-header h3 {
+  margin: 0;
+  color: var(--marron);
+}
+
+.semana-badge {
+  background: var(--crema);
+  color: var(--marron);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.analisis-resumen {
+  display: flex;
+  gap: 20px;
+  background: var(--crema);
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--marron);
+}
+
+.analisis-resumen strong {
+  color: var(--rojo-marron);
+}
+
+.analisis-acciones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-refresh, .btn-exportar, .btn-guardar-conteo {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-refresh {
+  background: var(--crema-oscuro);
+  color: var(--marron);
+}
+
+.btn-exportar {
+  background: #217346;
+  color: white;
+}
+
+.btn-guardar-conteo {
+  background: var(--rojo-marron);
+  color: white;
+  margin-left: auto;
+}
+
+.btn-guardar-conteo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-refresh:hover, .btn-exportar:hover, .btn-guardar-conteo:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+
+.analisis-tabla-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--crema-oscuro);
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.analisis-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.analisis-tabla th {
+  background: var(--crema);
+  color: var(--marron);
+  padding: 10px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.analisis-tabla td {
+  padding: 8px;
+  border-bottom: 1px solid var(--crema-oscuro);
+  text-align: left;
+}
+
+.analisis-tabla input {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #1a1a1a;
+  background: white;
+}
+
+.fila-ok {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.fila-sobrante {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.fila-faltante {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.analisis-observaciones {
+  margin-top: 20px;
+}
+
+.analisis-observaciones label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--marron);
+  font-size: 0.9rem;
+}
+
+.analisis-observaciones textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--crema-oscuro);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  resize: vertical;
+}
+
+/* Dark mode */
+.dark-mode .analisis-inventario { background: var(--card-bg); }
+.dark-mode .analisis-header h3,
+.dark-mode .analisis-resumen { color: var(--text-primary); }
+.dark-mode .semana-badge,
+.dark-mode .analisis-resumen { background: var(--border-color); }
+.dark-mode .analisis-tabla-container { border-color: var(--border-color); }
+.dark-mode .analisis-tabla th { background: var(--border-color); color: var(--text-primary); }
+.dark-mode .analisis-tabla td { border-bottom-color: var(--border-color); color: var(--text-primary); }
+.dark-mode .analisis-tabla input { background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary); }
+.dark-mode .analisis-observaciones label { color: var(--text-primary); }
+.dark-mode .analisis-observaciones textarea { background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary); }
