@@ -8,17 +8,19 @@ import DailySalesKPI from './DailySalesKPI';
 import VentasAcumuladas from './VentasAcumuladas';
 import DespachosPanel from './DespachosPanel';
 import CuadresLista from './CuadresLista';
+import AnalisisInventario from './AnalisisInventario';
 import './OwnerDashboard.css';
 
 // ============================================================
 //  MODO: 'pos' o 'fabrica'
 // ============================================================
-const MODO = import.meta.env.VITE_MODO || 'pos';
+const MODO = (import.meta.env.VITE_MODO || 'pos').toLowerCase();
 const esFabrica = MODO === 'fabrica';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   const [tabActiva, setTabActiva] = useState('dashboard');
 
+  // ===== TABS BASE (comunes en tienda y fábrica) =====
   const tabsBase = [
     { 
       id: 'dashboard', 
@@ -59,7 +61,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
     }
   ];
 
-  // Pestañas exclusivas del POS (no se muestran en fábrica)
+  // ===== TABS EXCLUSIVAS DEL POS (no se muestran en fábrica) =====
   const tabsSoloPOS = [
     { 
       id: 'inventario', 
@@ -81,10 +83,15 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           actualizarInventario={actualizarInventario}
         />
       ) 
+    },
+    { 
+      id: 'analisis-inventario', 
+      label: '📊 Análisis Inventario', 
+      component: <AnalisisInventario usuario={usuario} />
     }
   ];
 
-  // Construir el array de tabs según el modo
+  // ===== CONSTRUIR ARRAY DE TABS SEGÚN EL MODO =====
   const tabs = esFabrica
     ? tabsBase
     : [
@@ -94,7 +101,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         tabsBase[2],       // ventas
         tabsBase[3],       // tiempo-real
         tabsSoloPOS[1],    // despachos
-        tabsBase[4]        // cuadres
+        tabsBase[4],       // cuadres
+        tabsSoloPOS[2]     // análisis inventario
       ];
 
   return (
@@ -108,6 +116,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
+      {/* Pestañas */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -120,6 +129,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         ))}
       </div>
       
+      {/* Contenido de la pestaña activa */}
       <div className="tab-content">
         {tabs.find(t => t.id === tabActiva)?.component}
       </div>
