@@ -533,58 +533,112 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* MODAL DE EMPANADAS */}
-      {mostrarModalEmpanadas && comboEmpanadas && (
-        <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
-          <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>🍱 Seleccionar Empanadas</h2>
-              <button className="close-btn" onClick={() => setMostrarModalEmpanadas(false)}>✕</button>
+     {/* MODAL DE EMPANADAS CON BARRA DE PROGRESO INTERACTIVA */}
+{mostrarModalEmpanadas && comboEmpanadas && (() => {
+  // Calculamos el total asignado una sola vez
+  const totalActual = Object.entries(seleccionEmpanadas).reduce(
+    (sum, [id, cant]) => sum + cant * getUnidadesPorPaquete(parseInt(id)), 0
+  );
+  const requerido = comboEmpanadas.requerido;
+  const porcentaje = Math.min(100, Math.round((totalActual / requerido) * 100));
+  const completo = totalActual === requerido;
+  const faltantes = requerido - totalActual;
+
+  return (
+    <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
+      <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>🍱 Seleccionar Sabores del Combo</h2>
+          <button className="close-btn" onClick={() => setMostrarModalEmpanadas(false)}>✕</button>
+        </div>
+        
+        <div className="modal-body personalizar-body">
+          {/* TARJETA DE PROGRESO EN VIVO */}
+          <div className={`combo-progress-card ${completo ? 'completo' : ''}`}>
+            <div className="progress-info-row">
+              <span className="combo-nombre-badge">
+                <strong>{comboEmpanadas.combo.nombre}</strong>
+              </span>
+              <span className={`progress-status-badge ${completo ? 'badge-exito' : 'badge-pendiente'}`}>
+                {completo ? '✅ ¡Cupo completado!' : `Faltan ${faltantes} unidades`}
+              </span>
             </div>
-            <div className="modal-body personalizar-body">
-              <p>
-                Combo <strong>{comboEmpanadas.combo.nombre}</strong> requiere{' '}
-                <strong>{comboEmpanadas.requerido}</strong> unidades de empanadas.
-                Elige los sabores y cantidades (paquetes).
-              </p>
-              {comboEmpanadas.productosEmpanadas.map(prod => {
-                const up = getUnidadesPorPaquete(prod.id);
-                const seleccion = seleccionEmpanadas[prod.id] || 0;
-                const totalActual = Object.entries(seleccionEmpanadas).reduce(
-                  (sum, [id, cant]) => sum + cant * getUnidadesPorPaquete(parseInt(id)), 0
-                );
-                return (
-                  <div key={prod.id} className="asignacion-item">
-                    <span className="paquete-nombre">
-                      {prod.subcategoria || prod.nombre} {!esFabrica && `(Stock: ${prod.cantidad} paq, ${up} uds/paq)`}
-                    </span>
-                    <div className="asignacion-controles">
-                      <button
-                        className="cantidad-btn"
-                        onClick={() => handleEmpanadaChange(prod.id, -1)}
-                        disabled={seleccion <= 0}
-                      >
-                        −
-                      </button>
-                      <span className="asignacion-valor">{seleccion}</span>
-                      <button
-                        className="cantidad-btn"
-                        onClick={() => handleEmpanadaChange(prod.id, 1)}
-                        disabled={totalActual >= comboEmpanadas.requerido || (!esFabrica && seleccion >= prod.cantidad)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              <button className="btn-aplicar-personalizacion" onClick={confirmarSeleccionEmpanadas}>
-                ✅ Agregar combo
-              </button>
+
+            {/* Barra de progreso */}
+            <div className="progress-bar-track">
+              <div 
+                className={`progress-bar-fill ${completo ? 'fill-exito' : 'fill-pendiente'}`}
+                style={{ width: `${porcentaje}%` }}
+              />
+            </div>
+
+            <div className="progress-counter-row">
+              <small>{totalActual} de {requerido} unidades seleccionadas</small>
+              <small><strong>{porcentaje}%</strong></small>
             </div>
           </div>
+
+          {/* LISTA DE SABORES */}
+          <div className="empanadas-sabores-list">
+            {comboEmpanadas.productosEmpanadas.map(prod => {
+              const up = getUnidadesPorPaquete(prod.id);
+              const seleccion = seleccionEmpanadas[prod.id] || 0;
+              const unidadesAportadas = seleccion * up;
+              const maxPaquetesAlcanzado = !esFabrica && seleccion >= prod.cantidad;
+
+              return (
+                <div 
+                  key={prod.id} 
+                  className={`asignacion-item ${seleccion > 0 ? 'sabor-seleccionado' : ''}`}
+                >
+                  <div className="paquete-info">
+                    <span className="paquete-nombre">
+                      {prod.subcategoria || prod.nombre}
+                    </span>
+                    <span className="paquete-detalles">
+                      {up} uds/paquete
+                      {!esFabrica && ` • Stock: ${prod.cantidad} paq.`}
+                      {seleccion > 0 && (
+                        <strong className="uds-aportadas"> ({unidadesAportadas} uds)</strong>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="asignacion-controles">
+                    <button
+                      className="cantidad-btn btn-menos"
+                      onClick={() => handleEmpanadaChange(prod.id, -1)}
+                      disabled={seleccion <= 0}
+                    >
+                      −
+                    </button>
+                    <span className="asignacion-valor">{seleccion}</span>
+                    <button
+                      className="cantidad-btn btn-mas"
+                      onClick={() => handleEmpanadaChange(prod.id, 1)}
+                      disabled={totalActual >= requerido || maxPaquetesAlcanzado}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* BOTÓN DE CONFIRMAR REACTIVO */}
+          <button 
+            className={`btn-aplicar-personalizacion ${completo ? 'btn-listo-pulse' : 'btn-bloqueado'}`} 
+            onClick={confirmarSeleccionEmpanadas}
+            disabled={!completo}
+          >
+            {completo ? '✅ Agregar combo al carrito' : `⚠️ Faltan ${faltantes} unidades para completar`}
+          </button>
         </div>
-      )}
+      </div>
+    </div>
+  );
+})()}
 
       {/* CARRITO */}
       <div className="carrito-container">
