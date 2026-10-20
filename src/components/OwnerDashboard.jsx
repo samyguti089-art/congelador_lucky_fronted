@@ -8,11 +8,11 @@ import DailySalesKPI from './DailySalesKPI';
 import VentasAcumuladas from './VentasAcumuladas';
 import DespachosPanel from './DespachosPanel';
 import CuadresLista from './CuadresLista';
-import KardexPanel from './components/KardexPanel';
+import KardexPanel from './KardexPanel';
 import './OwnerDashboard.css';
 
 // ============================================================
-//  MODO: 'pos' o 'fabrica'
+// MODO: 'pos' o 'fabrica'
 // ============================================================
 const MODO = (import.meta.env.VITE_MODO || 'pos').toLowerCase();
 const esFabrica = MODO === 'fabrica';
@@ -61,13 +61,19 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
     }
   ];
 
-  // ===== TABS EXCLUSIVAS DEL POS (no se muestran en fábrica) =====
+  // ===== TABS EXCLUSIVAS DEL POS (TIENDA) =====
   const tabsSoloPOS = [
     { 
-    id: 'kardex', 
-    label: '📋 Kardex Stock', 
-    component: <KardexPanel inventario={inventario} /> 
-    }
+      id: 'inventario', 
+      label: '📦 Inventario', 
+      component: (
+        <InventoryPanel 
+          inventario={inventario}
+          actualizarInventario={actualizarInventario}
+        />
+      ) 
+    },
+    { 
       id: 'despachos', 
       label: '📦 Despachos', 
       component: (
@@ -79,9 +85,9 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       ) 
     },
     { 
-      id: 'analisis-inventario', 
-      label: '📊 Análisis Inventario', 
-      component: <AnalisisInventario usuario={usuario} />
+      id: 'kardex', 
+      label: '📋 Kardex Stock', 
+      component: <KardexPanel inventario={inventario} /> 
     }
   ];
 
@@ -96,7 +102,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         tabsBase[3],       // tiempo-real
         tabsSoloPOS[1],    // despachos
         tabsBase[4],       // cuadres
-        tabsSoloPOS[2]     // análisis inventario
+        tabsSoloPOS[2]     // kardex stock
       ];
 
   return (
@@ -110,7 +116,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
       
-      {/* Pestañas */}
+      {/* Pestañas con nuevo espaciado */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
