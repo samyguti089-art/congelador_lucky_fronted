@@ -1959,3 +1959,209 @@ textarea,
   border-radius: 4px;
   transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+/* ============================================================
+   ✨ MODAL DE EMPANADAS - MEJORAS VISUALES INTERACTIVAS
+   ============================================================ */
+
+/* Tarjeta de progreso */
+.combo-progress-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.combo-progress-card.completo {
+  background: #f0fdf4;
+  border-color: #86efac;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.progress-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.combo-nombre-badge {
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.progress-status-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+}
+
+.badge-pendiente {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge-exito {
+  background: #dcfce7;
+  color: #15803d;
+  animation: pulseLight 1.5s infinite;
+}
+
+/* Barra de progreso */
+.progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+}
+
+.fill-pendiente {
+  background: linear-gradient(90deg, #f59e0b, #ea580c);
+}
+
+.fill-exito {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.progress-counter-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+/* Sabores en la lista */
+.empanadas-sabores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 16px;
+}
+
+.asignacion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.asignacion-item.sabor-seleccionado {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.paquete-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.paquete-nombre {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.paquete-detalles {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.uds-aportadas {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* Controles de cantidad */
+.asignacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cantidad-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #1e293b;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.cantidad-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.cantidad-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.asignacion-valor {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+/* Botón de confirmar con efecto de pulso */
+@keyframes pulseGreen {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.btn-aplicar-personalizacion {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-listo-pulse {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  animation: pulseGreen 2s infinite;
+}
+
+.btn-listo-pulse:hover {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.btn-bloqueado {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border: 1px dashed #cbd5e1;
+}
