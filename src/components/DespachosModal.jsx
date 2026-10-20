@@ -3,12 +3,15 @@ import axios from 'axios';
 import { FaTimes, FaBox, FaClock, FaCheckCircle } from 'react-icons/fa';
 import './DespachosModal.css';
 
+// ✅ Fecha fija de Colombia (evita que pase al día siguiente después de las 7:00 PM)
+const getFechaColombia = () => {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+};
+
 function DespachosModal({ onClose, inventario }) {
   const [despachos, setDespachos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(getFechaColombia());
   const [error, setError] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -39,12 +42,13 @@ function DespachosModal({ onClose, inventario }) {
     return producto ? (producto.subcategoria || producto.nombre) : `Producto #${productoId}`;
   };
 
-  const formatearHora = (fecha) => {
-    if (!fecha) return '-';
-    return new Date(fecha).toLocaleTimeString('es-CO', {
+  const formatearHora = (fechaTimestamp) => {
+    if (!fechaTimestamp) return '-';
+    return new Date(fechaTimestamp).toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     });
   };
 
@@ -87,7 +91,7 @@ function DespachosModal({ onClose, inventario }) {
             <>
               <div className="despachos-resumen">
                 <span className="despachos-total">
-                  Total: <strong>{totalDespachado} unidades</strong>
+                  Total: <strong>{totalDespachado} paquetes</strong>
                 </span>
                 <span className="despachos-cantidad">
                   {despachos.length} despachos
@@ -104,10 +108,11 @@ function DespachosModal({ onClose, inventario }) {
                       </span>
                     </div>
                     <div className="despacho-detalles">
-                      <span className="despacho-cantidad">+{d.cantidad} uds</span>
+                      <span className="despacho-cantidad">+{d.cantidad} paq.</span>
                       <span className="despacho-hora">
                         <FaClock className="hora-icono" />
-                        {formatearHora(d.fecha_cierre || d.fecha)}
+                        {/* ✅ Usa fecha_cierre o created_at como respaldo seguro */}
+                        {formatearHora(d.fecha_cierre || d.created_at)}
                       </span>
                       {d.estado === 'cerrado' && (
                         <span className="despacho-estado cerrado">
