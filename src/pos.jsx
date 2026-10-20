@@ -252,6 +252,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== CARRITO =====
   const agregarAlCarrito = (producto, cantidad = 1) => {
+    playBeep();
     const item = {
       id: producto.id,
       nombre: producto.subcategoria || producto.nombre,
@@ -359,6 +360,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         monto_transferencia: datosPago.monto_transferencia || 0
       });
       setMostrarModalExito(true);
+      playChaChing();   // 👈 Sonido de caja registradora
+      launchConfetti();  // 👈 Confeti en pantalla
       setCarrito([]);
 
       if (!esFabrica && response.data.inventario && actualizarInventario) {
@@ -689,68 +692,83 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* MODAL DE VENTA EXITOSA */}
-      {mostrarModalExito && ventaExitosa && (
-        <div className="modal-overlay" onClick={() => {}}>
-          <div className="modal-content exito-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header exito-header">
-              <FiCheckCircle className="exito-icono" />
-              <h2>¡Venta Exitosa!</h2>
-              <button className="close-btn" onClick={cerrarModalExito}>✕</button>
+      {/* MODAL DE TICKET TÉRMICO CON CAMBIO GIGANTE */}
+        {mostrarModalExito && ventaExitosa && (
+          <div className="modal-overlay" onClick={() => {}}>
+            <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
+              
+              {/* TICKET ESTILO IMPRESORA TÉRMICA */}
+              <div className="ticket-papel">
+                <div className="ticket-header">
+                  <div className="ticket-logo">🥟</div>
+                  <h2>CONGELADOR LUCKY</h2>
+                  <p className="ticket-subtitulo">Punto de Venta • Picadas Congeladas</p>
+                  <div className="ticket-divisor-punteado" />
+                  <div className="ticket-datos">
+                    <span><strong>Venta #:</strong> {ventaExitosa.id}</span>
+                    <span><strong>Fecha:</strong> {new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                  </div>
+                  <div className="ticket-datos">
+                    <span><strong>Cajero:</strong> {usuario?.nombre || 'General'}</span>
+                    <span><strong>Pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}</span>
+                  </div>
+                  <div className="ticket-divisor-punteado" />
+                </div>
+
+        {/* LISTADO DE PRODUCTOS DEL RECIBO */}
+        <div className="ticket-articulos">
+          {ventaExitosa.productos.map((item, idx) => (
+            <div key={idx} className="ticket-item-row">
+              <span className="ticket-item-nombre">
+                {item.cantidad}x {item.nombre} {item.incluido && '(inc)'}
+              </span>
+              <span className="ticket-item-subtotal">
+                {formatPrice(item.subtotal)}
+              </span>
             </div>
-            <div className="modal-body">
-              <div className="venta-info">
-                <p><strong>📍 Venta #:</strong> {ventaExitosa.id}</p>
-                <p><strong>📅 Fecha:</strong> {ventaExitosa.fecha}</p>
-                <p><strong>👤 Cajero:</strong> {ventaExitosa.cajero}</p>
-                <p><strong>💳 Método de pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
-                {ventaExitosa.cambio > 0 && (
-                  <p><strong>🔄 Cambio:</strong> {formatPrice(ventaExitosa.cambio)}</p>
-                )}
-              </div>
-              <div className="detalle-venta">
-                <h3>Detalle de la compra</h3>
-                <table className="detalle-tabla">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Cantidad</th>
-                      <th>Precio Unit.</th>
-                      <th>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ventaExitosa.productos.map((item, idx) => (
-                      <tr key={idx} className={item.esCombo ? "combo-row" : ""}>
-                        <td className={item.esCombo ? "combo-producto" : ""}>
-                          {item.esCombo && "🍱 "}{item.nombre}
-                          {item.incluido && " (incluido)"}
-                        </td>
-                        <td>{item.cantidad}</td>
-                        <td>{formatPrice(item.precio)}</td>
-                        <td className="subtotal-cell">{formatPrice(item.subtotal)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="total-row">
-                      <td colSpan="3"><strong>Total</strong></td>
-                      <td className="total-cell">{formatPrice(ventaExitosa.total)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-              <div className="mensaje-agradecimiento">
-                <p>🎉 ¡Gracias por tu compra!</p>
-                <p className="mensaje-pequeno">Venta registrada correctamente en el sistema</p>
-              </div>
-              <button className="btn-cerrar-exito" onClick={cerrarModalExito}>
-                Aceptar
-              </button>
-            </div>
+          ))}
+        </div>
+
+        <div className="ticket-divisor-punteado" />
+
+        {/* TOTALES */}
+        <div className="ticket-totales">
+          <div className="ticket-total-row">
+            <span>TOTAL PAGADO:</span>
+            <strong>{formatPrice(ventaExitosa.total)}</strong>
           </div>
         </div>
-      )}
+
+        {/* 🌟 CAMBIO / VUELTOS EN GRANDE (Si fue en efectivo) */}
+        {ventaExitosa.cambio > 0 ? (
+          <div className="ticket-cambio-destacado">
+            <span className="cambio-label">CAMBIO A ENTREGAR</span>
+            <span className="cambio-monto">{formatPrice(ventaExitosa.cambio)}</span>
+          </div>
+        ) : (
+          <div className="ticket-pago-exacto">
+            <span>✅ Pago exacto (Sin cambio)</span>
+          </div>
+        )}
+
+        <div className="ticket-footer-msg">
+          <p>¡Gracias por su compra!</p>
+        </div>
+      </div>
+
+      {/* BOTONES DE ACCIÓN */}
+      <div className="ticket-acciones">
+        <button className="btn-ticket-imprimir" onClick={() => window.print()}>
+          🖨️ Imprimir
+        </button>
+        <button className="btn-ticket-nueva-venta" onClick={cerrarModalExito}>
+          ➕ Nueva Venta
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
 
       {/* MODAL DE PAGO */}
       {mostrarModalPago && (
