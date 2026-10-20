@@ -8,7 +8,7 @@ import DailySalesKPI from './DailySalesKPI';
 import VentasAcumuladas from './VentasAcumuladas';
 import DespachosPanel from './DespachosPanel';
 import CuadresLista from './CuadresLista';
-import AnalisisInventario from './AnalisisInventario';
+import KardexPanel from './components/KardexPanel';
 import './OwnerDashboard.css';
 
 // ============================================================
@@ -64,16 +64,10 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
   // ===== TABS EXCLUSIVAS DEL POS (no se muestran en fábrica) =====
   const tabsSoloPOS = [
     { 
-      id: 'inventario', 
-      label: '📦 Inventario', 
-      component: (
-        <InventoryPanel 
-          inventario={inventario}
-          actualizarInventario={actualizarInventario}
-        />
-      ) 
-    },
-    { 
+    id: 'kardex', 
+    label: '📋 Kardex Stock', 
+    component: <KardexPanel inventario={inventario} /> 
+    }
       id: 'despachos', 
       label: '📦 Despachos', 
       component: (
