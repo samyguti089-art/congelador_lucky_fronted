@@ -134,6 +134,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   // ===== COMBOS =====
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
+    playBeep();
     try {
       const { data: detalles, error } = await supabase
         .from('combo_detalle')
@@ -195,6 +196,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const handleEmpanadaChange = (productoId, delta) => {
+    playBeep();
     setSeleccionEmpanadas(prev => {
       const actual = prev[productoId] || 0;
       const nuevo = Math.max(0, actual + delta);
@@ -211,6 +213,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   };
 
   const confirmarSeleccionEmpanadas = () => {
+    playBeep();
     const { combo, cantidad, requerido, productosEmpanadas, itemsFijos } = comboEmpanadas;
     let totalAsignado = 0;
     const itemsEmpanadas = [];
