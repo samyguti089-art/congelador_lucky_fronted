@@ -8,6 +8,7 @@ import ModalPago from './components/ModalPago';
 import DespachosModal from './components/DespachosModal';
 import BaseDelDia from './components/BaseDelDia';
 import { formatPrice } from './utils/formatPrice.js';
+import { playBeep, playChaChing, launchConfetti } from './utils/posEffects';
 
 import deditosImg from "./components/images/portada 2 deditos.jpg";
 import empanadasImg from "./components/images/empanadas portada.jpg";
