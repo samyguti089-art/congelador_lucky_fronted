@@ -1,9 +1,18 @@
 // ============================================================
-// 🔊 EFECTOS DE AUDIO Y VISUALES (Calibrados y Potentes)
+//  EFECTOS DE AUDIO Y VISUALES (Con Switch de Silencio y Confeti)
 // ============================================================
 
 // Canal de audio único compartido
 let audioCtx = null;
+
+const isSonidoActivo = () => {
+  try {
+    const saved = localStorage.getItem('sonidoActivo');
+    return saved !== null ? JSON.parse(saved) : true;
+  } catch (e) {
+    return true;
+  }
+};
 
 const getAudioContext = async () => {
   if (!audioCtx) {
@@ -17,6 +26,7 @@ const getAudioContext = async () => {
 
 // 1. BIP de producto (Claro, nítido y con duración perceptible)
 export const playBeep = async () => {
+  if (!isSonidoActivo()) return;
   try {
     const ctx = await getAudioContext();
     const osc = ctx.createOscillator();
@@ -42,6 +52,7 @@ export const playBeep = async () => {
 
 // 2. CAJA REGISTRADORA ("Cha-Ching" brillante de 2 tonos)
 export const playChaChing = async () => {
+  if (!isSonidoActivo()) return;
   try {
     const ctx = await getAudioContext();
     const ahora = ctx.currentTime;
