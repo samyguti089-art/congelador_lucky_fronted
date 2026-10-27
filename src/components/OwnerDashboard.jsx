@@ -214,7 +214,7 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
           </span>
         </button>
 
-        <nav id="owner-mobile-nav" className="tabs-container owner-navigation" aria-label="Secciones del panel">
+        <nav id="owner-mobile-nav" className="owner-navigation" aria-label="Secciones del panel">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
