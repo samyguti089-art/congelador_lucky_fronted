@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiLogOut, FiCheckCircle, FiClipboard, FiMoon, FiSun, FiTrash2, FiTruck, FiUser, FiVolume2, FiVolumeX } from "react-icons/fi";
+import { FiLogOut, FiCheckCircle, FiClipboard, FiMoon, FiSun, FiTrash2, FiTruck, FiUser, FiVolume2, FiVolumeX, FiSend, FiMail, FiPrinter } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
@@ -383,8 +383,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       launchConfetti();  // Confeti en pantalla
       setCarrito([]);
 
+      // IMPORTANTE: actualizar sin forzar recarga (false) para que la factura NO se cierre
       if (!esFabrica && response.data.inventario && actualizarInventario) {
-        actualizarInventario(true);
+        actualizarInventario(false);
       }
     } catch (err) {
       console.error("Error al registrar venta:", err);
@@ -408,6 +409,53 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const cerrarModalExito = () => {
     setMostrarModalExito(false);
     setVentaExitosa(null);
+  };
+
+  // ===== GENERAR Y ENVIAR FACTURA (WHATSAPP Y CORREO) =====
+  const generarTextoFactura = (venta) => {
+    const separador = '--------------------------------';
+    const items = venta.productos.map(p => 
+      `• ${p.cantidad}x ${p.nombre}${p.incluido ? ' (incluido)' : ''} - ${formatPrice(p.subtotal)}`
+    ).join('\n');
+
+    return `🧾 *CONGELADOR LUCKY — FACTURA DE VENTA*\n` +
+      `*Venta #:* ${venta.id}\n` +
+      `*Fecha:* ${venta.fecha}\n` +
+      `*Cajero:* ${venta.cajero}\n` +
+      `*Método de pago:* ${venta.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}\n` +
+      `${separador}\n` +
+      `*DETALLE DEL PEDIDO:*\n` +
+      `${items}\n` +
+      `${separador}\n` +
+      `*TOTAL:* ${formatPrice(venta.total)}\n` +
+      (venta.cambio > 0 ? `*Cambio entregado:* ${formatPrice(venta.cambio)}\n` : '') +
+      `${separador}\n` +
+      `❄️ _¡Gracias por elegir Congelador Lucky!_`;
+  };
+
+  const enviarFacturaWhatsApp = (venta) => {
+    const texto = generarTextoFactura(venta);
+    const tel = window.prompt("Ingresa el número de WhatsApp del cliente (ejemplo: 3001234567)\nO déjalo vacío para abrir WhatsApp y elegir el contacto:");
+    if (tel === null) return;
+    
+    let url = '';
+    const telLimpio = tel.replace(/[^0-9]/g, '');
+    if (telLimpio.length >= 10) {
+      const codigoPais = telLimpio.startsWith('57') ? telLimpio : `57${telLimpio}`;
+      url = `https://api.whatsapp.com/send?phone=${codigoPais}&text=${encodeURIComponent(texto)}`;
+    } else {
+      url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    }
+    window.open(url, '_blank');
+  };
+
+  const enviarFacturaEmail = (venta) => {
+    const texto = generarTextoFactura(venta);
+    const email = window.prompt("Ingresa el correo electrónico del cliente:", "");
+    if (email === null) return;
+    const asunto = `Factura de Venta #${venta.id} - Congelador Lucky`;
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto.replace(/\*/g, '').replace(/_/g, ''))}`;
+    window.location.href = mailtoUrl;
   };
 
   return (
@@ -799,7 +847,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         )}
       </div>
 
-      {/* MODAL DE TICKET TÉRMICO CON CAMBIO GIGANTE */}
+      {/* MODAL DE TICKET TÉRMICO CON BOTONES DE WHATSAPP, EMAIL, IMPRIMIR */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay" onClick={() => {}}>
           <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
@@ -858,11 +906,38 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               </div>
             </div>
 
-            <div className="ticket-acciones">
-              <button className="btn-ticket-imprimir" onClick={() => window.print()}>
-                🖨️ Imprimir
+            {/* BOTONES DE ACCIÓN: WHATSAPP, EMAIL, IMPRIMIR Y NUEVA VENTA */}
+            <div className="ticket-acciones-grid">
+              <button 
+                type="button" 
+                className="btn-ticket-whatsapp" 
+                onClick={() => enviarFacturaWhatsApp(ventaExitosa)}
+                title="Enviar ticket por WhatsApp"
+              >
+                <FiSend /> WhatsApp
               </button>
-              <button className="btn-ticket-nueva-venta" onClick={cerrarModalExito}>
+              <button 
+                type="button" 
+                className="btn-ticket-email" 
+                onClick={() => enviarFacturaEmail(ventaExitosa)}
+                title="Enviar ticket por correo electrónico"
+              >
+                <FiMail /> Correo
+              </button>
+              <button 
+                type="button" 
+                className="btn-ticket-imprimir" 
+                onClick={() => window.print()}
+                title="Imprimir ticket"
+              >
+                <FiPrinter /> Imprimir
+              </button>
+              <button 
+                type="button" 
+                className="btn-ticket-nueva-venta" 
+                onClick={cerrarModalExito}
+                title="Cerrar factura y empezar nueva venta"
+              >
                 ✨ Nueva Venta
               </button>
             </div>
