@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiLogOut, FiCheckCircle } from "react-icons/fi";
+import { FiLogOut, FiCheckCircle, FiClipboard, FiMoon, FiSun, FiTrash2, FiTruck, FiUser, FiVolume2, FiVolumeX } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
@@ -77,12 +77,25 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   }, [darkMode]);
 
+  // ===== SWITCH DE SONIDO =====
+  const [sonidoActivo, setSonidoActivo] = useState(() => {
+    const saved = localStorage.getItem('sonidoActivo');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const toggleSonido = () => {
+    setSonidoActivo(prev => {
+      const nuevo = !prev;
+      localStorage.setItem('sonidoActivo', JSON.stringify(nuevo));
+      return nuevo;
+    });
+  };
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   const getImagenProducto = (nombreArchivo) => {
     if (!nombreArchivo) return null;
     if (imageMap[nombreArchivo]) return imageMap[nombreArchivo];
-    console.warn(`⚠️ Imagen no encontrada: ${nombreArchivo}`);
     return null;
   };
 
@@ -100,36 +113,36 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  // ===== CATEGORÍAS =====
+  // Categorías fijas
   const categorias = [
-    { id: "deditos", nombre: "Deditos", imagen: deditosImg, color: "#d97706" },
-    { id: "empanadas", nombre: "Empanadas", imagen: empanadasImg, color: "#b45309" },
-    { id: "otros", nombre: "Otros", imagen: otrosImg, color: "#4b5563" },
-    { id: "combos", nombre: "Combos", imagen: combosImg, color: "#6b21a5" }
+    { id: "deditos", nombre: "Deditos", imagen: deditosImg, color: "#f87171" },
+    { id: "empanadas", nombre: "Empanadas", imagen: empanadasImg, color: "#60a5fa" },
+    { id: "otros", nombre: "Otros", imagen: otrosImg, color: "#fbbf24" },
+    { id: "combos", nombre: "Combos", imagen: combosImg, color: "#34d399" },
   ];
 
   const abrirCategoria = (categoriaId) => {
+    setCategoriaSeleccionada(categoriaId);
     if (categoriaId === "combos") {
       setMostrarModalCombos(true);
-      return;
+    } else {
+      const filtrados = inventario.filter(
+        (p) => p.categoria && p.categoria.toLowerCase() === categoriaId.toLowerCase()
+      );
+      setProductosCategoria(filtrados);
+      setMostrarModalProductos(true);
     }
-    const nombreCategoria = categoriaId === "otros" ? "Otros" : categoriaId;
-    const productos = inventario.filter(item =>
-      item.categoria?.toLowerCase() === nombreCategoria.toLowerCase()
-    );
-    setProductosCategoria(productos);
-    setCategoriaSeleccionada(categoriaId);
-    setMostrarModalProductos(true);
   };
 
-  // ===== AUXILIARES =====
+  // Helper para unidades por paquete de empanadas
   const getUnidadesPorPaquete = (productoId) => {
-    const p = inventario.find(i => i.id === productoId);
-    if (p) {
-      const match = p.subcategoria?.match(/x(\d+)/);
-      if (match) return parseInt(match[1], 10);
-    }
-    return 1;
+    const prod = inventario.find(i => i.id === productoId);
+    const subcat = (prod?.subcategoria || prod?.nombre || '').toLowerCase();
+    if (subcat.includes('x10') || subcat.includes('10')) return 10;
+    if (subcat.includes('x5') || subcat.includes('5')) return 5;
+    if (subcat.includes('x8') || subcat.includes('8')) return 8;
+    if (subcat.includes('x20') || subcat.includes('20')) return 20;
+    return 10;
   };
 
   // ===== COMBOS =====
@@ -163,6 +176,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           precio: 0,
           cantidad: d.cantidad,
           subtotal: 0,
+          imagen_url: prod?.imagen_url,
           esCombo: false,
           incluido: true,
         };
@@ -170,7 +184,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       if (empanadas.length > 0) {
         const requerido = empanadas.reduce((sum, e) => sum + e.cantidad * e.unidades_por_paquete, 0);
-        // En fábrica no filtramos por stock
         const productosEmpanadas = inventario.filter(
           i => i.categoria?.toLowerCase() === 'empanadas' && (esFabrica || i.cantidad > 0)
         );
@@ -184,6 +197,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           precio: combo.precio,
           cantidad,
           subtotal: cantidad * combo.precio,
+          imagen_url: combo.imagen_url,
           esCombo: true,
           esPrecioCombo: true,
         };
@@ -201,7 +215,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const actual = prev[productoId] || 0;
       const nuevo = Math.max(0, actual + delta);
       const prod = inventario.find(i => i.id === productoId);
-      // En fábrica no limitamos por stock
       const maxPaquetes = esFabrica ? 999 : (prod ? Math.floor(prod.cantidad) : 0);
       const limitado = Math.min(nuevo, maxPaquetes);
       const totalAsignado = Object.entries({ ...prev, [productoId]: limitado }).reduce((sum, [id, cant]) => {
@@ -227,6 +240,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
           precio: 0,
           cantidad: cant,
           subtotal: 0,
+          imagen_url: prod.imagen_url,
           esCombo: false,
           incluido: true,
         });
@@ -243,6 +257,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       precio: combo.precio,
       cantidad,
       subtotal: cantidad * combo.precio,
+      imagen_url: combo.imagen_url,
       esCombo: true,
       esPrecioCombo: true,
     };
@@ -262,6 +277,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       precio: producto.precio,
       cantidad: cantidad,
       subtotal: cantidad * producto.precio,
+      imagen_url: producto.imagen_url,
       esCombo: false
     };
     setCarrito(prev => [...prev, item]);
@@ -343,7 +359,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       });
 
       const productosMostrados = carritoCopy.map(item => ({
-        nombre: item.esCombo ? `🍱 ${item.nombre}` : item.nombre,
+        nombre: item.esCombo ? `Combo: ${item.nombre}` : item.nombre,
         cantidad: item.cantidad,
         precio: item.precio,
         subtotal: item.subtotal,
@@ -363,51 +379,40 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         monto_transferencia: datosPago.monto_transferencia || 0
       });
       setMostrarModalExito(true);
-      playChaChing();   // 👈 Sonido de caja registradora
-      launchConfetti();  // 👈 Confeti en pantalla
+      playChaChing();   // Sonido de caja registradora
+      launchConfetti();  // Confeti en pantalla
       setCarrito([]);
 
       if (!esFabrica && response.data.inventario && actualizarInventario) {
-        actualizarInventario(false);
+        actualizarInventario(true);
       }
-      if (setRefreshTrigger) {
-        setTimeout(() => {
-          setRefreshTrigger(prev => prev + 1);
-        }, 100);
-      }
-      setDatosPagoConfirmacion(null);
-    } catch (error) {
-      console.error("Error al registrar venta del carrito:", error);
-      if (error.response) {
-        alert(`Error ${error.response.status}: ${error.response.data.detail || JSON.stringify(error.response.data)}`);
-      } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Revisa que el backend esté activo.");
-      } else {
-        alert("Error al preparar la solicitud: " + error.message);
-      }
-      setMostrarModalPago(true);
+    } catch (err) {
+      console.error("Error al registrar venta:", err);
+      alert(err.response?.data?.detail || "Error al procesar la venta");
     }
   };
 
-  // ===== CIERRE DE SESIÓN =====
-  const handleCerrarSesion = () => setMostrarModalCierre(true);
-  const confirmarCierre = () => {
-    setCerrando(true);
-    setTimeout(() => cerrarSesion(), 1500);
-  };
-  const cancelarCierre = () => setMostrarModalCierre(false);
-  const cerrarModalExito = () => {
-    setMostrarModalExito(false);
-    setTimeout(() => setVentaExitosa(null), 300);
+  const handleCerrarSesion = () => {
+    if (carrito.length > 0) {
+      if (window.confirm("Tienes productos en el carrito. ¿Estás seguro de que deseas salir?")) {
+        cerrarSesion();
+      }
+    } else {
+      cerrarSesion();
+    }
   };
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+  const totalUnidadesCarrito = carrito.reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
-  // ============================================================
-  // RENDER
-  // ============================================================
+  const cerrarModalExito = () => {
+    setMostrarModalExito(false);
+    setVentaExitosa(null);
+  };
+
   return (
     <div className="pos-container">
+      {/* HEADER DEL POS */}
       <div className="pos-header">
         <div className="logo-area">
           <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
@@ -415,7 +420,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
         <div className="user-area">
           <div className="user-details">
-            <span className="user-icon">👤</span>
+            <span className="user-icon"><FiUser aria-hidden="true" /></span>
             <div className="user-text">
               <span className="user-name">{usuario.nombre}</span>
               <span className="user-role">{esFabrica ? 'Fábrica' : 'Cajero'}</span>
@@ -424,21 +429,47 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
           {!esFabrica && <BaseDelDia usuario={usuario} />}
 
-          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">💰 Cuadre</button>
-          <button onClick={handleCerrarSesion} className="logout-btn"><FiLogOut className="logout-icon" /> Salir</button>
-
+          <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
+            <FiClipboard aria-hidden="true" /> Cuadre
+          </button>
+          
           {!esFabrica && (
-            <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">📥 Despachos</button>
+            <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
+              <FiTruck aria-hidden="true" /> Despachos
+            </button>
           )}
 
-          <button onClick={toggleDarkMode} className="theme-toggle-btn" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
-            {darkMode ? '☀️' : '🌙'}
+          {/* SWITCH DE SONIDO 🔊 / 🔇 */}
+          <button 
+            type="button" 
+            onClick={toggleSonido} 
+            className="sound-toggle-btn" 
+            title={sonidoActivo ? 'Silenciar sonidos del sistema' : 'Activar sonidos del sistema'} 
+            aria-label={sonidoActivo ? 'Silenciar sonidos' : 'Activar sonidos'}
+          >
+            {sonidoActivo ? <FiVolume2 aria-hidden="true" /> : <FiVolumeX aria-hidden="true" />}
+          </button>
+
+          {/* MODO OSCURO */}
+          <button 
+            type="button" 
+            onClick={toggleDarkMode} 
+            className="theme-toggle-btn" 
+            title={darkMode ? 'Modo claro' : 'Modo oscuro'} 
+            aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          >
+            {darkMode ? <FiSun aria-hidden="true" /> : <FiMoon aria-hidden="true" />}
+          </button>
+
+          <button onClick={handleCerrarSesion} className="logout-btn">
+            <FiLogOut className="logout-icon" /> Salir
           </button>
         </div>
       </div>
 
       {mensajeInventario && <div className="inventory-message">{mensajeInventario}</div>}
 
+      {/* GRID DE CATEGORÍAS */}
       <div className="categorias-grid">
         {categorias.map((cat) => (
           <button
@@ -477,7 +508,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       {producto.imagen_url ? (
                         <img src={getImagenProducto(producto.imagen_url)} alt={producto.subcategoria || producto.nombre} />
                       ) : (
-                        <div className="producto-sin-imagen">📷</div>
+                        <div className="producto-sin-imagen"></div>
                       )}
                     </div>
                     <div className="producto-info">
@@ -490,7 +521,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       onClick={() => agregarAlCarrito(producto)}
                       disabled={!esFabrica && producto.cantidad <= 0}
                     >
-                      ➕ Agregar
+                      + Agregar
                     </button>
                   </div>
                 ))
@@ -518,7 +549,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       {combo.imagen_url ? (
                         <img src={getImagenProducto(combo.imagen_url)} alt={combo.nombre} />
                       ) : (
-                        <div className="combo-sin-imagen">🍱</div>
+                        <div className="combo-sin-imagen"></div>
                       )}
                     </div>
                     <div className="combo-info">
@@ -530,7 +561,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                       className="agregar-combo-btn"
                       onClick={() => agregarComboAlCarrito(combo)}
                     >
-                      ➕ Agregar Combo
+                      + Agregar Combo
                     </button>
                   </div>
                 ))
@@ -540,155 +571,228 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-     {/* MODAL DE EMPANADAS CON BARRA DE PROGRESO INTERACTIVA */}
-{mostrarModalEmpanadas && comboEmpanadas && (() => {
-  // Calculamos el total asignado una sola vez
-  const totalActual = Object.entries(seleccionEmpanadas).reduce(
-    (sum, [id, cant]) => sum + cant * getUnidadesPorPaquete(parseInt(id)), 0
-  );
-  const requerido = comboEmpanadas.requerido;
-  const porcentaje = Math.min(100, Math.round((totalActual / requerido) * 100));
-  const completo = totalActual === requerido;
-  const faltantes = requerido - totalActual;
+      {/* MODAL DE EMPANADAS CON BARRA DE PROGRESO */}
+      {mostrarModalEmpanadas && comboEmpanadas && (() => {
+        const totalActual = Object.entries(seleccionEmpanadas).reduce(
+          (sum, [id, cant]) => sum + cant * getUnidadesPorPaquete(parseInt(id)), 0
+        );
+        const requerido = comboEmpanadas.requerido;
+        const porcentaje = Math.min(100, Math.round((totalActual / requerido) * 100));
+        const completo = totalActual === requerido;
+        const faltantes = requerido - totalActual;
 
-  return (
-    <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
-      <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>🍱 Seleccionar Sabores del Combo</h2>
-          <button className="close-btn" onClick={() => setMostrarModalEmpanadas(false)}>✕</button>
-        </div>
-        
-        <div className="modal-body personalizar-body">
-          {/* TARJETA DE PROGRESO EN VIVO */}
-          <div className={`combo-progress-card ${completo ? 'completo' : ''}`}>
-            <div className="progress-info-row">
-              <span className="combo-nombre-badge">
-                <strong>{comboEmpanadas.combo.nombre}</strong>
-              </span>
-              <span className={`progress-status-badge ${completo ? 'badge-exito' : 'badge-pendiente'}`}>
-                {completo ? '✅ ¡Cupo completado!' : `Faltan ${faltantes} unidades`}
-              </span>
-            </div>
-
-            {/* Barra de progreso */}
-            <div className="progress-bar-track">
-              <div 
-                className={`progress-bar-fill ${completo ? 'fill-exito' : 'fill-pendiente'}`}
-                style={{ width: `${porcentaje}%` }}
-              />
-            </div>
-
-            <div className="progress-counter-row">
-              <small>{totalActual} de {requerido} unidades seleccionadas</small>
-              <small><strong>{porcentaje}%</strong></small>
-            </div>
-          </div>
-
-          {/* LISTA DE SABORES */}
-          <div className="empanadas-sabores-list">
-            {comboEmpanadas.productosEmpanadas.map(prod => {
-              const up = getUnidadesPorPaquete(prod.id);
-              const seleccion = seleccionEmpanadas[prod.id] || 0;
-              const unidadesAportadas = seleccion * up;
-              const maxPaquetesAlcanzado = !esFabrica && seleccion >= prod.cantidad;
-
-              return (
-                <div 
-                  key={prod.id} 
-                  className={`asignacion-item ${seleccion > 0 ? 'sabor-seleccionado' : ''}`}
-                >
-                  <div className="paquete-info">
-                    <span className="paquete-nombre">
-                      {prod.subcategoria || prod.nombre}
+        return (
+          <div className="modal-overlay" onClick={() => setMostrarModalEmpanadas(false)}>
+            <div className="modal-content personalizar-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>🍱 Seleccionar Sabores del Combo</h2>
+                <button className="close-btn" onClick={() => setMostrarModalEmpanadas(false)}>✕</button>
+              </div>
+              
+              <div className="modal-body personalizar-body">
+                <div className={`combo-progress-card ${completo ? 'completo' : ''}`}>
+                  <div className="progress-info-row">
+                    <span className="combo-nombre-badge">
+                      <strong>{comboEmpanadas.combo.nombre}</strong>
                     </span>
-                    <span className="paquete-detalles">
-                      {up} uds/paquete
-                      {!esFabrica && ` • Stock: ${prod.cantidad} paq.`}
-                      {seleccion > 0 && (
-                        <strong className="uds-aportadas"> ({unidadesAportadas} uds)</strong>
-                      )}
+                    <span className={`progress-status-badge ${completo ? 'badge-exito' : 'badge-pendiente'}`}>
+                      {completo ? '✨ ¡Cupo completado!' : `Faltan ${faltantes} unidades`}
                     </span>
                   </div>
 
-                  <div className="asignacion-controles">
-                    <button
-                      className="cantidad-btn btn-menos"
-                      onClick={() => handleEmpanadaChange(prod.id, -1)}
-                      disabled={seleccion <= 0}
-                    >
-                      −
-                    </button>
-                    <span className="asignacion-valor">{seleccion}</span>
-                    <button
-                      className="cantidad-btn btn-mas"
-                      onClick={() => handleEmpanadaChange(prod.id, 1)}
-                      disabled={totalActual >= requerido || maxPaquetesAlcanzado}
-                    >
-                      +
-                    </button>
+                  <div className="progress-bar-track">
+                    <div 
+                      className={`progress-bar-fill ${completo ? 'fill-completo' : ''}`}
+                      style={{ width: `${porcentaje}%` }}
+                    />
+                  </div>
+                  
+                  <div className="progress-numbers-row">
+                    <span>Asignadas: <strong>{totalActual}</strong> de {requerido} uds</span>
+                    <span><strong>{porcentaje}%</strong></span>
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="empanadas-scroll-list">
+                  {comboEmpanadas.productosEmpanadas.map(prod => {
+                    const up = getUnidadesPorPaquete(prod.id);
+                    const seleccion = seleccionEmpanadas[prod.id] || 0;
+                    const maxPaquetesAlcanzado = !esFabrica && seleccion >= prod.cantidad;
+
+                    return (
+                      <div key={prod.id} className={`asignacion-item ${seleccion > 0 ? 'item-seleccionado' : ''}`}>
+                        <div className="asignacion-info">
+                          <span className="paquete-nombre">{prod.subcategoria || prod.nombre}</span>
+                          <span className="paquete-meta">
+                            {up} uds/paq {!esFabrica && `• Stock: ${prod.cantidad} paq.`}
+                          </span>
+                        </div>
+
+                        <div className="asignacion-controles">
+                          <button
+                            className="cantidad-btn btn-menos"
+                            onClick={() => handleEmpanadaChange(prod.id, -1)}
+                            disabled={seleccion <= 0}
+                          >
+                            −
+                          </button>
+                          <span className="asignacion-valor">{seleccion}</span>
+                          <button
+                            className="cantidad-btn btn-mas"
+                            onClick={() => handleEmpanadaChange(prod.id, 1)}
+                            disabled={totalActual >= requerido || maxPaquetesAlcanzado}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button 
+                  className={`btn-aplicar-personalizacion ${completo ? 'btn-listo-pulse' : 'btn-bloqueado'}`} 
+                  onClick={confirmarSeleccionEmpanadas}
+                  disabled={!completo}
+                >
+                  {completo ? '✅ Agregar combo al carrito' : `⏳ Faltan ${faltantes} unidades para completar`}
+                </button>
+              </div>
+            </div>
           </div>
+        );
+      })()}
 
-          {/* BOTÓN DE CONFIRMAR REACTIVO */}
-          <button 
-            className={`btn-aplicar-personalizacion ${completo ? 'btn-listo-pulse' : 'btn-bloqueado'}`} 
-            onClick={confirmarSeleccionEmpanadas}
-            disabled={!completo}
-          >
-            {completo ? '✅ Agregar combo al carrito' : `⚠️ Faltan ${faltantes} unidades para completar`}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-})()}
-
-      {/* CARRITO */}
+      {/* ============================================================
+          CARRITO DE COMPRAS — DISEÑO MODERNO ESTILO TARJETAS
+      ============================================================ */}
       <div className="carrito-container">
-        <h2>🛒 Carrito de Compras</h2>
+        {/* CABECERA DEL CARRITO */}
+        <div className="carrito-header-card">
+          <div className="carrito-header-left">
+            <span className="carrito-badge-icono">🛍️</span>
+            <div>
+              <h2 className="carrito-titulo">Tu Carrito de Compras</h2>
+              <span className="carrito-contador-items">
+                {totalUnidadesCarrito} {totalUnidadesCarrito === 1 ? 'producto seleccionado' : 'productos seleccionados'}
+              </span>
+            </div>
+          </div>
+          {carrito.length > 0 && (
+            <button 
+              type="button" 
+              className="btn-vaciar-carrito" 
+              onClick={() => {
+                if (window.confirm("¿Deseas vaciar todos los productos del carrito?")) {
+                  setCarrito([]);
+                }
+              }}
+              title="Vaciar carrito"
+            >
+              Vaciar
+            </button>
+          )}
+        </div>
+
         {carrito.length === 0 ? (
-          <p className="carrito-vacio">El carrito está vacío</p>
+          <div className="carrito-vacio-box">
+            <span className="vacio-icono">🛒</span>
+            <p className="carrito-vacio-texto">Tu carrito está vacío</p>
+            <span className="carrito-vacio-sub">Selecciona una categoría arriba para agregar productos</span>
+          </div>
         ) : (
           <>
-            <div className="carrito-items">
-              {carrito.map((item, idx) => (
-                <div key={idx} className="carrito-item">
-                  <span className="carrito-nombre">
-                    {item.esCombo && "🍱 "}{item.nombre}
-                    {item.esCombo && <span className="combo-badge">Combo</span>}
-                    {item.incluido && <span className="incluido-badge">(Incluido)</span>}
-                  </span>
-                  <div className="carrito-cantidad-control">
-                    <button
-                      className="cantidad-btn"
-                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
-                      disabled={item.cantidad <= 1 || item.incluido}
-                    >
-                      −
-                    </button>
-                    <span className="carrito-cantidad">{item.cantidad}</span>
-                    <button
-                      className="cantidad-btn"
-                      onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
-                      disabled={item.incluido}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span className="carrito-precio">{formatPrice(item.precio)}</span>
-                  <span className="carrito-subtotal">{formatPrice(item.subtotal)}</span>
-                  <button className="carrito-eliminar" onClick={() => eliminarDelCarrito(idx)}>🗑️</button>
-                </div>
-              ))}
+            {/* BANNER INFORMATIVO */}
+            <div className="carrito-alerta-info">
+              <span className="alerta-check">✓</span>
+              <span>¡Pedido listo! Revisa las cantidades antes de registrar</span>
             </div>
-            <div className="carrito-total">
-              <strong>Total: {formatPrice(totalCarrito)}</strong>
-              <button className="registrar-btn" onClick={registrarVentaFinal}>
-                Registrar Venta
+
+            {/* LISTA DE PRODUCTOS TIPO TARJETAS */}
+            <div className="carrito-items-cards">
+              {carrito.map((item, idx) => {
+                const img = item.imagen_url ? getImagenProducto(item.imagen_url) : null;
+                return (
+                  <div key={idx} className="carrito-card-item">
+                    {/* IMAGEN MINIATURA */}
+                    <div className="carrito-item-img-wrapper">
+                      {img ? (
+                        <img src={img} alt={item.nombre} className="carrito-item-thumb" />
+                      ) : (
+                        <div className="carrito-item-placeholder">
+                          {item.esCombo ? '🍱' : '🥟'}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* INFORMACIÓN DEL PRODUCTO */}
+                    <div className="carrito-item-info">
+                      <h4 className="carrito-item-titulo">{item.nombre}</h4>
+                      <div className="carrito-item-badges">
+                        {item.esCombo && <span className="badge-pill badge-combo">COMBO</span>}
+                        {item.incluido && <span className="badge-pill badge-incluido">INCLUIDO</span>}
+                        {!item.esCombo && !item.incluido && <span className="badge-pill badge-estandar">PAQUETE</span>}
+                      </div>
+                      <span className="carrito-item-precio">
+                        {item.precio === 0 && item.incluido ? 'Gratis en combo' : formatPrice(item.subtotal)}
+                      </span>
+                    </div>
+
+                    {/* CONTROLES DE CANTIDAD EN PÍLDORA */}
+                    <div className="carrito-item-acciones">
+                      {!item.incluido ? (
+                        <div className="pill-cantidad-control">
+                          <button
+                            type="button"
+                            className="btn-pill-menos"
+                            onClick={() => actualizarCantidadCarrito(idx, item.cantidad - 1)}
+                            disabled={item.cantidad <= 1}
+                            title="Disminuir"
+                          >
+                            −
+                          </button>
+                          <span className="pill-cantidad-valor">{item.cantidad}</span>
+                          <button
+                            type="button"
+                            className="btn-pill-mas"
+                            onClick={() => actualizarCantidadCarrito(idx, item.cantidad + 1)}
+                            title="Aumentar"
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="item-incluido-cant">x{item.cantidad}</span>
+                      )}
+
+                      {/* BOTÓN ELIMINAR */}
+                      <button
+                        type="button"
+                        className="btn-eliminar-item"
+                        aria-label={`Quitar ${item.nombre} del carrito`}
+                        title="Quitar del carrito"
+                        onClick={() => eliminarDelCarrito(idx)}
+                      >
+                        <FiTrash2 aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* TOTAL Y BOTÓN DE CONFIRMAR */}
+            <div className="carrito-footer-box">
+              <div className="carrito-resumen-total">
+                <span className="total-titulo">TOTAL A PAGAR:</span>
+                <span className="total-precio-grande">{formatPrice(totalCarrito)}</span>
+              </div>
+              <button 
+                type="button" 
+                className="btn-confirmar-pedido-grande" 
+                onClick={registrarVentaFinal}
+              >
+                <FiCheckCircle /> REGISTRAR VENTA / COBRAR
               </button>
             </div>
           </>
@@ -696,84 +800,77 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       </div>
 
       {/* MODAL DE TICKET TÉRMICO CON CAMBIO GIGANTE */}
-        {mostrarModalExito && ventaExitosa && (
-          <div className="modal-overlay" onClick={() => {}}>
-            <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
-              
-              {/* TICKET ESTILO IMPRESORA TÉRMICA */}
-              <div className="ticket-papel">
-                <div className="ticket-header">
-                  <div className="ticket-logo">🥟</div>
-                  <h2>CONGELADOR LUCKY</h2>
-                  <p className="ticket-subtitulo">Punto de Venta • Picadas Congeladas</p>
-                  <div className="ticket-divisor-punteado" />
-                  <div className="ticket-datos">
-                    <span><strong>Venta #:</strong> {ventaExitosa.id}</span>
-                    <span><strong>Fecha:</strong> {new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                  </div>
-                  <div className="ticket-datos">
-                    <span><strong>Cajero:</strong> {usuario?.nombre || 'General'}</span>
-                    <span><strong>Pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}</span>
-                  </div>
-                  <div className="ticket-divisor-punteado" />
+      {mostrarModalExito && ventaExitosa && (
+        <div className="modal-overlay" onClick={() => {}}>
+          <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ticket-papel">
+              <div className="ticket-header">
+                <div className="ticket-logo">❄️</div>
+                <h2>CONGELADOR LUCKY</h2>
+                <p className="ticket-subtitulo">Punto de Venta • Picadas Congeladas</p>
+                <div className="ticket-divisor-punteado" />
+                <div className="ticket-datos">
+                  <span><strong>Venta #:</strong> {ventaExitosa.id}</span>
+                  <span><strong>Fecha:</strong> {new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                 </div>
+                <div className="ticket-datos">
+                  <span><strong>Cajero:</strong> {usuario?.nombre || 'General'}</span>
+                  <span><strong>Pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}</span>
+                </div>
+                <div className="ticket-divisor-punteado" />
+              </div>
 
-        {/* LISTADO DE PRODUCTOS DEL RECIBO */}
-        <div className="ticket-articulos">
-          {ventaExitosa.productos.map((item, idx) => (
-            <div key={idx} className="ticket-item-row">
-              <span className="ticket-item-nombre">
-                {item.cantidad}x {item.nombre} {item.incluido && '(inc)'}
-              </span>
-              <span className="ticket-item-subtotal">
-                {formatPrice(item.subtotal)}
-              </span>
+              <div className="ticket-articulos">
+                {ventaExitosa.productos.map((item, idx) => (
+                  <div key={idx} className="ticket-item-row">
+                    <span className="ticket-item-nombre">
+                      {item.cantidad}x {item.nombre} {item.incluido && '(inc)'}
+                    </span>
+                    <span className="ticket-item-subtotal">
+                      {formatPrice(item.subtotal)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="ticket-divisor-punteado" />
+
+              <div className="ticket-totales">
+                <div className="ticket-total-row">
+                  <span>TOTAL PAGADO:</span>
+                  <strong>{formatPrice(ventaExitosa.total)}</strong>
+                </div>
+              </div>
+
+              {ventaExitosa.cambio > 0 ? (
+                <div className="ticket-cambio-destacado">
+                  <span className="cambio-label">CAMBIO A ENTREGAR</span>
+                  <span className="cambio-monto">{formatPrice(ventaExitosa.cambio)}</span>
+                </div>
+              ) : (
+                <div className="ticket-pago-exacto">
+                  <span>✓ Pago exacto (Sin cambio)</span>
+                </div>
+              )}
+
+              <div className="ticket-footer-msg">
+                <p>¡Gracias por su compra!</p>
+              </div>
             </div>
-          ))}
-        </div>
 
-        <div className="ticket-divisor-punteado" />
-
-        {/* TOTALES */}
-        <div className="ticket-totales">
-          <div className="ticket-total-row">
-            <span>TOTAL PAGADO:</span>
-            <strong>{formatPrice(ventaExitosa.total)}</strong>
+            <div className="ticket-acciones">
+              <button className="btn-ticket-imprimir" onClick={() => window.print()}>
+                🖨️ Imprimir
+              </button>
+              <button className="btn-ticket-nueva-venta" onClick={cerrarModalExito}>
+                ✨ Nueva Venta
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* 🌟 CAMBIO / VUELTOS EN GRANDE (Si fue en efectivo) */}
-        {ventaExitosa.cambio > 0 ? (
-          <div className="ticket-cambio-destacado">
-            <span className="cambio-label">CAMBIO A ENTREGAR</span>
-            <span className="cambio-monto">{formatPrice(ventaExitosa.cambio)}</span>
-          </div>
-        ) : (
-          <div className="ticket-pago-exacto">
-            <span>✅ Pago exacto (Sin cambio)</span>
-          </div>
-        )}
-
-        <div className="ticket-footer-msg">
-          <p>¡Gracias por su compra!</p>
-        </div>
-      </div>
-
-      {/* BOTONES DE ACCIÓN */}
-      <div className="ticket-acciones">
-        <button className="btn-ticket-imprimir" onClick={() => window.print()}>
-          🖨️ Imprimir
-        </button>
-        <button className="btn-ticket-nueva-venta" onClick={cerrarModalExito}>
-          ➕ Nueva Venta
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
-
-      {/* MODAL DE PAGO */}
+      {/* MODAL DE PAGO CON BILLETES RÁPIDOS */}
       {mostrarModalPago && (
         <ModalPago
           total={totalCarrito}
@@ -818,8 +915,8 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 }}>
                   No
                 </button>
-                <button className="btn-aceptar-confirmacion" onClick={ejecutarPago}>
-                  Sí, confirmar pago
+                <button className="btn-ejecutar-confirmacion" onClick={ejecutarPago}>
+                  Sí, confirmar
                 </button>
               </div>
             </div>
@@ -827,54 +924,23 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* MODAL DE CUADRE */}
+      {/* MODAL DE CUADRE DE CAJA */}
       {mostrarCuadre && (
-        <div className="modal-overlay" onClick={() => setMostrarCuadre(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CashRegister
-              usuario={usuario}
-              inventario={inventario}
-              onClose={() => setMostrarCuadre(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* MODAL DE DESPACHOS (solo POS) */}
-      {!esFabrica && mostrarDespachos && (
-        <DespachosModal
-          onClose={() => setMostrarDespachos(false)}
+        <CashRegister
+          usuario={usuario}
           inventario={inventario}
+          onClose={() => setMostrarCuadre(false)}
         />
       )}
 
-      {/* MODAL DE CIERRE DE SESIÓN */}
-      {mostrarModalCierre && (
-        <div className="modal-overlay" onClick={cancelarCierre}>
-          <div className="modal-content cierre-modal" onClick={(e) => e.stopPropagation()}>
-            {!cerrando ? (
-              <>
-                <div className="modal-header">
-                  <h2>🔓 Cerrar Sesión</h2>
-                  <button className="close-btn" onClick={cancelarCierre}>✕</button>
-                </div>
-                <div className="modal-body">
-                  <p className="cierre-mensaje">¿Estás seguro de que deseas cerrar sesión?</p>
-                  <div className="cierre-buttons">
-                    <button className="btn-cancelar" onClick={cancelarCierre}>Cancelar</button>
-                    <button className="btn-confirmar" onClick={confirmarCierre}>Sí, cerrar sesión</button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="modal-body cerrando">
-                <div className="spinner"></div>
-                <p>🔄 Cerrando sesión...</p>
-                <p className="cerrando-mensaje">Por favor espera</p>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* MODAL DE DESPACHOS */}
+      {mostrarDespachos && (
+        <DespachosModal
+          inventario={inventario}
+          usuario={usuario}
+          actualizarInventario={actualizarInventario}
+          onClose={() => setMostrarDespachos(false)}
+        />
       )}
     </div>
   );
