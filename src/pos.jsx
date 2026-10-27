@@ -849,8 +849,18 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
       {/* MODAL DE TICKET TÉRMICO CON BOTONES DE WHATSAPP, EMAIL, IMPRIMIR */}
       {mostrarModalExito && ventaExitosa && (
-        <div className="modal-overlay" onClick={() => {}}>
+        <div className="modal-overlay ticket-modal-overlay" onClick={cerrarModalExito}>
           <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
+            {/* BOTÓN X PARA SALIR RÁPIDO */}
+            <button 
+              type="button" 
+              className="ticket-close-btn" 
+              onClick={cerrarModalExito} 
+              title="Cerrar ticket"
+            >
+              ✕
+            </button>
+
             <div className="ticket-papel">
               <div className="ticket-header">
                 <div className="ticket-logo">❄️</div>
