@@ -3616,3 +3616,86 @@ body.dark-mode .total-precio-grande {
   transform: translateY(-2px);
   box-shadow: 0 6px 10px -1px rgba(16, 185, 129, 0.4);
 }
+
+
+/* ============================================================
+   MEJORAS RESPONSIVE Y CONTROL DEL MODAL DE TICKET
+============================================================ */
+.ticket-modal-overlay {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  overflow-y: auto !important;
+  z-index: 3000 !important;
+}
+
+.ticket-modal {
+  position: relative !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  max-width: 440px !important;
+  width: 100% !important;
+  padding: 24px 16px 20px !important;
+  border-radius: 24px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.ticket-close-btn {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  background: #0f172a;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ticket-close-btn:hover {
+  background: #dc2626;
+  transform: scale(1.12) rotate(90deg);
+}
+
+.ticket-papel {
+  width: 100% !important;
+  max-width: 360px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ticket-acciones-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  margin-top: 14px !important;
+  width: 100% !important;
+  max-width: 360px !important;
+}
+
+.btn-ticket-nueva-venta {
+  grid-column: span 2 !important;
+  padding: 14px 20px !important;
+  font-size: 1.05rem !important;
+  border-radius: 14px !important;
+  background: #059669 !important;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4) !important;
+}
+
+.btn-ticket-nueva-venta:hover {
+  background: #047857 !important;
+  transform: translateY(-2px) !important;
+}
