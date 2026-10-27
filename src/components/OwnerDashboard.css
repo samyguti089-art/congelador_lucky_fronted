@@ -5262,3 +5262,134 @@
     font-size: 1.05rem;
   }
 }
+
+
+/* ============================================================
+   AJUSTES DEFINITIVOS DE ESPACIADO, SIDEBAR Y ANCHO COMPLETO
+============================================================ */
+
+/* 1. Arreglo definitivo del Sidebar (Kardex nunca se superpone con Cerrar Sesión) */
+.owner-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding: 18px 12px 14px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+}
+
+.owner-sidebar .owner-navigation {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 4px !important;
+  margin-bottom: 12px !important;
+  scrollbar-width: thin;
+}
+
+.owner-sidebar .owner-nav-btn {
+  flex-shrink: 0 !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.owner-sidebar .logout-btn {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  min-height: 46px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  background: #fae8df !important;
+  color: #a83b25 !important;
+  font-weight: 700 !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* 2. Pantalla Completa y Responsive (Todo el ancho del monitor de PC) */
+.owner-shell {
+  display: grid !important;
+  grid-template-columns: 270px minmax(0, 1fr) !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+}
+
+.owner-shell.sidebar-collapsed {
+  grid-template-columns: 78px minmax(0, 1fr) !important;
+}
+
+.owner-main {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 24px 32px !important;
+  box-sizing: border-box !important;
+}
+
+.owner-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.owner-content > *,
+.owner-content .daily-sales-kpi,
+.owner-content .stock-bajo-kpi,
+.owner-content .sales-reports,
+.owner-content .inventory-panel,
+.owner-content .despachos-panel,
+.owner-content .kardex-panel,
+.owner-content .cuadres-lista {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Adaptabilidad a Tablets y Móviles */
+@media (max-width: 900px) {
+  .owner-shell {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .owner-sidebar {
+    position: fixed !important;
+    left: -100% !important;
+    top: 0 !important;
+    width: 280px !important;
+    transition: left 0.3s ease !important;
+  }
+
+  .owner-sidebar.is-open {
+    left: 0 !important;
+  }
+
+  .owner-main {
+    padding: 16px !important;
+  }
+}
