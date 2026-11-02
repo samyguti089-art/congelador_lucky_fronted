@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiLogOut, FiCheckCircle, FiClipboard, FiMoon, FiSun, FiTrash2, FiTruck, FiUser, FiVolume2, FiVolumeX, FiSend, FiMail, FiPrinter } from "react-icons/fi";
 import { supabase } from "./supabaseClient";
@@ -411,29 +411,33 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     setVentaExitosa(null);
   };
 
-  // ===== GENERAR Y ENVIAR FACTURA (WHATSAPP Y CORREO) =====
+  // ===== GENERAR Y ENVIAR FACTURA (TIRILLA TÉRMICA VISUAL EN WHATSAPP Y CORREO) =====
   const generarTextoFactura = (venta) => {
-    const separador = '--------------------------------';
+    const linea = '─────────────────────────────';
+    const lineaDoble = '═══════════════════════════════';
     const items = venta.productos.map(p => 
-      `• ${p.cantidad}x ${p.nombre}${p.incluido ? ' (incluido)' : ''} - ${formatPrice(p.subtotal)}`
+      `  🔹 ${p.cantidad}x ${p.nombre}${p.incluido ? ' (incluido)' : ''}\n       💰 ${formatPrice(p.subtotal)}`
     ).join('\n');
 
-    return `🧾 *CONGELADOR LUCKY — FACTURA DE VENTA*\n` +
-      `*Venta #:* ${venta.id}\n` +
-      `*Fecha:* ${venta.fecha}\n` +
-      `*Cajero:* ${venta.cajero}\n` +
-      `*Método de pago:* ${venta.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}\n` +
-      `${separador}\n` +
-      `*DETALLE DEL PEDIDO:*\n` +
+    return `╔${lineaDoble}╗\n` +
+      `║   🧊 *CONGELADOR LUCKY* 🧊   ║\n` +
+      `║   _Punto de Venta Oficial_   ║\n` +
+      `╠${lineaDoble}╣\n\n` +
+      `🧾 *RECIBO DE VENTA:* #${venta.id}\n` +
+      `📅 *Fecha:* ${venta.fecha}\n` +
+      `👤 *Cajero:* ${venta.cajero}\n` +
+      `💳 *Pago:* ${venta.metodo_pago === 'efectivo' ? '💵 Efectivo' : '🏦 Transferencia'}\n\n` +
+      `${linea}\n` +
+      `🛒 *DETALLE DEL PEDIDO:*\n` +
       `${items}\n` +
-      `${separador}\n` +
-      `*TOTAL:* ${formatPrice(venta.total)}\n` +
-      (venta.cambio > 0 ? `*Cambio entregado:* ${formatPrice(venta.cambio)}\n` : '') +
-      `${separador}\n` +
-      `❄️ _¡Gracias por elegir Congelador Lucky!_`;
+      `${linea}\n` +
+      `✅ *TOTAL PAGADO:* *${formatPrice(venta.total)}*\n` +
+      (venta.cambio > 0 ? `💸 *Cambio entregado:* ${formatPrice(venta.cambio)}\n` : `✔️ *Estado:* Pago exacto\n`) +
+      `${linea}\n` +
+      `🌟 _¡Gracias por elegir Congelador Lucky!_\n` +
+      `🍟 _Visítanos pronto de nuevo_ 🫶`;
   };
-
-  const enviarFacturaWhatsApp = (venta) => {
+const enviarFacturaWhatsApp = (venta) => {
     const texto = generarTextoFactura(venta);
     const tel = window.prompt("Ingresa el número de WhatsApp del cliente (ejemplo: 3001234567)\nO déjalo vacío para abrir WhatsApp y elegir el contacto:");
     if (tel === null) return;
@@ -447,6 +451,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
     }
     window.open(url, '_blank');
+  };
+
+  const descargarTirillaPDF = () => {
+    // Abre el diálogo de impresión optimizado para PDF/Térmica de 80mm
+    window.print();
   };
 
   const enviarFacturaEmail = (venta) => {
@@ -851,7 +860,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay ticket-modal-overlay" onClick={cerrarModalExito}>
           <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
-            {/* BOTÓN X PARA SALIR RÁPIDO */}
+            {/* BOTON X PARA SALIR RAPIDO */}
             <button 
               type="button" 
               className="ticket-close-btn" 
@@ -863,9 +872,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
             <div className="ticket-papel">
               <div className="ticket-header">
-                <div className="ticket-logo">❄️</div>
+                <div className="ticket-logo">🧊❄️</div>
                 <h2>CONGELADOR LUCKY</h2>
-                <p className="ticket-subtitulo">Punto de Venta • Picadas Congeladas</p>
+                <p className="ticket-subtitulo">Punto de Venta Oficial • Picadas Congeladas</p>
                 <div className="ticket-divisor-punteado" />
                 <div className="ticket-datos">
                   <span><strong>Venta #:</strong> {ventaExitosa.id}</span>
@@ -873,7 +882,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 </div>
                 <div className="ticket-datos">
                   <span><strong>Cajero:</strong> {usuario?.nombre || 'General'}</span>
-                  <span><strong>Pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia'}</span>
+                  <span><strong>Pago:</strong> {ventaExitosa.metodo_pago === 'efectivo' ? '💵 Efectivo' : '🏦 Transferencia'}</span>
                 </div>
                 <div className="ticket-divisor-punteado" />
               </div>
@@ -907,7 +916,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 </div>
               ) : (
                 <div className="ticket-pago-exacto">
-                  <span>✓ Pago exacto (Sin cambio)</span>
+                  <span>✔️ Pago exacto (Sin cambio)</span>
                 </div>
               )}
 
@@ -916,7 +925,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               </div>
             </div>
 
-            {/* BOTONES DE ACCIÓN: WHATSAPP, EMAIL, IMPRIMIR Y NUEVA VENTA */}
+            {/* BOTONES DE ACCION: WHATSAPP, EMAIL, IMPRIMIR Y NUEVA VENTA */}
             <div className="ticket-acciones-grid">
               <button 
                 type="button" 
@@ -929,7 +938,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
               <button 
                 type="button" 
                 className="btn-ticket-email" 
-                onClick={() => enviarFacturaEmail(ventaExitosa)}
+                onClick={() => enviarFacturaCorreo(ventaExitosa)}
                 title="Enviar ticket por correo electrónico"
               >
                 <FiMail /> Correo
@@ -938,7 +947,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 type="button" 
                 className="btn-ticket-imprimir" 
                 onClick={() => window.print()}
-                title="Imprimir ticket"
+                title="Imprimir ticket térmico"
               >
                 <FiPrinter /> Imprimir
               </button>
@@ -948,7 +957,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 onClick={cerrarModalExito}
                 title="Cerrar factura y empezar nueva venta"
               >
-                ✨ Nueva Venta
+                🛒 Nueva Venta
               </button>
             </div>
           </div>
