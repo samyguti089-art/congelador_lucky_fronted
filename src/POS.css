@@ -3699,3 +3699,154 @@ body.dark-mode .total-precio-grande {
   background: #047857 !important;
   transform: translateY(-2px) !important;
 }
+
+
+/* ============================================================
+   IMPRESION / PDF - TIRILLA TERMICA 80mm
+   ============================================================ */
+@media print {
+  /* Ocultar TODO excepto el ticket */
+  body > *:not(.modal-overlay),
+  .pos-container,
+  .pos-header,
+  .pos-categorias,
+  .pos-productos,
+  .carrito-panel,
+  .carrito-header,
+  .ticket-close-btn,
+  .ticket-acciones-grid,
+  .modal-overlay > * {
+    display: none !important;
+  }
+
+  /* Mostrar SOLO el ticket */
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    display: block !important;
+  }
+
+  .modal-content.ticket-modal {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    max-width: 80mm !important;
+    width: 80mm !important;
+    display: block !important;
+  }
+
+  .ticket-papel {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 11px !important;
+    color: #000 !important;
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px 4px !important;
+  }
+
+  .ticket-header h2 {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    letter-spacing: 1px !important;
+  }
+
+  .ticket-logo {
+    font-size: 22px !important;
+    text-align: center !important;
+  }
+
+  .ticket-subtitulo {
+    font-size: 9px !important;
+    text-align: center !important;
+  }
+
+  .ticket-divisor-punteado {
+    border-top: 1px dashed #000 !important;
+    margin: 4px 0 !important;
+  }
+
+  .ticket-datos {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 9px !important;
+    padding: 1px 0 !important;
+  }
+
+  .ticket-articulos {
+    margin: 4px 0 !important;
+  }
+
+  .ticket-item-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 10px !important;
+    padding: 2px 0 !important;
+    border-bottom: none !important;
+  }
+
+  .ticket-item-nombre {
+    font-size: 10px !important;
+  }
+
+  .ticket-item-subtotal {
+    font-size: 10px !important;
+    font-weight: bold !important;
+  }
+
+  .ticket-total-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 4px 0 !important;
+    border-top: 2px solid #000 !important;
+  }
+
+  .ticket-cambio-destacado {
+    background: #000 !important;
+    color: #fff !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    margin: 4px 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ticket-pago-exacto {
+    text-align: center !important;
+    font-size: 10px !important;
+    font-style: italic !important;
+    padding: 4px !important;
+  }
+
+  .ticket-footer-msg {
+    text-align: center !important;
+    font-size: 10px !important;
+    margin-top: 6px !important;
+    font-style: italic !important;
+  }
+
+  /* Ocultar botones dentro del modal impreso */
+  .ticket-close-btn,
+  .ticket-acciones-grid,
+  .btn-ticket-whatsapp,
+  .btn-ticket-email,
+  .btn-ticket-imprimir,
+  .btn-ticket-nueva-venta {
+    display: none !important;
+  }
+}
