@@ -11,6 +11,7 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [observaciones, setObservaciones] = useState('');
   const [totalHoy, setTotalHoy] = useState(0);
+  const [guardando, setGuardando] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -51,7 +52,7 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
         usuario_id: usuario.id
       });
 
-      alert('✅ Despacho registrado correctamente');
+      alert(' Despacho registrado correctamente');
       setProductoId('');
       setCantidad('');
       setObservaciones('');
@@ -64,6 +65,8 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
     } catch (error) {
       console.error('Error registrando despacho:', error);
       alert('❌ Error: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -85,7 +88,7 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
 
   return (
     <div className="despachos-panel">
-      <h3>📦 Despachos Diarios</h3>
+      <h3> Despachos Diarios</h3>
       
       <div className="despacho-resumen">
         <div className="despacho-total-hoy">
@@ -128,8 +131,8 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
             required
           />
           
-          <button type="submit" className="btn-registrar-despacho">
-            ➕ Registrar Despacho
+          <button type="submit" className="btn-registrar-despacho" disabled={guardando} style={{ opacity: guardando ? 0.6 : 1, cursor: guardando ? 'not-allowed' : 'pointer' }}>
+             {guardando ? '⏳ Registrando...' : '📦 Registrar Despacho'}
           </button>
         </div>
         
@@ -168,7 +171,7 @@ function DespachosPanel({ inventario, usuario, actualizarInventario }) {
                     <td>{d.observaciones || '-'}</td>
                     <td>
                       <span className={`estado-badge ${d.estado || 'cerrado'}`}>
-                        {d.estado === 'cerrado' ? '✅ Cerrado' : '⏳ Abierto'}
+                        {d.estado === 'cerrado' ? ' Cerrado' : '⏳ Abierto'}
                       </span>
                     </td>
                     <td className="hora-cell">
