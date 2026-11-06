@@ -4158,3 +4158,243 @@ body.dark-mode .total-precio-grande {
   background: #d1fae5 !important;
   font-weight: 700;
 }
+
+
+/* ============================================================
+   MODAL INTELIGENTE DE NOTIFICACIÓN DE OBSEQUIO PARA LA CAJERA
+============================================================ */
+.modal-obsequio-alerta-overlay {
+  z-index: 2500 !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modal-obsequio-alerta-card {
+  max-width: 520px !important;
+  width: 92% !important;
+  background: #ffffff !important;
+  border-radius: 24px !important;
+  padding: 30px 26px !important;
+  text-align: center !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 2px #fef08a !important;
+  border: 2px solid #facc15 !important;
+  position: relative;
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.obsequio-alerta-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef08a, #fde047, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  margin: -10px auto 14px;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+  animation: pulseBadge 1.8s infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.obsequio-alerta-title {
+  margin: 0 0 6px 0 !important;
+  color: #78350f !important;
+  font-size: 1.5rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+}
+
+.obsequio-alerta-sub {
+  margin: 0 0 18px 0;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.obsequio-alerta-sub strong {
+  color: #0f172a;
+}
+
+.obsequio-alerta-box {
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+  border: 2px dashed #10b981;
+  border-radius: 18px;
+  padding: 18px 16px;
+  margin-bottom: 20px;
+  text-align: left;
+  position: relative;
+}
+
+.obsequio-alerta-box-badge {
+  position: absolute;
+  top: -12px;
+  left: 18px;
+  background: #059669;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.obsequio-alerta-box-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.obsequio-box-gift-ico {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.obsequio-box-prod-title {
+  margin: 0 0 4px 0;
+  color: #065f46;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.obsequio-box-prod-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #047857;
+}
+
+.obsequio-alerta-instrucciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  border: 1px solid #e2e8f0;
+}
+
+.alerta-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.alerta-check-item .check-ico {
+  color: #10b981;
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.obsequio-alerta-acciones {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-entendido-obsequio {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-entendido-obsequio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.45);
+}
+
+/* ============================================================
+   TARJETA VISIBLE DE DEDITOS X20 OBSEQUIO EN LA LISTA DEL CARRITO
+============================================================ */
+.carrito-card-obsequio {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5) !important;
+  border: 1.5px solid #86efac !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
+  position: relative;
+}
+
+.obsequio-thumb-emoji {
+  background: #dcfce7 !important;
+  font-size: 1.6rem !important;
+}
+
+.obsequio-item-header-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-obsequio-tag {
+  background: #059669 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.3px;
+  padding: 2px 7px !important;
+  border-radius: 8px !important;
+}
+
+.obsequio-kardex-subtext {
+  display: block;
+  font-size: 0.72rem;
+  color: #047857;
+  font-weight: 600;
+  margin: 2px 0;
+}
+
+.obsequio-gratis-txt {
+  color: #059669 !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+}
+
+.obsequio-val-ref-tachado {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+
+.pill-cantidad-obsequio {
+  background: #059669;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}

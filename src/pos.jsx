@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   FiLogOut,
@@ -72,6 +72,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const [mostrarDespachos, setMostrarDespachos] = useState(false);
   const [mostrarTablaObsequios, setMostrarTablaObsequios] = useState(false);
   const [entregarObsequio, setEntregarObsequio] = useState(true);
+  const [mostrarAlertaObsequioModal, setMostrarAlertaObsequioModal] = useState(false);
+  const [nivelObsequioAlerta, setNivelObsequioAlerta] = useState(0);
+  const nivelObsequioPrevioRef = useRef(0);
 
   // ===== COMBOS SIMPLIFICADOS =====
   const [comboEmpanadas, setComboEmpanadas] = useState(null);
@@ -200,10 +203,20 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     ? Math.max(0, Math.floor((Number(productoObsequio.cantidad) || 0) - deditos20EnCarrito))
     : obsequiosGanados;
 
+  // El obsequio se otorga y se descuenta directamente de inventario
   const cantidadObsequioEfectiva =
-    obsequiosGanados > 0 && entregarObsequio
-      ? (productoObsequio ? Math.min(obsequiosGanados, stockDisponibleObsequio) : obsequiosGanados)
-      : 0;
+    obsequiosGanados > 0 && entregarObsequio ? obsequiosGanados : 0;
+
+  // Detección inteligente en tiempo real: al llegar a cada meta ($100k, $200k...), notifica a la cajera y selecciona Deditos x20
+  useEffect(() => {
+    if (obsequiosGanados > nivelObsequioPrevioRef.current) {
+      setNivelObsequioAlerta(obsequiosGanados);
+      setMostrarAlertaObsequioModal(true);
+      if (sonidoActivo) playChaChing();
+      launchConfetti();
+    }
+    nivelObsequioPrevioRef.current = obsequiosGanados;
+  }, [obsequiosGanados, sonidoActivo]);
 
   // ===== COMBOS =====
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
@@ -518,6 +531,12 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       `🛒 *DETALLE DEL PEDIDO:*\n` +
       `${items}\n` +
       `${linea}\n` +
+      (venta.obsequios > 0
+        ? `🎉 *¡FELICIDADES POR TU COMPRA!* 🎉\n` +
+          `🎁 *TIENES DERECHO A UN OBSEQUIO:*\n` +
+          `   *${venta.obsequios}x Bandeja Deditos x20 ($0 - GRATIS)*\n` +
+          `${linea}\n`
+        : '') +
       `✅ *TOTAL PAGADO:* *${formatPrice(venta.total)}*\n` +
       (venta.cambio > 0 ? `💸 *Cambio entregado:* ${formatPrice(venta.cambio)}\n` : `✔️ *Estado:* Pago exacto\n`) +
       `${linea}\n` +
@@ -942,6 +961,37 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
             {/* LISTA DE PRODUCTOS TIPO TARJETAS */}
             <div className="carrito-items-cards">
+              {/* TARJETA VISIBLE DE DEDITOS X20 OBSEQUIO SELECCIONADO AUTOMÁTICAMENTE */}
+              {cantidadObsequioEfectiva > 0 && (
+                <div className="carrito-card-item carrito-card-obsequio">
+                  <div className="carrito-item-img-wrapper">
+                    <div className="carrito-item-placeholder obsequio-thumb-emoji">
+                      🎁
+                    </div>
+                  </div>
+                  <div className="carrito-item-info">
+                    <div className="obsequio-item-header-inline">
+                      <h4 className="carrito-item-titulo">
+                        {productoObsequio?.subcategoria || productoObsequio?.nombre || 'Deditos x20'}
+                      </h4>
+                      <span className="badge-pill badge-obsequio-tag">🎁 OBSEQUIO AUTOMÁTICO</span>
+                    </div>
+                    <span className="obsequio-kardex-subtext">
+                      ✓ Seleccionado automáticamente por compra ≥ {formatPrice(obsequiosGanados * MONTO_META_OBSEQUIO)}
+                    </span>
+                    <div className="carrito-item-precio-row">
+                      <span className="carrito-item-precio obsequio-gratis-txt">GRATIS ($0)</span>
+                      <span className="obsequio-val-ref-tachado">
+                        Val. ref: {formatPrice(cantidadObsequioEfectiva * (productoObsequio?.precio || PRECIO_REF_OBSEQUIO))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="carrito-item-acciones">
+                    <span className="pill-cantidad-obsequio">+{cantidadObsequioEfectiva} paq.</span>
+                  </div>
+                </div>
+              )}
+
               {carrito.map((item, idx) => {
                 const img = item.imagen_url ? getImagenProducto(item.imagen_url) : null;
                 return (
@@ -1070,6 +1120,57 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL INTELIGENTE DE NOTIFICACIÓN DE OBSEQUIO PARA LA CAJERA */}
+      {mostrarAlertaObsequioModal && (
+        <div className="modal-overlay modal-obsequio-alerta-overlay" onClick={() => setMostrarAlertaObsequioModal(false)}>
+          <div className="modal-content modal-obsequio-alerta-card" onClick={(e) => e.stopPropagation()}>
+            <div className="obsequio-alerta-icon-badge">
+              🎉
+            </div>
+            <h2 className="obsequio-alerta-title">¡FELICIDADES POR TU COMPRA!</h2>
+            <p className="obsequio-alerta-sub">
+              El cliente ha alcanzado <strong>{formatPrice(totalCarrito)}</strong> en compras.
+            </p>
+
+            <div className="obsequio-alerta-box">
+              <span className="obsequio-alerta-box-badge">TIENE DERECHO A UN OBSEQUIO</span>
+              <div className="obsequio-alerta-box-body">
+                <span className="obsequio-box-gift-ico">🎁</span>
+                <div>
+                  <h3 className="obsequio-box-prod-title">
+                    {nivelObsequioAlerta} {nivelObsequioAlerta === 1 ? 'BANDEJA' : 'BANDEJAS'} DE 20 UNIDADES DEDITOS
+                  </h3>
+                  <p className="obsequio-box-prod-desc">
+                    Producto seleccionado: <strong>{productoObsequio?.subcategoria || 'Deditos x20'}</strong> (Valor: <strong>GRATIS $0</strong>)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="obsequio-alerta-instrucciones">
+              <div className="alerta-check-item">
+                <span className="check-ico">✓</span>
+                <span><strong>Deditos x20 seleccionados:</strong> Se han añadido automáticamente al pedido a <strong>$0</strong>.</span>
+              </div>
+              <div className="alerta-check-item">
+                <span className="check-ico">✓</span>
+                <span><strong>Descuento de Inventario:</strong> Al confirmar la venta, se descontarán directamente <strong>{nivelObsequioAlerta} bandeja(s)</strong> de Deditos x20 del inventario y quedarán registradas en el Kardex.</span>
+              </div>
+            </div>
+
+            <div className="obsequio-alerta-acciones">
+              <button
+                type="button"
+                className="btn-entendido-obsequio"
+                onClick={() => setMostrarAlertaObsequioModal(false)}
+              >
+                🎁 ¡Entendido, Deditos x20 Seleccionados!
+              </button>
             </div>
           </div>
         </div>
