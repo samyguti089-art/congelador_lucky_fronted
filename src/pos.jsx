@@ -865,13 +865,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             <span className="vacio-icono">🛒</span>
             <p className="carrito-vacio-texto">Tu carrito está vacío</p>
             <span className="carrito-vacio-sub">Selecciona una categoría arriba para agregar productos</span>
-            <button
-              type="button"
-              className="btn-ver-escala-link"
-              onClick={() => setMostrarTablaObsequios(true)}
-            >
-              🎁 Por cada $100.000 de compra obsequiamos 1 Bandeja Deditos x20 (Ver tabla)
-            </button>
           </div>
         ) : (
           <>
