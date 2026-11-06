@@ -22,13 +22,8 @@ import {
   FiTruck
 } from 'react-icons/fi';
 import luckyLogo from './images/logo.jpeg';
+import { STORE_NAME, OWNER_SUBTITLE } from '../utils/storeConfig';
 import './OwnerDashboard.css';
-
-// ============================================================
-// MODO: 'pos' o 'fabrica'
-// ============================================================
-const MODO = (import.meta.env.VITE_MODO || 'pos').toLowerCase();
-const esFabrica = MODO === 'fabrica';
 
 function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeInventario, inventario }) {
   const [tabActiva, setTabActiva] = useState('dashboard');
@@ -61,8 +56,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
     };
   }, [menuAbierto]);
 
-  // ===== TABS BASE (comunes en tienda y fábrica) =====
-  const tabsBase = [
+  // ===== TODAS LAS FUNCIONALIDADES HABILITADAS PARA AMBAS SEDES =====
+  const tabs = [
     { 
       id: 'dashboard', 
       title: 'Resumen de hoy',
@@ -70,12 +65,22 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       icon: FiGrid,
       component: (
         <>
-          {!esFabrica && (
-            <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
-          )}
+          <StockBajoKPI inventario={inventario} actualizarInventario={actualizarInventario} />
           <DailySalesKPI />
         </>
       )
+    },
+    { 
+      id: 'inventario', 
+      title: 'Inventario',
+      label: 'Inventario',
+      icon: FiPackage,
+      component: (
+        <InventoryPanel 
+          inventario={inventario}
+          actualizarInventario={actualizarInventario}
+        />
+      ) 
     },
     { 
       id: 'top', 
@@ -104,31 +109,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       component: <RealtimeSales /> 
     },
     { 
-      id: 'cuadres', 
-      title: 'Cuadres',
-      label: 'Cuadres',
-      icon: FiClipboard,
-      component: <CuadresLista /> 
-    }
-  ];
-
-  // ===== TABS EXCLUSIVAS DEL POS (TIENDA) =====
-  const tabsSoloPOS = [
-    { 
-      id: 'inventario', 
-      title: 'Inventario',
-      label: 'Inventario',
-      icon: FiPackage,
-      component: (
-        <InventoryPanel 
-          inventario={inventario}
-          actualizarInventario={actualizarInventario}
-        />
-      ) 
-    },
-    { 
       id: 'despachos', 
-      title: 'Despachos',
+      title: 'Despachos Diarios y Relación Mensual',
       label: 'Despachos',
       icon: FiTruck,
       component: (
@@ -140,6 +122,13 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       ) 
     },
     { 
+      id: 'cuadres', 
+      title: 'Cuadres de Caja',
+      label: 'Cuadres',
+      icon: FiClipboard,
+      component: <CuadresLista /> 
+    },
+    { 
       id: 'kardex', 
       title: 'Kardex Stock',
       label: 'Kardex',
@@ -147,20 +136,6 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
       component: <KardexPanel inventario={inventario} /> 
     }
   ];
-
-  // ===== CONSTRUIR ARRAY DE TABS SEGÚN EL MODO =====
-  const tabs = esFabrica
-    ? tabsBase
-    : [
-        tabsBase[0],       // dashboard
-        tabsSoloPOS[0],    // inventario
-        tabsBase[1],       // top
-        tabsBase[2],       // ventas
-        tabsBase[3],       // tiempo-real
-        tabsSoloPOS[1],    // despachos
-        tabsBase[4],       // cuadres
-        tabsSoloPOS[2]     // kardex stock
-      ];
 
   const pestanaActual = tabs.find(tab => tab.id === tabActiva) || tabs[0];
   const fechaActual = new Intl.DateTimeFormat('es-CO', {
@@ -174,8 +149,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         <div className="owner-brand">
           <img className="owner-brand-logo" src={luckyLogo} alt="" />
           <span className="owner-brand-copy">
-            <strong>Congelados Lucky</strong>
-            <small>{esFabrica ? 'Panel de fábrica' : 'Panel del dueño'}</small>
+            <strong>{STORE_NAME}</strong>
+            <small>{OWNER_SUBTITLE}</small>
           </span>
         </div>
 
@@ -209,8 +184,8 @@ function OwnerDashboard({ usuario, cerrarSesion, actualizarInventario, mensajeIn
         >
           <img className="owner-brand-logo" src={luckyLogo} alt="" />
           <span className="owner-brand-copy">
-            <strong>Congelados Lucky</strong>
-            <small>{esFabrica ? 'Panel de fábrica' : 'Panel del dueño'}</small>
+            <strong>{STORE_NAME}</strong>
+            <small>{OWNER_SUBTITLE}</small>
           </span>
         </button>
 

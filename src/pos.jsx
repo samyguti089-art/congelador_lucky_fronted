@@ -1,6 +1,21 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiLogOut, FiCheckCircle, FiClipboard, FiMoon, FiSun, FiTrash2, FiTruck, FiUser, FiVolume2, FiVolumeX, FiSend, FiMail, FiPrinter } from "react-icons/fi";
+import {
+  FiLogOut,
+  FiCheckCircle,
+  FiClipboard,
+  FiMoon,
+  FiSun,
+  FiTrash2,
+  FiTruck,
+  FiUser,
+  FiVolume2,
+  FiVolumeX,
+  FiSend,
+  FiMail,
+  FiPrinter,
+  FiGift
+} from "react-icons/fi";
 import { supabase } from "./supabaseClient";
 import "./POS.css";
 import CashRegister from './CashRegister';
@@ -9,6 +24,7 @@ import DespachosModal from './components/DespachosModal';
 import BaseDelDia from './components/BaseDelDia';
 import { formatPrice } from './utils/formatPrice.js';
 import { playBeep, playChaChing, launchConfetti } from './utils/posEffects';
+import { STORE_NAME, STORE_TITLE_UPPER, POS_BADGE_TEXT } from './utils/storeConfig';
 
 import deditosImg from "./components/images/portada 2 deditos.jpg";
 import empanadasImg from "./components/images/empanadas portada.jpg";
@@ -27,28 +43,35 @@ Object.keys(imageModules).forEach((path) => {
 });
 
 // ============================================================
-//  MODO: 'pos' o 'fabrica'
+//  CONFIGURACIÓN DE PROMOCIÓN DE OBSEQUIOS MAYORISTAS
 // ============================================================
-const MODO = import.meta.env.VITE_MODO || 'pos';
-const esFabrica = MODO === 'fabrica';
+const MONTO_META_OBSEQUIO = 100000;
+const PRECIO_REF_OBSEQUIO = 6000;
+const ESCALA_OBSEQUIOS = Array.from({ length: 10 }, (_, idx) => {
+  const nivel = idx + 1;
+  return {
+    venta: nivel * MONTO_META_OBSEQUIO,
+    bandejas: nivel,
+    descripcion: `${nivel} ${nivel === 1 ? 'BANDEJA' : 'BANDEJAS'} DE 20 UNIDADES DEDITOS`
+  };
+});
 
 function POS({ usuario, inventario, actualizarInventario, mensajeInventario, refreshTrigger, cerrarSesion, setRefreshTrigger }) {
   // ===== ESTADOS PRINCIPALES =====
   const [carrito, setCarrito] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
-  const [productosCategoria, setProductosCategoria] = useState([]);
   const [combos, setCombos] = useState([]);
   const [mostrarModalProductos, setMostrarModalProductos] = useState(false);
   const [mostrarModalCombos, setMostrarModalCombos] = useState(false);
-  const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [datosPagoConfirmacion, setDatosPagoConfirmacion] = useState(null);
   const [ventaExitosa, setVentaExitosa] = useState(null);
-  const [cerrando, setCerrando] = useState(false);
   const [mostrarCuadre, setMostrarCuadre] = useState(false);
   const [mostrarDespachos, setMostrarDespachos] = useState(false);
+  const [mostrarTablaObsequios, setMostrarTablaObsequios] = useState(false);
+  const [entregarObsequio, setEntregarObsequio] = useState(true);
 
   // ===== COMBOS SIMPLIFICADOS =====
   const [comboEmpanadas, setComboEmpanadas] = useState(null);
@@ -105,6 +128,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
 
   const fetchCombos = async () => {
     try {
+      if (!supabase) return;
       const { data, error } = await supabase.from("combos").select("*");
       if (error) throw error;
       setCombos(data || []);
@@ -121,15 +145,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     { id: "combos", nombre: "Combos", imagen: combosImg, color: "#34d399" },
   ];
 
+  const productosCategoria = categoriaSeleccionada && categoriaSeleccionada !== "combos"
+    ? inventario.filter(
+        (p) => p.categoria && p.categoria.toLowerCase() === categoriaSeleccionada.toLowerCase()
+      )
+    : [];
+
   const abrirCategoria = (categoriaId) => {
     setCategoriaSeleccionada(categoriaId);
     if (categoriaId === "combos") {
       setMostrarModalCombos(true);
     } else {
-      const filtrados = inventario.filter(
-        (p) => p.categoria && p.categoria.toLowerCase() === categoriaId.toLowerCase()
-      );
-      setProductosCategoria(filtrados);
       setMostrarModalProductos(true);
     }
   };
@@ -144,6 +170,40 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     if (subcat.includes('x20') || subcat.includes('20')) return 20;
     return 10;
   };
+
+  // ===== IDENTIFICAR PRODUCTO DE OBSEQUIO (BANDEJA DEDITOS X20) =====
+  const productoObsequio = inventario.find((p) => {
+    const texto = `${p.subcategoria || ''} ${p.nombre || ''}`.toLowerCase();
+    return (
+      (texto.includes('deditos x20') || texto.includes('dedito x20') || texto.includes('tradicional x20')) &&
+      !texto.includes('mini') &&
+      !texto.includes('bocadillo')
+    );
+  }) || inventario.find((p) => p.id === 9) || null;
+
+  const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+  const totalUnidadesCarrito = carrito.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+
+  // Cálculo automático de obsequios por cada $100,000
+  const obsequiosGanados = Math.floor(totalCarrito / MONTO_META_OBSEQUIO);
+  const restoMetaObsequio = totalCarrito % MONTO_META_OBSEQUIO;
+  const faltaSiguienteObsequio = MONTO_META_OBSEQUIO - restoMetaObsequio;
+  const porcentajeMetaObsequio = Math.min(100, Math.round((restoMetaObsequio / MONTO_META_OBSEQUIO) * 100));
+
+  const deditos20EnCarrito = productoObsequio
+    ? carrito
+        .filter((item) => item.id === productoObsequio.id && !item.esPrecioCombo && !item.esCombo)
+        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    : 0;
+
+  const stockDisponibleObsequio = productoObsequio
+    ? Math.max(0, Math.floor((Number(productoObsequio.cantidad) || 0) - deditos20EnCarrito))
+    : obsequiosGanados;
+
+  const cantidadObsequioEfectiva =
+    obsequiosGanados > 0 && entregarObsequio
+      ? (productoObsequio ? Math.min(obsequiosGanados, stockDisponibleObsequio) : obsequiosGanados)
+      : 0;
 
   // ===== COMBOS =====
   const agregarComboAlCarrito = async (combo, cantidad = 1) => {
@@ -185,7 +245,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       if (empanadas.length > 0) {
         const requerido = empanadas.reduce((sum, e) => sum + e.cantidad * e.unidades_por_paquete, 0);
         const productosEmpanadas = inventario.filter(
-          i => i.categoria?.toLowerCase() === 'empanadas' && (esFabrica || i.cantidad > 0)
+          i => i.categoria?.toLowerCase() === 'empanadas' && i.cantidad > 0
         );
         setComboEmpanadas({ combo, cantidad, requerido, productosEmpanadas, itemsFijos });
         setSeleccionEmpanadas({});
@@ -215,7 +275,7 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       const actual = prev[productoId] || 0;
       const nuevo = Math.max(0, actual + delta);
       const prod = inventario.find(i => i.id === productoId);
-      const maxPaquetes = esFabrica ? 999 : (prod ? Math.floor(prod.cantidad) : 0);
+      const maxPaquetes = prod ? Math.floor(prod.cantidad) : 0;
       const limitado = Math.min(nuevo, maxPaquetes);
       const totalAsignado = Object.entries({ ...prev, [productoId]: limitado }).reduce((sum, [id, cant]) => {
         return sum + cant * getUnidadesPorPaquete(parseInt(id));
@@ -345,6 +405,18 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       }
     });
 
+    // Integrar obsequios por volumen ($0 cobrado, descuenta stock real en inventario y Kardex)
+    const obsequiosParaRegistrar = cantidadObsequioEfectiva;
+    if (obsequiosParaRegistrar > 0) {
+      productosParaBackend.push({
+        producto_id: productoObsequio ? productoObsequio.id : null,
+        combo_id: null,
+        cantidad: obsequiosParaRegistrar,
+        total: 0,
+        descripcion: `OBSEQUIO: ${obsequiosParaRegistrar}x Bandeja Deditos x20`
+      });
+    }
+
     const carritoCopy = [...carrito];
     const totalVenta = carritoCopy.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -364,14 +436,28 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         precio: item.precio,
         subtotal: item.subtotal,
         esCombo: item.esCombo,
-        incluido: item.incluido
+        incluido: item.incluido,
+        esObsequio: false
       }));
+
+      if (obsequiosParaRegistrar > 0) {
+        productosMostrados.push({
+          nombre: 'Bandeja Deditos x20 (OBSEQUIO)',
+          cantidad: obsequiosParaRegistrar,
+          precio: 0,
+          subtotal: 0,
+          esCombo: false,
+          incluido: false,
+          esObsequio: true
+        });
+      }
 
       setVentaExitosa({
         id: response.data.id_venta,
         productos: productosMostrados,
+        obsequios: obsequiosParaRegistrar,
         total: totalVenta,
-        fecha: new Date().toLocaleString(),
+        fecha: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
         cajero: usuario.nombre,
         metodo_pago: datosPago.metodo_pago,
         cambio: datosPago.cambio,
@@ -379,12 +465,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         monto_transferencia: datosPago.monto_transferencia || 0
       });
       setMostrarModalExito(true);
-      playChaChing();   // Sonido de caja registradora
-      launchConfetti();  // Confeti en pantalla
+      playChaChing();
+      launchConfetti();
       setCarrito([]);
+      setEntregarObsequio(true);
 
-      // IMPORTANTE: actualizar sin forzar recarga (false) para que la factura NO se cierre
-      if (!esFabrica && response.data.inventario && actualizarInventario) {
+      // Actualizar inventario sin recargar la página para mantener la factura en pantalla
+      if (response.data.inventario && actualizarInventario) {
         actualizarInventario(false);
       }
     } catch (err) {
@@ -403,9 +490,6 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
     }
   };
 
-  const totalCarrito = carrito.reduce((sum, item) => sum + item.subtotal, 0);
-  const totalUnidadesCarrito = carrito.reduce((sum, item) => sum + (item.cantidad || 0), 0);
-
   const cerrarModalExito = () => {
     setMostrarModalExito(false);
     setVentaExitosa(null);
@@ -415,12 +499,15 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
   const generarTextoFactura = (venta) => {
     const linea = '─────────────────────────────';
     const lineaDoble = '═══════════════════════════════';
-    const items = venta.productos.map(p => 
-      `  🔹 ${p.cantidad}x ${p.nombre}${p.incluido ? ' (incluido)' : ''}\n       💰 ${formatPrice(p.subtotal)}`
-    ).join('\n');
+    const items = venta.productos.map(p => {
+      if (p.esObsequio) {
+        return `  🎁 ${p.cantidad}x ${p.nombre}\n       ✨ GRATIS ($0)`;
+      }
+      return `  🔹 ${p.cantidad}x ${p.nombre}${p.incluido ? ' (incluido)' : ''}\n       💰 ${formatPrice(p.subtotal)}`;
+    }).join('\n');
 
     return `╔${lineaDoble}╗\n` +
-      `║   🧊 *CONGELADOR LUCKY* 🧊   ║\n` +
+      `║   🧊 *${STORE_TITLE_UPPER}* 🧊   ║\n` +
       `║   _Punto de Venta Oficial_   ║\n` +
       `╠${lineaDoble}╣\n\n` +
       `🧾 *RECIBO DE VENTA:* #${venta.id}\n` +
@@ -434,10 +521,11 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
       `✅ *TOTAL PAGADO:* *${formatPrice(venta.total)}*\n` +
       (venta.cambio > 0 ? `💸 *Cambio entregado:* ${formatPrice(venta.cambio)}\n` : `✔️ *Estado:* Pago exacto\n`) +
       `${linea}\n` +
-      `🌟 _¡Gracias por elegir Congelador Lucky!_\n` +
+      `🌟 _¡Gracias por elegir ${STORE_NAME}!_\n` +
       `🍟 _Visítanos pronto de nuevo_ 🫶`;
   };
-const enviarFacturaWhatsApp = (venta) => {
+
+  const enviarFacturaWhatsApp = (venta) => {
     const texto = generarTextoFactura(venta);
     const tel = window.prompt("Ingresa el número de WhatsApp del cliente (ejemplo: 3001234567)\nO déjalo vacío para abrir WhatsApp y elegir el contacto:");
     if (tel === null) return;
@@ -453,16 +541,11 @@ const enviarFacturaWhatsApp = (venta) => {
     window.open(url, '_blank');
   };
 
-  const descargarTirillaPDF = () => {
-    // Abre el diálogo de impresión optimizado para PDF/Térmica de 80mm
-    window.print();
-  };
-
-  const enviarFacturaEmail = (venta) => {
+  const enviarFacturaCorreo = (venta) => {
+    const email = window.prompt("Ingresa el correo electrónico del cliente:");
+    if (!email) return;
     const texto = generarTextoFactura(venta);
-    const email = window.prompt("Ingresa el correo electrónico del cliente:", "");
-    if (email === null) return;
-    const asunto = `Factura de Venta #${venta.id} - Congelador Lucky`;
+    const asunto = `Factura de Venta #${venta.id} - ${STORE_NAME}`;
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto.replace(/\*/g, '').replace(/_/g, ''))}`;
     window.location.href = mailtoUrl;
   };
@@ -472,29 +555,36 @@ const enviarFacturaWhatsApp = (venta) => {
       {/* HEADER DEL POS */}
       <div className="pos-header">
         <div className="logo-area">
-          <img src={logoImg} alt="Congelados Lucky" className="logo-img" />
-          <span className="pos-badge">{esFabrica ? 'Fábrica' : 'Punto de Venta'}</span>
+          <img src={logoImg} alt={STORE_NAME} className="logo-img" />
+          <span className="pos-badge">{POS_BADGE_TEXT}</span>
         </div>
         <div className="user-area">
           <div className="user-details">
             <span className="user-icon"><FiUser aria-hidden="true" /></span>
             <div className="user-text">
               <span className="user-name">{usuario.nombre}</span>
-              <span className="user-role">{esFabrica ? 'Fábrica' : 'Cajero'}</span>
+              <span className="user-role">Cajero</span>
             </div>
           </div>
 
-          {!esFabrica && <BaseDelDia usuario={usuario} />}
+          <BaseDelDia usuario={usuario} />
+
+          <button
+            type="button"
+            onClick={() => setMostrarTablaObsequios(true)}
+            className="obsequios-header-btn"
+            title="Ver escala de obsequios por compras mayoristas"
+          >
+            <FiGift aria-hidden="true" /> Obsequios
+          </button>
 
           <button onClick={() => setMostrarCuadre(true)} className="cuadre-btn">
             <FiClipboard aria-hidden="true" /> Cuadre
           </button>
           
-          {!esFabrica && (
-            <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
-              <FiTruck aria-hidden="true" /> Despachos
-            </button>
-          )}
+          <button onClick={() => setMostrarDespachos(true)} className="despachos-btn">
+            <FiTruck aria-hidden="true" /> Despachos
+          </button>
 
           {/* SWITCH DE SONIDO 🔊 / 🔇 */}
           <button 
@@ -571,12 +661,12 @@ const enviarFacturaWhatsApp = (venta) => {
                     <div className="producto-info">
                       <h4>{producto.subcategoria || producto.nombre}</h4>
                       <p className="producto-precio">{formatPrice(producto.precio)}</p>
-                      {!esFabrica && <p className="producto-stock">Stock: {producto.cantidad}</p>}
+                      <p className="producto-stock">Stock: {producto.cantidad}</p>
                     </div>
                     <button
                       className="agregar-btn"
                       onClick={() => agregarAlCarrito(producto)}
-                      disabled={!esFabrica && producto.cantidad <= 0}
+                      disabled={producto.cantidad <= 0}
                     >
                       + Agregar
                     </button>
@@ -674,14 +764,14 @@ const enviarFacturaWhatsApp = (venta) => {
                   {comboEmpanadas.productosEmpanadas.map(prod => {
                     const up = getUnidadesPorPaquete(prod.id);
                     const seleccion = seleccionEmpanadas[prod.id] || 0;
-                    const maxPaquetesAlcanzado = !esFabrica && seleccion >= prod.cantidad;
+                    const maxPaquetesAlcanzado = seleccion >= prod.cantidad;
 
                     return (
                       <div key={prod.id} className={`asignacion-item ${seleccion > 0 ? 'item-seleccionado' : ''}`}>
                         <div className="asignacion-info">
                           <span className="paquete-nombre">{prod.subcategoria || prod.nombre}</span>
                           <span className="paquete-meta">
-                            {up} uds/paq {!esFabrica && `• Stock: ${prod.cantidad} paq.`}
+                            {up} uds/paq • Stock: {prod.cantidad} paq.
                           </span>
                         </div>
 
@@ -721,7 +811,7 @@ const enviarFacturaWhatsApp = (venta) => {
       })()}
 
       {/* ============================================================
-          CARRITO DE COMPRAS — DISEÑO MODERNO ESTILO TARJETAS
+          CARRITO DE COMPRAS — DISEÑO MODERNO ESTILO TARJETAS + OBSEQUIOS
       ============================================================ */}
       <div className="carrito-container">
         {/* CABECERA DEL CARRITO */}
@@ -756,14 +846,99 @@ const enviarFacturaWhatsApp = (venta) => {
             <span className="vacio-icono">🛒</span>
             <p className="carrito-vacio-texto">Tu carrito está vacío</p>
             <span className="carrito-vacio-sub">Selecciona una categoría arriba para agregar productos</span>
+            <button
+              type="button"
+              className="btn-ver-escala-link"
+              onClick={() => setMostrarTablaObsequios(true)}
+            >
+              🎁 Por cada $100.000 de compra obsequiamos 1 Bandeja Deditos x20 (Ver tabla)
+            </button>
           </div>
         ) : (
           <>
-            {/* BANNER INFORMATIVO */}
-            <div className="carrito-alerta-info">
-              <span className="alerta-check">✓</span>
-              <span>¡Pedido listo! Revisa las cantidades antes de registrar</span>
-            </div>
+            {/* PROGRESO O TARJETA DE OBSEQUIO POR VOLUMEN */}
+            {obsequiosGanados === 0 ? (
+              <div className="obsequio-progreso-card">
+                <div className="obsequio-progreso-top">
+                  <span>
+                    🎁 Agrega <strong>{formatPrice(faltaSiguienteObsequio)}</strong> más para ganar <strong>1 Bandeja Deditos x20 GRATIS</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="obsequio-tabla-mini-btn"
+                    onClick={() => setMostrarTablaObsequios(true)}
+                  >
+                    Ver escala
+                  </button>
+                </div>
+                <div className="obsequio-barra-track">
+                  <div
+                    className="obsequio-barra-fill"
+                    style={{ width: `${porcentajeMetaObsequio}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className={`obsequio-ganado-card ${!entregarObsequio ? 'obsequio-pausado' : ''}`}>
+                <div className="obsequio-ganado-header">
+                  <div className="obsequio-ganado-title">
+                    <span className="obsequio-gift-emoji">🎁</span>
+                    <div>
+                      <strong>¡OBSEQUIO POR VOLUMEN!</strong>
+                      <small>Por cada $100.000 llevas 1 bandeja gratis</small>
+                    </div>
+                  </div>
+                  <label className="obsequio-switch-label" title="Activar o desactivar entrega del obsequio">
+                    <input
+                      type="checkbox"
+                      checked={entregarObsequio}
+                      onChange={(e) => setEntregarObsequio(e.target.checked)}
+                    />
+                    <span>Entregar</span>
+                  </label>
+                </div>
+
+                <div className="obsequio-ganado-detalle">
+                  <div className="obsequio-producto-linea">
+                    <span className="obsequio-cant-badge">{obsequiosGanados}x</span>
+                    <span className="obsequio-prod-nombre">
+                      BANDEJA DE 20 UNIDADES DEDITOS
+                    </span>
+                  </div>
+                  <div className="obsequio-precios-box">
+                    <span className="obsequio-precio-tachado">
+                      {formatPrice(obsequiosGanados * (productoObsequio?.precio || PRECIO_REF_OBSEQUIO))}
+                    </span>
+                    <span className="obsequio-gratis-pill">GRATIS $0</span>
+                  </div>
+                </div>
+
+                {entregarObsequio && productoObsequio && stockDisponibleObsequio < obsequiosGanados && (
+                  <div className="obsequio-alerta-stock">
+                    ⚠️ Stock disponible de Deditos x20: {stockDisponibleObsequio} bandeja(s). Se descontarán {cantidadObsequioEfectiva} del inventario.
+                  </div>
+                )}
+
+                {entregarObsequio && cantidadObsequioEfectiva > 0 && (
+                  <div className="obsequio-kardex-nota">
+                    ✓ Descuenta {cantidadObsequioEfectiva} bandeja(s) del inventario automáticamente al cobrar
+                  </div>
+                )}
+
+                <div className="obsequio-siguiente-meta">
+                  <span>
+                    Siguiente obsequio (#{obsequiosGanados + 1}) en <strong>{formatPrice(faltaSiguienteObsequio)}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="obsequio-tabla-mini-btn"
+                    onClick={() => setMostrarTablaObsequios(true)}
+                  >
+                    Tabla
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* LISTA DE PRODUCTOS TIPO TARJETAS */}
             <div className="carrito-items-cards">
@@ -840,6 +1015,12 @@ const enviarFacturaWhatsApp = (venta) => {
 
             {/* TOTAL Y BOTÓN DE CONFIRMAR */}
             <div className="carrito-footer-box">
+              {cantidadObsequioEfectiva > 0 && (
+                <div className="carrito-resumen-obsequio-row">
+                  <span>🎁 Obsequio incluido:</span>
+                  <strong>{cantidadObsequioEfectiva}x Deditos x20 ($0)</strong>
+                </div>
+              )}
               <div className="carrito-resumen-total">
                 <span className="total-titulo">TOTAL A PAGAR:</span>
                 <span className="total-precio-grande">{formatPrice(totalCarrito)}</span>
@@ -856,11 +1037,48 @@ const enviarFacturaWhatsApp = (venta) => {
         )}
       </div>
 
+      {/* MODAL ESCALA DE OBSEQUIOS POR VOLUMEN */}
+      {mostrarTablaObsequios && (
+        <div className="modal-overlay" onClick={() => setMostrarTablaObsequios(false)}>
+          <div className="modal-content obsequios-escala-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🎁 Tabla Oficial de Obsequios Mayoristas</h2>
+              <button className="close-btn" onClick={() => setMostrarTablaObsequios(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="obsequios-regla-banner">
+                POR COMPRAS DE CADA <strong>$100.000</strong> SE OBSEQUIA UNA BANDEJA DE <strong>20 UNIDADES DEDITOS ({formatPrice(productoObsequio?.precio || PRECIO_REF_OBSEQUIO)})</strong>
+              </div>
+              <div className="obsequios-tabla-wrapper">
+                <table className="obsequios-escala-table">
+                  <thead>
+                    <tr>
+                      <th>VENTA</th>
+                      <th>OBSEQUIO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ESCALA_OBSEQUIOS.map((fila) => {
+                      const activo = obsequiosGanados === fila.bandejas;
+                      return (
+                        <tr key={fila.venta} className={activo ? 'fila-obsequio-activa' : ''}>
+                          <td><strong>{formatPrice(fila.venta)}</strong></td>
+                          <td>🎁 {fila.descripcion}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL DE TICKET TÉRMICO CON BOTONES DE WHATSAPP, EMAIL, IMPRIMIR */}
       {mostrarModalExito && ventaExitosa && (
         <div className="modal-overlay ticket-modal-overlay" onClick={cerrarModalExito}>
           <div className="modal-content ticket-modal" onClick={(e) => e.stopPropagation()}>
-            {/* BOTON X PARA SALIR RAPIDO */}
             <button 
               type="button" 
               className="ticket-close-btn" 
@@ -873,7 +1091,7 @@ const enviarFacturaWhatsApp = (venta) => {
             <div className="ticket-papel">
               <div className="ticket-header">
                 <div className="ticket-logo">🧊❄️</div>
-                <h2>CONGELADOR LUCKY</h2>
+                <h2>{STORE_TITLE_UPPER}</h2>
                 <p className="ticket-subtitulo">Punto de Venta Oficial • Picadas Congeladas</p>
                 <div className="ticket-divisor-punteado" />
                 <div className="ticket-datos">
@@ -889,12 +1107,12 @@ const enviarFacturaWhatsApp = (venta) => {
 
               <div className="ticket-articulos">
                 {ventaExitosa.productos.map((item, idx) => (
-                  <div key={idx} className="ticket-item-row">
+                  <div key={idx} className={`ticket-item-row ${item.esObsequio ? 'ticket-item-obsequio' : ''}`}>
                     <span className="ticket-item-nombre">
-                      {item.cantidad}x {item.nombre} {item.incluido && '(inc)'}
+                      {item.esObsequio ? '🎁 ' : ''}{item.cantidad}x {item.nombre} {item.incluido && '(inc)'}
                     </span>
                     <span className="ticket-item-subtotal">
-                      {formatPrice(item.subtotal)}
+                      {item.esObsequio ? 'GRATIS ($0)' : formatPrice(item.subtotal)}
                     </span>
                   </div>
                 ))}
@@ -983,7 +1201,7 @@ const enviarFacturaWhatsApp = (venta) => {
         }}>
           <div className="modal-content confirmacion-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header confirmacion-header">
-              <h2>⚠️ Confirmar Pago</h2>
+              <h2>✅ Confirmar Pago</h2>
               <button className="close-btn" onClick={() => {
                 setMostrarConfirmacion(false);
                 setDatosPagoConfirmacion(null);
@@ -999,6 +1217,11 @@ const enviarFacturaWhatsApp = (venta) => {
                 <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
                 {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
                   <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
+                )}
+                {cantidadObsequioEfectiva > 0 && (
+                  <p style={{ color: '#059669', fontWeight: 700 }}>
+                    <strong>🎁 Obsequio a empacar:</strong> {cantidadObsequioEfectiva}x Bandeja Deditos x20 ($0)
+                  </p>
                 )}
               </div>
               <div className="confirmacion-buttons">

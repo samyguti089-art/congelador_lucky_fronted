@@ -3850,3 +3850,311 @@ body.dark-mode .total-precio-grande {
     display: none !important;
   }
 }
+
+
+/* ============================================================
+   PROMOCIÓN DE OBSEQUIOS MAYORISTAS (POR CADA $100.000)
+   ============================================================ */
+.obsequios-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  color: #b45309;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.obsequios-header-btn:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+}
+
+.btn-ver-escala-link {
+  margin-top: 14px;
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+  color: #92400e;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-ver-escala-link:hover {
+  background: #fef3c7;
+}
+
+.obsequio-progreso-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.obsequio-progreso-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #78350f;
+  margin-bottom: 6px;
+}
+
+.obsequio-barra-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(217, 119, 6, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.obsequio-barra-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.obsequio-tabla-mini-btn {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #d97706;
+  color: #92400e;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.obsequio-tabla-mini-btn:hover {
+  background: #ffffff;
+}
+
+.obsequio-ganado-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.16);
+}
+
+.obsequio-ganado-card.obsequio-pausado {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: none;
+  opacity: 0.85;
+}
+
+.obsequio-ganado-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.obsequio-ganado-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.obsequio-gift-emoji {
+  font-size: 1.45rem;
+}
+
+.obsequio-ganado-title strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #065f46;
+  letter-spacing: 0.2px;
+}
+
+.obsequio-ganado-title small {
+  display: block;
+  font-size: 0.75rem;
+  color: #047857;
+}
+
+.obsequio-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #065f46;
+  cursor: pointer;
+}
+
+.obsequio-ganado-detalle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1px solid #a7f3d0;
+}
+
+.obsequio-producto-linea {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.obsequio-cant-badge {
+  background: #059669;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.84rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.obsequio-prod-nombre {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.obsequio-precios-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.obsequio-precio-tachado {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.obsequio-gratis-pill {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #f59e0b;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.obsequio-alerta-stock {
+  margin-top: 7px;
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  color: #92400e;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.obsequio-kardex-nota {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #047857;
+  font-weight: 600;
+}
+
+.obsequio-siguiente-meta {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(5, 150, 105, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #065f46;
+}
+
+.carrito-resumen-obsequio-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px dashed #10b981;
+  color: #065f46;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  margin-bottom: 8px;
+}
+
+.ticket-item-obsequio {
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Modal Escala de Obsequios */
+.obsequios-escala-modal {
+  max-width: 540px !important;
+  width: 94% !important;
+}
+
+.obsequios-regla-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  color: #78350f;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.obsequios-tabla-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.obsequios-escala-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.obsequios-escala-table thead th {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.obsequios-escala-table tbody td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.obsequios-escala-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.obsequios-escala-table tbody tr.fila-obsequio-activa {
+  background: #d1fae5 !important;
+  font-weight: 700;
+}

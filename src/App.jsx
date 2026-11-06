@@ -2,21 +2,20 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Login from "./login";
 import POS from "./pos";
-import AdminDashboard from "./AdminDashboard";
 import OwnerDashboard from "./components/OwnerDashboard";
 import { supabase } from "./supabaseClient";
+import { STORE_NAME } from "./utils/storeConfig";
 
 function App() {
   const [usuario, setUsuario] = useState(null);
   const [inventario, setInventario] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
-  const [ventas, setVentas] = useState([]);
   const [mensajeInventario, setMensajeInventario] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
+    document.title = STORE_NAME;
     const usuarioGuardado = sessionStorage.getItem("usuario");
     if (usuarioGuardado) {
       setUsuario(JSON.parse(usuarioGuardado));
@@ -34,45 +33,9 @@ function App() {
   };
 
   const cargarInventario = async () => {
+    if (!supabase) return;
     const { data, error } = await supabase.from("inventario").select("*");
-    if (!error) setInventario(data);
-  };
-
-  const cargarUsuarios = async () => {
-    const { data, error } = await supabase.from("usuarios").select("*");
-    if (!error) setUsuarios(data);
-  };
-
-  const cargarVentas = async () => {
-    const { data, error } = await supabase.from("ventas").select("*");
-    if (!error) setVentas(data);
-  };
-
-  const agregarUsuario = async (nuevoUsuario) => {
-    const { data, error } = await supabase.from("usuarios").insert([nuevoUsuario]);
-    if (!error) setUsuarios([...usuarios, ...data]);
-  };
-
-  const eliminarUsuario = async (id) => {
-    await supabase.from("usuarios").delete().eq("id", id);
-    setUsuarios(usuarios.filter(u => u.id !== id));
-  };
-
-  const agregarProducto = async (producto) => {
-    const { data, error } = await supabase.from("inventario").insert([producto]);
-    if (!error) setInventario([...inventario, ...data]);
-  };
-
-  const actualizarProducto = async (id, cambios) => {
-    const { data, error } = await supabase.from("inventario").update(cambios).eq("id", id);
-    if (!error) {
-      setInventario(inventario.map(p => p.id === id ? { ...p, ...cambios } : p));
-    }
-  };
-
-  const eliminarProducto = async (id) => {
-    await supabase.from("inventario").delete().eq("id", id);
-    setInventario(inventario.filter(p => p.id !== id));
+    if (!error && data) setInventario(data);
   };
 
   const actualizarInventario = async (forzarRecarga = false) => {
@@ -82,48 +45,54 @@ function App() {
       if (forzarRecarga) {
         window.location.reload();
       } else {
-        setMensajeInventario("Inventario actualizado correctamente ✔️");
+        setMensajeInventario("Inventario actualizado correctamente");
         setTimeout(() => setMensajeInventario(""), 3000);
       }
     } catch (err) {
       console.error("Error actualizando inventario:", err);
-      setMensajeInventario("❌ Error al actualizar inventario");
+      setMensajeInventario("Error al actualizar inventario");
       setTimeout(() => setMensajeInventario(""), 3000);
     }
   };
 
+  const rolNormalizado = (usuario?.rol || "").toLowerCase().trim();
+  const esPanelDueno =
+    rolNormalizado === "dueño" ||
+    rolNormalizado === "dueno" ||
+    rolNormalizado === "admin" ||
+    rolNormalizado === "administrador";
+
   // ===== EFECTO PARA CARGAR DATOS SEGÚN ROL =====
   useEffect(() => {
     if (usuario) {
-      if (usuario.rol === "cajero") {
+      if (!API_URL || !supabase) return;
+      if (rolNormalizado === "cajero") {
         actualizarInventario();
-      }
-      if (usuario.rol === "admin") {
+      } else if (esPanelDueno) {
         cargarInventario();
-        cargarUsuarios();
-        cargarVentas();
-      }
-      if (usuario.rol === "dueño") {
-        cargarInventario(); // ✅ Ahora el dueño también carga inventario
       }
     }
   }, [usuario]);
 
   const registrarVenta = async (item) => {
     try {
-      const res = await axios.post(`${API_URL}/venta`, {
-        producto_id: item.id,
-        cantidad: item.cantidad,
-        total: item.total
-      }, {
-        params: { cajero_id: usuario.id }
-      });
+      const res = await axios.post(
+        `${API_URL}/venta`,
+        {
+          producto_id: item.id,
+          cantidad: item.cantidad,
+          total: item.total,
+        },
+        {
+          params: { cajero_id: usuario.id },
+        }
+      );
       alert(res.data.mensaje);
       if (res.data.inventario) {
         setInventario(res.data.inventario);
-        setMensajeInventario("Inventario actualizado después de la venta ✔️");
+        setMensajeInventario("Inventario actualizado después de la venta");
         setTimeout(() => setMensajeInventario(""), 3000);
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
       }
     } catch (err) {
       console.error("Error registrando venta:", err);
@@ -131,76 +100,53 @@ function App() {
     }
   };
 
-  const registrarVentaCombo = async (comboId, precioCombo) => {
-    try {
-      const { data: detalle, error } = await supabase
-        .from("combo_detalle")
-        .select("producto_id, cantidad")
-        .eq("combo_id", comboId);
-      if (error) throw error;
-      await supabase.from("ventas").insert([
-        { 
-          producto_id: null,
-          cantidad: 1,
-          total: precioCombo,
-          cajero_id: usuario.id 
-        }
-      ]);
-      for (const item of detalle) {
-        const producto = inventario.find(p => p.id === item.producto_id);
-        if (producto) {
-          await supabase
-            .from("inventario")
-            .update({ cantidad: producto.cantidad - item.cantidad })
-            .eq("id", item.producto_id);
-        }
-      }
-      setMensajeInventario("Inventario actualizado después de la venta de combo ✔️");
-      setTimeout(() => setMensajeInventario(""), 3000);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (err) {
-      console.error("Error registrando venta de combo:", err);
-      alert("Error al registrar venta de combo");
-    }
-  };
+  const missingConfiguration = [
+    !API_URL && "VITE_API_URL",
+    !import.meta.env.VITE_SUPABASE_URL && "VITE_SUPABASE_URL",
+    !import.meta.env.VITE_SUPABASE_KEY && "VITE_SUPABASE_KEY",
+  ].filter(Boolean);
 
   if (!usuario) {
-    return <Login setUsuario={manejarLogin} />;
-  }
-
-  if (usuario.rol === "cajero") {
     return (
-      <POS
-        usuario={usuario}
-        inventario={inventario}
-        registrarVenta={registrarVenta}
-        actualizarInventario={actualizarInventario}
-        mensajeInventario={mensajeInventario}
-        refreshTrigger={refreshTrigger}
-        cerrarSesion={cerrarSesion}
-        setRefreshTrigger={setRefreshTrigger}
+      <Login
+        setUsuario={manejarLogin}
+        modoVistaPrevia={missingConfiguration.length > 0}
       />
     );
   }
 
-  if (usuario.rol === "admin") {
+  if (rolNormalizado === "cajero") {
     return (
-      <AdminDashboard
-        usuario={usuario}
-        usuarios={usuarios}
-        inventario={inventario}
-        ventas={ventas}
-        agregarUsuario={agregarUsuario}
-        eliminarUsuario={eliminarUsuario}
-        agregarProducto={agregarProducto}
-        actualizarProducto={actualizarProducto}
-        eliminarProducto={eliminarProducto}
-        cerrarSesion={cerrarSesion}
-      />
+      <>
+        {(usuario.vista_previa || missingConfiguration.length > 0) && (
+          <div
+            role="status"
+            style={{
+              background: "#fff7d6",
+              color: "#704b00",
+              fontFamily: "Arial, sans-serif",
+              padding: "10px 16px",
+              textAlign: "center",
+            }}
+          >
+            Vista previa sin datos: conecta el backend para habilitar ventas y consultas.
+          </div>
+        )}
+        <POS
+          usuario={usuario}
+          inventario={inventario}
+          registrarVenta={registrarVenta}
+          actualizarInventario={actualizarInventario}
+          mensajeInventario={mensajeInventario}
+          refreshTrigger={refreshTrigger}
+          cerrarSesion={cerrarSesion}
+          setRefreshTrigger={setRefreshTrigger}
+        />
+      </>
     );
   }
 
-  if (usuario.rol === "dueño") {
+  if (esPanelDueno) {
     return (
       <OwnerDashboard
         usuario={usuario}
@@ -212,7 +158,7 @@ function App() {
     );
   }
 
-  return <div>Rol desconocido</div>;
+  return <div>Rol desconocido ({usuario.rol})</div>;
 }
 
 export default App;

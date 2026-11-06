@@ -5393,3 +5393,389 @@
     padding: 16px !important;
   }
 }
+
+
+/* ============================================================
+   NUEVO ESQUEMA VISUAL Y FUNCIONAL DE DESPACHOS (DIARIO + MENSUAL)
+============================================================ */
+.despachos-esquema-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.despacho-registro-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+.despacho-registro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.despacho-registro-header h3 {
+  margin: 0 0 4px 0;
+  color: #3b2a1f;
+  font-size: 1.15rem;
+}
+
+.despacho-registro-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.despacho-fecha-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.despacho-fecha-top label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.despacho-fecha-top input[type="date"] {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.btn-ir-hoy-despacho {
+  background: #fae8df;
+  color: #9b2c2c;
+  border: 1px solid #f2c6b6;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.despacho-preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  background: #fdf8f3;
+  border: 1px solid #ead8c7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0;
+  font-size: 0.86rem;
+  color: #5c3a21;
+}
+
+.despacho-preview-total strong {
+  color: #166534;
+  font-size: 0.98rem;
+}
+
+.despachos-esquema-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.despachos-sheet-card {
+  background: #ffffff;
+  border: 1px solid #d6c7b8;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.despachos-sheet-banner {
+  background: linear-gradient(135deg, #4a3222, #6b442a);
+  color: #ffffff;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.despachos-sheet-banner.banner-mensual {
+  background: linear-gradient(135deg, #1e3a5f, #2b5282);
+}
+
+.despachos-sheet-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.despachos-sheet-title-group h4 {
+  margin: 0;
+  color: #ffffff !important;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.despachos-sheet-date-pill {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.despachos-sheet-kpis {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sheet-kpi-pill {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.sheet-kpi-pill.valor {
+  background: #fef08a;
+  color: #713f12;
+}
+
+.despachos-mes-controles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mes-picker-input {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.btn-toggle-dias-mes {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-toggle-dias-mes.activo,
+.btn-toggle-dias-mes:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.despachos-excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.despachos-excel-table thead th {
+  background: #f3ece4;
+  color: #3b2a1f;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.4px;
+  padding: 11px 12px;
+  border-bottom: 2px solid #d5c4b2;
+  border-right: 1px solid #e7dcd0;
+  text-align: left;
+}
+
+.tabla-relacion-mes thead th {
+  background: #e8eff7;
+  color: #1e3a5f;
+  border-bottom: 2px solid #bfd0e3;
+  border-right: 1px solid #d7e3f0;
+}
+
+.despachos-excel-table thead th:last-child,
+.despachos-excel-table tbody td:last-child,
+.despachos-excel-table tfoot td:last-child {
+  border-right: none;
+}
+
+.despachos-excel-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ebe3da;
+  border-right: 1px solid #f2ece4;
+  color: #2d241e;
+  vertical-align: middle;
+}
+
+.despachos-excel-table tbody tr:nth-child(even) {
+  background: #fcfaf8;
+}
+
+.despachos-excel-table tbody tr:hover {
+  background: #f7efe6;
+}
+
+.despachos-excel-table .num-col {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.despachos-excel-table .center-col {
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.prod-nombre-principal {
+  font-weight: 600;
+  color: #2d241e;
+}
+
+.prod-obs-nota {
+  font-size: 0.75rem;
+  color: #8b5e3c;
+  margin-top: 2px;
+}
+
+.cant-badge-col {
+  font-weight: 700;
+  color: #4a3222;
+}
+
+.valor-strong-col {
+  font-weight: 700;
+  color: #166534;
+}
+
+.fecha-reg-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+  font-size: 0.82rem;
+}
+
+.hora-reg-sub {
+  font-size: 0.71rem;
+  color: #78716c;
+}
+
+.excel-total-row {
+  background: #efe5d8 !important;
+  font-weight: 800;
+}
+
+.tabla-relacion-mes .excel-total-row {
+  background: #dce8f5 !important;
+}
+
+.excel-total-row td {
+  padding: 12px;
+  border-top: 2px solid #bda68e;
+  color: #2d241e;
+  font-size: 0.9rem;
+}
+
+.tabla-relacion-mes .excel-total-row td {
+  border-top: 2px solid #9ab5d3;
+  color: #1e3a5f;
+}
+
+.excel-total-row .total-destacado {
+  color: #9b2c2c !important;
+  font-size: 0.98rem;
+}
+
+.tabla-mensual-scroll {
+  max-height: 540px;
+  overflow-y: auto;
+}
+
+.fila-clicable {
+  cursor: pointer;
+}
+
+.fila-sin-movimiento {
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.fila-sin-movimiento td {
+  color: #94a3b8 !important;
+}
+
+.fila-dia-seleccionado {
+  background: #fef3c7 !important;
+}
+
+.fecha-mes-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.tag-viendo {
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.sin-datos-sheet {
+  padding: 32px 20px;
+  text-align: center;
+  color: #78716c;
+}
+
+.btn-ver-calendario-vacio {
+  margin-top: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 1180px) {
+  .despachos-esquema-grid {
+    grid-template-columns: 1fr;
+  }
+}

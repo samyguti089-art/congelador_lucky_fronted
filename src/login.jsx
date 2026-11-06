@@ -2,9 +2,10 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaStore } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
+import { STORE_NAME } from "./utils/storeConfig";
 import "./App.css";
 
-function Login({ setUsuario }) {
+function Login({ setUsuario, modoVistaPrevia = false }) {
   const [nombre, setNombre] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,10 @@ function Login({ setUsuario }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    if (!API_URL) {
+      setError("El backend no está configurado. Puedes entrar a la vista previa sin datos.");
+      return;
+    }
     if (!nombre.trim() || !password.trim()) {
       setError("Por favor completa todos los campos");
       return;
@@ -43,6 +48,10 @@ function Login({ setUsuario }) {
     }
   };
 
+  const entrarVistaPrevia = () => {
+    setUsuario({ id: 0, nombre: "Vista previa", rol: "cajero", vista_previa: true });
+  };
+
   return (
     <div className="login-modern-container">
       <div className="login-background-overlay"></div>
@@ -51,7 +60,7 @@ function Login({ setUsuario }) {
           <div className="logo-icon">
             <FaStore />
           </div>
-          <h1>Congelados Lucky</h1>
+          <h1>{STORE_NAME}</h1>
           <p>Sistema de Punto de Venta</p>
         </div>
 
@@ -111,10 +120,23 @@ function Login({ setUsuario }) {
               </>
             )}
           </button>
+
+          {modoVistaPrevia && (
+            <div style={{ marginTop: "16px", textAlign: "center" }}>
+              <p>Explora el punto de venta con inventario vacío y sin conexión al backend.</p>
+              <button
+                type="button"
+                className="login-button-modern"
+                onClick={entrarVistaPrevia}
+              >
+                Ver proyecto sin datos
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="login-footer-modern">
-          <p>© Congelados Lucky - Todos los derechos reservados</p>
+          <p>© {STORE_NAME} - Todos los derechos reservados</p>
         </div>
       </div>
     </div>
