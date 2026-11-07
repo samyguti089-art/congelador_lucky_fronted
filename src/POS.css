@@ -4398,3 +4398,211 @@ body.dark-mode .total-precio-grande {
   letter-spacing: 0.3px;
   box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
 }
+
+
+/* ============================================================
+   MODAL DE CONFIRMACIÓN DE PAGO (DISEÑO PUNTO PRINCIPAL)
+============================================================ */
+.confirmacion-modal-overlay {
+  z-index: 2800 !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+}
+
+.confirmacion-modal {
+  max-width: 480px !important;
+  width: 95% !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  animation: modalPagoSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.confirmacion-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+.confirmacion-header h2 {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.confirmacion-mensaje {
+  font-size: 1rem !important;
+  color: #475569 !important;
+  margin-bottom: 16px !important;
+  line-height: 1.5 !important;
+}
+
+.confirmacion-resumen {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  margin-bottom: 22px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.confirmacion-resumen-fila {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 0.95rem !important;
+  color: #334155 !important;
+}
+
+.confirmacion-resumen-fila strong.monto-destacado {
+  font-size: 1.3rem !important;
+  color: #059669 !important;
+  font-weight: 900 !important;
+}
+
+.confirmacion-resumen-fila.cambio-fila {
+  border-top: 1px dashed #cbd5e1 !important;
+  padding-top: 8px !important;
+  margin-top: 4px !important;
+}
+
+.confirmacion-resumen-fila strong.cambio-destacado {
+  font-size: 1.05rem !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.confirmacion-obsequio-alerta {
+  background: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+  margin-top: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.confirmacion-obsequio-alerta span {
+  font-size: 0.85rem !important;
+  color: #065f46 !important;
+  font-weight: 600 !important;
+}
+
+.confirmacion-obsequio-alerta strong {
+  font-size: 0.95rem !important;
+  color: #047857 !important;
+  font-weight: 800 !important;
+}
+
+.confirmacion-buttons {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 10px !important;
+}
+
+.btn-cancelar-confirmacion {
+  flex: 1 !important;
+  padding: 13px 18px !important;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 12px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.btn-cancelar-confirmacion:hover {
+  background: #fecaca !important;
+  color: #7f1d1d !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-ejecutar-confirmacion {
+  flex: 1.6 !important;
+  padding: 13px 22px !important;
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 14px -2px rgba(5, 150, 105, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.btn-ejecutar-confirmacion:hover {
+  background: linear-gradient(135deg, #047857, #065f46) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 18px -2px rgba(5, 150, 105, 0.5) !important;
+}
+
+.btn-ejecutar-confirmacion:active {
+  transform: translateY(0) !important;
+}
+
+/* ============================================================
+   MODAL DE CUADRE DE CAJA FLOTANTE (COMO VENTANA MODAL)
+============================================================ */
+.cuadre-modal-overlay {
+  z-index: 2600 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+.cuadre-modal-wrapper {
+  max-width: 740px !important;
+  width: 100% !important;
+  max-height: 92vh !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  animation: modalPagoSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cuadre-modal-wrapper .cash-register-container {
+  box-shadow: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  max-height: 92vh !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+}

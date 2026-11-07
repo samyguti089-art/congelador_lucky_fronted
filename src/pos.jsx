@@ -865,6 +865,13 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
             <span className="vacio-icono">🛒</span>
             <p className="carrito-vacio-texto">Tu carrito está vacío</p>
             <span className="carrito-vacio-sub">Selecciona una categoría arriba para agregar productos</span>
+            <button
+              type="button"
+              className="btn-ver-escala-link"
+              onClick={() => setMostrarTablaObsequios(true)}
+            >
+              🎁 Por cada $100.000 de compra obsequiamos 1 Bandeja Deditos x20 (Ver tabla)
+            </button>
           </div>
         ) : (
           <>
@@ -1286,9 +1293,9 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         />
       )}
 
-      {/* MODAL DE CONFIRMACIÓN */}
+      {/* MODAL DE CONFIRMACIÓN DE PAGO */}
       {mostrarConfirmacion && datosPagoConfirmacion && (
-        <div className="modal-overlay" onClick={() => {
+        <div className="modal-overlay confirmacion-modal-overlay" onClick={() => {
           setMostrarConfirmacion(false);
           setDatosPagoConfirmacion(null);
           setMostrarModalPago(true);
@@ -1302,32 +1309,50 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
                 setMostrarModalPago(true);
               }}>✕</button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body confirmacion-body">
               <p className="confirmacion-mensaje">
                 ¿Estás seguro de confirmar el pago de los productos seleccionados?
               </p>
               <div className="confirmacion-resumen">
-                <p><strong>Total:</strong> {formatPrice(totalCarrito)}</p>
-                <p><strong>Método de pago:</strong> {datosPagoConfirmacion.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</p>
+                <div className="confirmacion-resumen-fila">
+                  <span>Total a Pagar:</span>
+                  <strong className="monto-destacado">{formatPrice(totalCarrito)}</strong>
+                </div>
+                <div className="confirmacion-resumen-fila">
+                  <span>Método de pago:</span>
+                  <strong>{datosPagoConfirmacion.metodo_pago === 'efectivo' ? '💵 Efectivo' : '💳 Transferencia'}</strong>
+                </div>
                 {datosPagoConfirmacion.metodo_pago === 'efectivo' && (
-                  <p><strong>Cambio:</strong> {formatPrice(datosPagoConfirmacion.cambio)}</p>
+                  <div className="confirmacion-resumen-fila cambio-fila">
+                    <span>Cambio / Vueltos:</span>
+                    <strong className="cambio-destacado">{formatPrice(datosPagoConfirmacion.cambio)}</strong>
+                  </div>
                 )}
                 {cantidadObsequioEfectiva > 0 && (
-                  <p style={{ color: '#059669', fontWeight: 700 }}>
-                    <strong>🎁 Obsequio a empacar:</strong> {cantidadObsequioEfectiva}x Bandeja Deditos x20 ($0)
-                  </p>
+                  <div className="confirmacion-obsequio-alerta">
+                    <span>🎁 Obsequio por volumen a entregar:</span>
+                    <strong>{cantidadObsequioEfectiva}x Bandeja Deditos x20 ($0)</strong>
+                  </div>
                 )}
               </div>
               <div className="confirmacion-buttons">
-                <button className="btn-cancelar-confirmacion" onClick={() => {
-                  setMostrarConfirmacion(false);
-                  setDatosPagoConfirmacion(null);
-                  setMostrarModalPago(true);
-                }}>
+                <button
+                  type="button"
+                  className="btn-cancelar-confirmacion"
+                  onClick={() => {
+                    setMostrarConfirmacion(false);
+                    setDatosPagoConfirmacion(null);
+                    setMostrarModalPago(true);
+                  }}
+                >
                   No
                 </button>
-                <button className="btn-ejecutar-confirmacion" onClick={ejecutarPago}>
-                  Sí, confirmar
+                <button
+                  type="button"
+                  className="btn-ejecutar-confirmacion"
+                  onClick={ejecutarPago}
+                >
+                  <FiCheckCircle /> Sí, confirmar
                 </button>
               </div>
             </div>
@@ -1335,13 +1360,17 @@ function POS({ usuario, inventario, actualizarInventario, mensajeInventario, ref
         </div>
       )}
 
-      {/* MODAL DE CUADRE DE CAJA */}
+      {/* MODAL DE CUADRE DE CAJA (VENTANA MODAL FLOTANTE) */}
       {mostrarCuadre && (
-        <CashRegister
-          usuario={usuario}
-          inventario={inventario}
-          onClose={() => setMostrarCuadre(false)}
-        />
+        <div className="modal-overlay cuadre-modal-overlay" onClick={() => setMostrarCuadre(false)}>
+          <div className="cuadre-modal-wrapper" onClick={(e) => e.stopPropagation()}>
+            <CashRegister
+              usuario={usuario}
+              inventario={inventario}
+              onClose={() => setMostrarCuadre(false)}
+            />
+          </div>
+        </div>
       )}
 
       {/* MODAL DE DESPACHOS */}
